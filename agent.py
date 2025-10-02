@@ -75,10 +75,6 @@ def extract_final_answer(text: str) -> Optional[str]:
     m = FINAL_ANSWER_RE.search(text)
     return m.group(1).strip() if m else None
 
-def extract_appliance_answer(text: str) -> Optional[str]:
-    m = APPLIANCE_ANSWER_RE.search(text)
-    return m.group(1).strip() if m else None
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Agent
 # ──────────────────────────────────────────────────────────────────────────────
@@ -111,7 +107,6 @@ class ToolCallingAgent:
         self.conversation.append(f"[SYSTEM]\n{text}")
 
     def _append_agent(self, text: str):
-        print(text)
         self.conversation.append(f"[AGENT]\n{text}")
 
     def _append_tool_result(self, name: str, result: Dict[str, Any]):
@@ -138,19 +133,18 @@ class ToolCallingAgent:
             prompt_now = self._compose_prompt()
             llm_out = self.llm.infer(
                 user_prompt=prompt_now,
-                system_prompt="Follow the instructions precisely. Only output <tool_call>...</tool_call> or <appliance>...</appliance> or <final_answer>...</final_answer>."
+                system_prompt="Follow the instructions precisely. Only output <tool_call>...</tool_call> or <final_answer>...</final_answer>."
             )
             if not llm_out:
                 return "The LLM did not return a response."
-
+            print(llm_out)
             # 2) Check for final answer
             final = extract_final_answer(llm_out)
             if final is not None:
+                # print("\n=========Last conversation=========")
+                # print(prompt_now)
+                # print("=========Last conversation=========\n")
                 return final
-
-            appliance = extract_appliance_answer(llm_out)
-            if appliance is not None:
-                return appliance
 
             # 3) Parse tool calls (there can be multiple)
             calls = extract_tool_calls(llm_out)
@@ -199,7 +193,6 @@ def load_system_prompt(filename):
         return None
 
 if __name__ == "__main__":
-    # Your example system prompt
     role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
     instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
 
@@ -211,7 +204,7 @@ if __name__ == "__main__":
 
     # Example user prompt; the LLM is expected to call tools in the right order.
     user_prompt = (
-        "turn on the right light in the lobby, swtich the fan in bedroom to half power"
+        "turn on the left right in the lobby, swtich the fan in bedroom to half power"
     )
 
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"

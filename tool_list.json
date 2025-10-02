@@ -37,5 +37,21 @@
             "properties": {},
             "required": []
         }
+    },
+    {
+        "name": "execute_appliance",
+        "description": "Receive Json argument store list of appliance that is need to execute, read and execute if the argument is accepted.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "json_str": {
+                    "type": "string",
+                    "description": "A string of json format argument, contain house appliances (in the provided list) and its relevant execution argument (use \" to ensure input is a string)."
+                }
+            },
+            "required": [
+                "json_str"
+            ]
+        }
     }
 ]

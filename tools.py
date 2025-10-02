@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 import requests
+import json
 
 LOCATION_COORDS = {
     "current":(10.7769, 106.7009), # hochiminh city
@@ -102,7 +103,75 @@ def get_current_location(return_value = False):
         return "Failed to get location"
 
 
+def execute_appliance(json_str: str) -> str:
+    def to_str(v):
+        if v is None: return ""
+        if isinstance(v, float):
+            s = f"{v:.6g}"
+            return s
+        return str(v)
+
+    def is_uniform_obj_list(lst):
+        if not lst or not all(isinstance(x, dict) for x in lst):
+            return False, []
+        key_sets = [tuple(sorted(d.keys())) for d in lst]
+        first = key_sets[0]
+        if not all(k == first for k in key_sets):
+            return False, []
+        return True, list(first)
+
+    def table_from_obj_list(lst, cols):
+        col_widths = {c: max(len(c), *(len(to_str(row.get(c, ""))) for row in lst)) for c in cols}
+        header = " | ".join(c.ljust(col_widths[c]) for c in cols)
+        sep = "-+-".join("-" * col_widths[c] for c in cols)
+        lines = [header, sep]
+        for row in lst:
+            line = " | ".join(to_str(row.get(c, "")).ljust(col_widths[c]) for c in cols)
+            lines.append(line)
+        return "\n".join(lines)
+
+    def kv_format(obj, indent=0, key=None):
+        pad = "  " * indent
+        lines = []
+        if isinstance(obj, dict):
+            if key is not None:
+                lines.append(f"{pad}{key}:")
+                pad += "  "
+            for k in obj:
+                lines.extend(kv_format(obj[k], indent + (1 if key is not None else 0), str(k)))
+        elif isinstance(obj, list):
+            if key is not None:
+                lines.append(f"{pad}{key}:")
+                pad += "  "
+            for i, item in enumerate(obj):
+                label = f"[{i}]"
+                if isinstance(item, (dict, list)):
+                    lines.extend(kv_format(item, indent + (1 if key is not None else 0), label))
+                else:
+                    lines.append(f"{pad}{label}: {to_str(item)}")
+        else:
+            if key is None:
+                lines.append(f"{pad}{to_str(obj)}")
+            else:
+                lines.append(f"{pad}{key}: {to_str(obj)}")
+        return lines
+
+    data = json.loads(json_str)
+
+    if isinstance(data, list):
+        uniform, cols = is_uniform_obj_list(data)
+        out = table_from_obj_list(data, cols) if uniform else "\n".join(kv_format(data))
+    elif isinstance(data, dict):
+        out = "\n".join(kv_format(data))
+    else:
+        out = to_str(data)
+
+    return out
+
+
+
 if __name__ == "__main__":
     # print(get_current_datetime_tool())
 
-    print(get_current_location())
+    string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": 50}]"
+    print(execute_appliance(string))
