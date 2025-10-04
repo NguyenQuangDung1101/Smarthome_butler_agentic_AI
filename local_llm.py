@@ -5,6 +5,7 @@ import base64
 from pathlib import Path
 import faiss
 import numpy as np
+import json
 from sentence_transformers import SentenceTransformer
 
 # Set up logging
@@ -56,32 +57,185 @@ class Copilot:
 
 
 class KnowledgeBase:
-    def __init__(self, model_name="all-MiniLM-L6-v2"):
+    def __init__(self,
+                 model_name: str = "all-MiniLM-L6-v2",
+                 chunk_size: int = 800,
+                 chunk_overlap: int = 100,
+                 chunk_by: str = "words"):
+        self.model_name = model_name
         self.embedder = SentenceTransformer(model_name)
+        self.chunk_size = int(chunk_size)
+        self.chunk_overlap = int(chunk_overlap)
+        self.chunk_by = chunk_by
+        self.raw_documents = []
         self.texts = []
+        self.sources = []
         self.index = None
 
+    def _chunk_document(self, text: str):
+        if not text:
+            return []
+        if self.chunk_by == "chars":
+            n = len(text)
+            step = max(1, self.chunk_size - self.chunk_overlap)
+            return [c for c in (text[i:i + self.chunk_size] for i in range(0, n, step)) if c.strip()]
+        else:
+            tokens = text.split()
+            n = len(tokens)
+            step = max(1, self.chunk_size - self.chunk_overlap)
+            chunks = []
+            for i in range(0, n, step):
+                chunk_tokens = tokens[i:i + self.chunk_size]
+                if chunk_tokens:
+                    chunks.append(" ".join(chunk_tokens))
+            return [c for c in chunks if c.strip()]
+
     def build(self, documents):
-        """Build FAISS index from list of text documents."""
-        self.texts = documents
-        embeddings = self.embedder.encode(documents, convert_to_numpy=True, normalize_embeddings=True)
+        """Build FAISS index from list of text documents (with chunking)."""
+        self.raw_documents = list(documents)
+
+        # chunk
+        all_chunks = []
+        sources = []
+        for doc_id, doc in enumerate(self.raw_documents):
+            chunks = self._chunk_document(doc)
+            for c_idx, c in enumerate(chunks):
+                all_chunks.append(c)
+                sources.append((doc_id, c_idx))
+
+        # stats
+        total_docs = len(self.raw_documents)
+        total_chunks = len(all_chunks)
+        lengths = [len(c.split()) if self.chunk_by == "words" else len(c) for c in all_chunks]
+        avg_len = (sum(lengths) / total_chunks) if total_chunks else 0
+        min_len = min(lengths) if lengths else 0
+        max_len = max(lengths) if lengths else 0
+
+        logger.info(
+            "KB build: chunking_config = {"
+            f"'chunk_size': {self.chunk_size}, "
+            f"'chunk_overlap': {self.chunk_overlap}, "
+            f"'chunk_by': '{self.chunk_by}'"
+            "}"
+        )
+        logger.info(
+            "KB build: stats = {"
+            f"'num_input_docs': {total_docs}, "
+            f"'num_chunks': {total_chunks}, "
+            f"'avg_chunk_len_{'words' if self.chunk_by=='words' else 'chars'}': {avg_len:.2f}, "
+            f"'min_len': {min_len}, "
+            f"'max_len': {max_len}"
+            "}"
+        )
+
+        if total_chunks == 0:
+            logger.warning("Knowledge base is empty after chunking. Nothing to index.")
+            self.texts, self.sources, self.index = [], [], None
+            return
+
+        self.texts = all_chunks
+        self.sources = sources
+
+        # embeddings + FAISS (inner product over normalized vectors)
+        embeddings = self.embedder.encode(
+            self.texts,
+            convert_to_numpy=True,
+            normalize_embeddings=True
+        )
         self.index = faiss.IndexFlatIP(embeddings.shape[1])
         self.index.add(embeddings)
-        logger.info(f"Knowledge base built with {len(documents)} documents.")
+        logger.info(f"Knowledge base built with {total_chunks} chunks.")
 
     def retrieve(self, query, k=3):
-        """Retrieve top-k most relevant documents."""
+        """Retrieve top-k most relevant chunks."""
         if not self.index:
-            logger.warning("Knowledge base is empty. Run build() first.")
+            logger.warning("Knowledge base is empty. Run build() or load() first.")
             return []
         q_emb = self.embedder.encode([query], convert_to_numpy=True, normalize_embeddings=True)
         D, I = self.index.search(q_emb, k)
-        return [self.texts[i] for i in I[0]]
+        return [self.texts[i] for i in I[0] if 0 <= i < len(self.texts)]
+
+    def save(self, folder_path: str):
+        p = Path(folder_path)
+        p.mkdir(parents=True, exist_ok=True)
+
+        if self.index is None or not self.texts:
+            raise RuntimeError("Nothing to save: build() first.")
+
+        # save faiss index
+        faiss.write_index(self.index, str(p / "index.faiss"))
+
+        # save chunks
+        with open(p / "texts.jsonl", "w", encoding="utf-8") as f:
+            for t in self.texts:
+                f.write(json.dumps({"text": t}, ensure_ascii=False) + "\n")
+
+        # save sources
+        with open(p / "sources.jsonl", "w", encoding="utf-8") as f:
+            for doc_id, chunk_idx in self.sources:
+                f.write(json.dumps({"doc_id": doc_id, "chunk_idx": chunk_idx}) + "\n")
+
+        # save metadata/config
+        meta = {
+            "model_name": self.model_name,
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+            "chunk_by": self.chunk_by
+        }
+        with open(p / "meta.json", "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+
+        logger.info(f"KB saved to: {p.resolve()}")
+
+    def load(self, folder_path: str):
+        """Load FAISS index + chunks + metadata from folder."""
+        p = Path(folder_path)
+        idx_path = p / "index.faiss"
+        texts_path = p / "texts.jsonl"
+        sources_path = p / "sources.jsonl"
+        meta_path = p / "meta.json"
+
+        if not (idx_path.exists() and texts_path.exists() and sources_path.exists() and meta_path.exists()):
+            raise FileNotFoundError("KB folder is missing required files (index.faiss, texts.jsonl, sources.jsonl, meta.json).")
+
+        # load meta and (re)create embedder with same model
+        with open(meta_path, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+
+        stored_model = meta.get("model_name", self.model_name)
+        if stored_model != self.model_name:
+            logger.warning(f"KB stored model '{stored_model}' differs from current '{self.model_name}'. Reinitializing embedder to '{stored_model}'.")
+            self.model_name = stored_model
+            self.embedder = SentenceTransformer(self.model_name)
+
+        self.chunk_size = meta.get("chunk_size", self.chunk_size)
+        self.chunk_overlap = meta.get("chunk_overlap", self.chunk_overlap)
+        self.chunk_by = meta.get("chunk_by", self.chunk_by)
+
+        # load faiss
+        self.index = faiss.read_index(str(idx_path))
+
+        # load texts
+        texts = []
+        with open(texts_path, "r", encoding="utf-8") as f:
+            for line in f:
+                obj = json.loads(line)
+                texts.append(obj["text"])
+        self.texts = texts
+
+        # load sources
+        sources = []
+        with open(sources_path, "r", encoding="utf-8") as f:
+            for line in f:
+                obj = json.loads(line)
+                sources.append((obj["doc_id"], obj["chunk_idx"]))
+        self.sources = sources
+
+        logger.info(f"KB loaded from: {p.resolve()} (chunks={len(self.texts)})")
 
 
 
 def load_documents_from_folder(folder_path):
-    """Load all text files in a folder as separate documents."""
     folder = Path(folder_path)
     docs = []
     for f in folder.glob("*.txt"):
@@ -120,22 +274,43 @@ if __name__ == "__main__":
     sys_prompt = "\n\n".join([p for p in parts if p])
     sys_prompt = ""
 
-
     # input
     question = "how many light in the bedroom?"
     # image_path = r""
 
+    # ###########################################################################
+    # # Use kb from raw text
     docs = load_documents_from_folder("./knowledge_base")
-    if docs:
-        kb = KnowledgeBase()
-        kb.build(docs)
-        context_docs = kb.retrieve(question, k=3)
-        context = "\n\n".join(context_docs)
-        print(context)
-        question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
+    kb = KnowledgeBase(
+        model_name="all-MiniLM-L6-v2",
+        chunk_size=800,
+        chunk_overlap=100,
+        chunk_by="words"
+    )
+    kb.build(docs)
+    context_docs = kb.retrieve(question, k=3)
+    context = "\n\n".join(context_docs)
+    print(context)
+    question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
+
+
+    ###########################################################################
+    # # Save and use kb from vector database
+    # docs = load_documents_from_folder("./knowledge_base")
+    # kb = KnowledgeBase(model_name="all-MiniLM-L6-v2", chunk_size=800, chunk_overlap=100, chunk_by="words")
+    # kb.build(docs)
+    # kb.save("./kb_store/test1")
+    # kb = KnowledgeBase()
+    # kb.load("./kb_store/test1")
+    # context_docs = kb.retrieve(question, k=3)
+    # context = "\n\n".join(context_docs)
+    # print(context)
+    # question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
+
 
 
 
     # Run inference
     result = copilot.infer(question, sys_prompt)
     print("Answer:\n", result)
+

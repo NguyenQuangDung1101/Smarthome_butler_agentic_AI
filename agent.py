@@ -141,7 +141,7 @@ class ToolCallingAgent:
             # delete the whole slice of old blocks
             del self.conversation[start_idx:end_idx]
 
-    async def run(self, user_prompt: str, use_kb=False, kb_path="./knowledge_base") -> str:
+    async def run(self, user_prompt: str, use_kb=False, kb_path="./kb_store/test1") -> str:
         # Step 0: seed system + user
         self._append_user(user_prompt)
 
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     )
 
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
-    # turn on the left in the lobby, swtich the fan in bedroom to half power
+    # turn on the left in the lobby, switch the fan in bedroom to half power
 
 
     # Run it
