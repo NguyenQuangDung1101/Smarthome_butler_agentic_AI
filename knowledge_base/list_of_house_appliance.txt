@@ -1,0 +1,30 @@
+Livingroom (espID: 1):
+    actuator:
+    - "led1" (light) (value: True/False)
+    - "motor1" (fan) (value: 0-100)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem"(Temperature sensor)
+Lobby(espID: 2):
+    actuator:
+    - "led1" (left light) (value: True/False)
+    - "led2" (right light) (value: True/False)
+    - "motor1" (fan) (value: 0-100)
+    - "motor2" (slider for door) (value: 0-100)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem"(Temperature sensor)
+Bedroom + balcony(ouside the house)(espID: 3):
+    actuator:
+    - "led1" (room light) (value: True/False)
+    - "led2" (bed light) (value: True/False)
+    - "led3" (balcony light outside) (value: True/False)
+    - "motor1" (fan) (value: 0-100)
+    - "motor2" (slider for window cover) (value: 0-100)
+    - "servo" (lock) (value: True/False)
+    - "pump" (to watering bonsai outside)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem" (Temperature sensor)
+    - "tem_out" (Temperature sensor outside)
+    - "mois" (Moisture sensor)

@@ -107,10 +107,6 @@ class ToolCallingAgent:
         self.conversation.append(f"[USER]\n{text}")
         self._trim_history()
 
-    def _append_system(self, text: str):
-        self.conversation.append(f"[SYSTEM]\n{text}")
-        self._trim_history()
-
     def _append_agent(self, text: str):
         self.conversation.append(f"[AGENT]\n{text}")
         self._trim_history()
@@ -145,9 +141,8 @@ class ToolCallingAgent:
             # delete the whole slice of old blocks
             del self.conversation[start_idx:end_idx]
 
-    async def run(self, user_prompt: str) -> str:
+    async def run(self, user_prompt: str, use_kb=False, kb_path="./knowledge_base") -> str:
         # Step 0: seed system + user
-        self._append_system(self.system_prompt)
         self._append_user(user_prompt)
 
         for step in range(1, self.max_steps + 1):
@@ -159,7 +154,7 @@ class ToolCallingAgent:
             prompt_now = self._compose_prompt()
             llm_out = self.llm.infer(
                 user_prompt=prompt_now,
-                system_prompt="Follow the instructions precisely. Only output <tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>."
+                system_prompt=f"[SYSTEM]\nFollow the instructions precisely. Only output <tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>.\n{self.system_prompt}"
             )
             if not llm_out:
                 return "The LLM did not return a response."

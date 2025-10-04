@@ -3,6 +3,9 @@ import requests
 import logging
 import base64
 from pathlib import Path
+import faiss
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 # Set up logging
 logger = logging.getLogger("OLLama")
@@ -51,6 +54,46 @@ class Copilot:
             logger.error(f"Inference failed: {e}")
             return None
 
+
+class KnowledgeBase:
+    def __init__(self, model_name="all-MiniLM-L6-v2"):
+        self.embedder = SentenceTransformer(model_name)
+        self.texts = []
+        self.index = None
+
+    def build(self, documents):
+        """Build FAISS index from list of text documents."""
+        self.texts = documents
+        embeddings = self.embedder.encode(documents, convert_to_numpy=True, normalize_embeddings=True)
+        self.index = faiss.IndexFlatIP(embeddings.shape[1])
+        self.index.add(embeddings)
+        logger.info(f"Knowledge base built with {len(documents)} documents.")
+
+    def retrieve(self, query, k=3):
+        """Retrieve top-k most relevant documents."""
+        if not self.index:
+            logger.warning("Knowledge base is empty. Run build() first.")
+            return []
+        q_emb = self.embedder.encode([query], convert_to_numpy=True, normalize_embeddings=True)
+        D, I = self.index.search(q_emb, k)
+        return [self.texts[i] for i in I[0]]
+
+
+
+def load_documents_from_folder(folder_path):
+    """Load all text files in a folder as separate documents."""
+    folder = Path(folder_path)
+    docs = []
+    for f in folder.glob("*.txt"):
+        try:
+            content = f.read_text(encoding="utf-8").strip()
+            if content:
+                docs.append(content)
+        except Exception as e:
+            logger.error(f"Error reading {f}: {e}")
+    logger.info(f"Loaded {len(docs)} documents from {folder_path}")
+    return docs
+
 def load_system_prompt(filename):
     try:
         with open(filename, 'r') as file:
@@ -58,6 +101,8 @@ def load_system_prompt(filename):
     except Exception as e:
         logger.error(f"Error reading system prompt from file: {e}")
         return None
+
+
 
 
 if __name__ == "__main__":
@@ -71,15 +116,25 @@ if __name__ == "__main__":
 
     role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
     instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
-
     parts = [role_sys_prompt, instruction_sys_prompt]
     sys_prompt = "\n\n".join([p for p in parts if p])
+    sys_prompt = ""
 
-    sys_prompt=""
 
     # input
-    question = "tell me a story contain animals"
+    question = "how many light in the bedroom?"
     # image_path = r""
+
+    docs = load_documents_from_folder("./knowledge_base")
+    if docs:
+        kb = KnowledgeBase()
+        kb.build(docs)
+        context_docs = kb.retrieve(question, k=3)
+        context = "\n\n".join(context_docs)
+        print(context)
+        question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
+
+
 
     # Run inference
     result = copilot.infer(question, sys_prompt)
