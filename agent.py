@@ -8,6 +8,7 @@ logger = logging.getLogger("OLLama")
 logging.basicConfig(level=logging.INFO)
 # Reuse your existing LLM + tools
 from local_llm import Copilot
+from tools import execute_appliance
 from tools_call import call_tool as async_call_tool  # your async tool dispatcher
 from tools_call import TOOLS as TOOL_SPEC
 
@@ -38,6 +39,10 @@ You can call tools using this EXACT format (one per line):
 <tool_call>{{"name":"<tool_name>", "arguments":{{...}}}}</tool_call>
 
 - Only output a tool call when you actually want me to execute it.
+- If you need to execute house appliances, output:
+
+<appliance>...json_config...</appliance>
+
 - After one or more tool calls, when you are ready to answer the user, output:
 
 <final_answer>...your final answer for the user...</final_answer>
@@ -46,9 +51,10 @@ Available tools (schema):
 {tools_doc}
 
 Rules:
-- Output ONLY either <tool_call>...</tool_call> or <final_answer>...</final_answer> at each step.
+- Output ONLY either <tool_call>...</tool_call>, <appliance>...</appliance>  or <final_answer>...</final_answer> at each step.
 - Do NOT include extra commentary outside those tags.
 - If a tool returns tabular data (CSV/text), read it and continue reasoning.
+- If house appliance execution return strange message, read it and continue reasoning.
 - If arguments are missing, request the needed info explicitly via <final_answer> asking the user.
 """
     return f"{user_system_prompt}\n\n{control}".strip()
@@ -71,6 +77,10 @@ def extract_tool_calls(text: str) -> List[Dict[str, Any]]:
             pass
     return calls
 
+def extract_appliance_answer(text: str) -> Optional[str]:
+    m = APPLIANCE_ANSWER_RE.search(text)
+    return m.group(1).strip() if m else None
+
 def extract_final_answer(text: str) -> Optional[str]:
     m = FINAL_ANSWER_RE.search(text)
     return m.group(1).strip() if m else None
@@ -80,21 +90,14 @@ def extract_final_answer(text: str) -> Optional[str]:
 # ──────────────────────────────────────────────────────────────────────────────
 
 class ToolCallingAgent:
-    """
-    Super-light agent loop:
-    1) Provide system+tools contract + user message.
-    2) Ask LLM for either tool calls or final answer.
-    3) If tool calls found, execute and feed results back, then loop.
-    4) Stop when final_answer is produced or when max_steps reached.
-    """
-
-    def __init__(self, llm: Copilot, system_prompt: str, max_steps: int = 6):
+    def __init__(self, llm: Copilot, system_prompt: str, max_steps: int = 6, max_history: int = 10):
         self.llm = llm
         self.system_prompt = system_prompt
         self.step = 0
         self.max_steps = max_steps
+        self.max_history = max_history + 1 # keep 1 -> 10 (no infer 0)
 
-        # Build conversation as a single growing prompt (since Copilot.infer takes plain text)
+        # Build conversation as a single growing prompt
         self.conversation: List[str] = []
 
     def _compose_prompt(self) -> str:
@@ -102,12 +105,15 @@ class ToolCallingAgent:
 
     def _append_user(self, text: str):
         self.conversation.append(f"[USER]\n{text}")
+        self._trim_history()
 
     def _append_system(self, text: str):
         self.conversation.append(f"[SYSTEM]\n{text}")
+        self._trim_history()
 
     def _append_agent(self, text: str):
         self.conversation.append(f"[AGENT]\n{text}")
+        self._trim_history()
 
     def _append_tool_result(self, name: str, result: Dict[str, Any]):
         # Your tools return {"content":[{"type":"text","text":"..."}]}
@@ -118,8 +124,26 @@ class ToolCallingAgent:
                 pieces.append(item.get("text", ""))
         payload = "\n".join(pieces).strip()
         safe = payload if payload else "<empty result>"
-        print(f"[TOOL:{name}:RESULT]\n{safe}")
+        print(f"[TOOL:{name}:RESULT]\n{safe}\n")
         self.conversation.append(f"[TOOL:{name}:RESULT]\n{safe}")
+        self._trim_history()
+
+    def _trim_history(self):
+        # (after lstrip) begins with "[INFERENCE " and ends right before the next "[INFERENCE ".
+        # if there are more than max_history blocks, remove the earliest whole blocks.
+        marker_indices = []
+        for idx, item in enumerate(self.conversation):
+            s = item.lstrip()
+            if s.startswith("[INFERENCE "):
+                marker_indices.append(idx)
+
+        # if more markers than allowed, drop earliest blocks
+        if len(marker_indices) > self.max_history:
+            drop_blocks = len(marker_indices) - self.max_history
+            start_idx = marker_indices[0]
+            end_idx = marker_indices[drop_blocks]
+            # delete the whole slice of old blocks
+            del self.conversation[start_idx:end_idx]
 
     async def run(self, user_prompt: str) -> str:
         # Step 0: seed system + user
@@ -129,15 +153,17 @@ class ToolCallingAgent:
         for step in range(1, self.max_steps + 1):
             self.step += 1
             self.conversation.append(f"\n[INFERENCE {self.step}]:\n")
+            self._trim_history()
+
             # 1) Ask LLM for the next action
             prompt_now = self._compose_prompt()
             llm_out = self.llm.infer(
                 user_prompt=prompt_now,
-                system_prompt="Follow the instructions precisely. Only output <tool_call>...</tool_call> or <final_answer>...</final_answer>."
+                system_prompt="Follow the instructions precisely. Only output <tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>."
             )
             if not llm_out:
                 return "The LLM did not return a response."
-            print(llm_out)
+
             # 2) Check for final answer
             final = extract_final_answer(llm_out)
             if final is not None:
@@ -146,7 +172,18 @@ class ToolCallingAgent:
                 # print("=========Last conversation=========\n")
                 return final
 
-            # 3) Parse tool calls (there can be multiple)
+            # 3) Check for appliance execution
+            appliance = extract_appliance_answer(llm_out)
+            if appliance is not None:
+                self._append_agent(f"Execute appliance: {appliance}")
+                try:
+                    print(execute_appliance(appliance))
+                    result = "Appliance executed successfully"
+                except Exception as e:
+                    result = f"Appliance execution failed: {e}"
+                self._append_agent(result)
+
+            # 4) Parse tool calls (there can be multiple)
             calls = extract_tool_calls(llm_out)
 
             if not calls:
@@ -154,7 +191,7 @@ class ToolCallingAgent:
                 self._append_agent("Your previous output didn't include a valid <tool_call> or <final_answer>. Please try again.")
                 continue
 
-            # 4) Execute tool(s) in order and append results
+            # 5) Execute tool(s) in order and append results
             for call in calls:
                 name = call.get("name")
                 args = call.get("arguments", {}) or {}
@@ -169,7 +206,6 @@ class ToolCallingAgent:
 
             # 5) After tool results are appended, loop back so LLM can continue / conclude
 
-        # Safety exit
         return "Reached max reasoning steps without a <final_answer>. Please refine your request."
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -182,7 +218,7 @@ def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "
     """
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
-    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16)
+    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=10)
 
 def load_system_prompt(filename):
     try:
@@ -204,11 +240,12 @@ if __name__ == "__main__":
 
     # Example user prompt; the LLM is expected to call tools in the right order.
     user_prompt = (
-        "turn on the left right in the lobby, swtich the fan in bedroom to half power"
+        "check the current time, if it is later than 8:00am, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, but if the current weather is not raining then set every fan in the house to 100%"
     )
 
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
-    
+    # turn on the left in the lobby, swtich the fan in bedroom to half power
+
 
     # Run it
     final = asyncio.run(agent.run(user_prompt))

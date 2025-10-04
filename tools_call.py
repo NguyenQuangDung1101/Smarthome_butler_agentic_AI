@@ -39,23 +39,12 @@ def tool_get_current_location(arguments: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {"content": [{"type": "text", "text": f"Error in get_current_location: {e}"}]}
 
-def tool_execute_appliance(arguments: Dict[str, Any]) -> Dict[str, Any]:
-    json_str = arguments.get("json_str","")
-    if json_str == "":
-        return "Can not get json_str from arguments"
-    try:
-        text = execute_appliance(json_str)
-        return {"content": [{"type": "text", "text": text}]}
-    except Exception as e:
-        return {"content": [{"type": "text", "text": f"Error in execute_appliance: {e}"}]}
-
 
 # ── TOOL DISPATCH MAP ────────────────────────────────────────────────────
 TOOL_DISPATCH = {
     "get_current_datetime": tool_get_current_datetime,
     "get_hourly_forecast": tool_get_hourly_forecast,
     "get_current_location": tool_get_current_location,
-    "execute_appliance": tool_execute_appliance
 }
 
 # ── PUBLIC ENTRYPOINT (kept async signature) ─────────────────────────────
