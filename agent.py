@@ -264,7 +264,9 @@ if __name__ == "__main__":
     parts = [role_sys_prompt, instruction_sys_prompt]
     sys_prompt = "\n\n".join([p for p in parts if p])
 
-    agent = build_agent(sys_prompt, model="qwen3:1.7b")
+    #gpt-oss:20b-cloud
+    #qwen3:1.7b
+    agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
     # Interactive multi-turn terminal chat:
     asyncio.run(agent.chat_cli())
@@ -273,7 +275,8 @@ if __name__ == "__main__":
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
     # turn on the left in the lobby, switch the fan in bedroom to half power
 
-    # user_prompt = "check the current time, if it is later than 8:00am, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, but if the current weather is not raining then set every fan in the house to 100%"
+    # user_prompt = "check the current time, if it is later than 4:00pm, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, if the current weather is raining then set all fan to 50, but if the current weather is not raining then set every fan in the house to 100%"
     # final = asyncio.run(agent.run(user_prompt))
     # print("\n=== Final Answer ===\n")
     # print(final)
+

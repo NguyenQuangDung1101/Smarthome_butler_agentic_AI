@@ -13,9 +13,10 @@ logger = logging.getLogger("OLLama")
 logging.basicConfig(level=logging.INFO)
 
 class Copilot:
-    def __init__(self, host="http://localhost:11434", model="gemma3:4b"):
+    def __init__(self, host="http://localhost:11434", model="gemma3:4b", server_host="http://localhost:5001"):
         self.host = host
         self.model = model
+        self.server_host = server_host
         self.client = ollama.Client(host=self.host)
  
     def list_models(self):
@@ -55,6 +56,40 @@ class Copilot:
             logger.error(f"Inference failed: {e}")
             return None
 
+    def infer_client(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None, timeout=30, retries=2, backoff=1.5):
+        image_b64 = None
+        if image_path:
+            try:
+                with open(image_path, "rb") as f:
+                    image_b64 = base64.b64encode(f.read()).decode("utf-8")
+            except Exception as e:
+                logger.error(f"{e}")
+        payload = {
+            "model": self.model,
+            "prompt": user_prompt or "",
+            "system_prompt": system_prompt or "",
+            "image_b64": image_b64
+        }
+        url = f"{self.server_host}/infer"
+        last_err = None
+        for attempt in range(retries + 1):
+            try:
+                res = requests.post(url, json=payload, timeout=timeout)
+                if res.ok:
+                    data = res.json()
+                    if data.get("status") == "ok":
+                        return data.get("llm_out", "")
+                    logger.error(f"{data}")
+                    return None
+                else:
+                    last_err = RuntimeError(f"HTTP {res.status_code} {res.text}")
+            except Exception as e:
+                last_err = e
+            if attempt < retries:
+                import time
+                time.sleep(backoff ** attempt)
+        logger.error(f"{last_err}")
+        return None
 
 class KnowledgeBase:
     def __init__(self,
@@ -260,6 +295,7 @@ def load_system_prompt(filename):
 
 
 if __name__ == "__main__":
+    # *gpt-oss:20b-cloud
     # qwen3:1.7b
     # qwen3:4b
     # qwen3:8b
@@ -267,50 +303,51 @@ if __name__ == "__main__":
         host="http://localhost:11434",
         model="qwen3:1.7b"
     )
+    print(copilot.list_models())
 
-    role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
-    instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
-    parts = [role_sys_prompt, instruction_sys_prompt]
-    sys_prompt = "\n\n".join([p for p in parts if p])
-    sys_prompt = ""
+    # role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
+    # instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
+    # parts = [role_sys_prompt, instruction_sys_prompt]
+    # sys_prompt = "\n\n".join([p for p in parts if p])
+    # sys_prompt = ""
 
-    # input
-    question = "how many light in the bedroom?"
-    # image_path = r""
+    # # input
+    # question = "how many light in the bedroom?"
+    # # image_path = r""
 
-    # ###########################################################################
-    # # Use kb from raw text
-    docs = load_documents_from_folder("./knowledge_base")
-    kb = KnowledgeBase(
-        model_name="all-MiniLM-L6-v2",
-        chunk_size=800,
-        chunk_overlap=100,
-        chunk_by="words"
-    )
-    kb.build(docs)
-    context_docs = kb.retrieve(question, k=3)
-    context = "\n\n".join(context_docs)
-    print(context)
-    question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
-
-
-    ###########################################################################
-    # # Save and use kb from vector database
+    # # ###########################################################################
+    # # # Use kb from raw text
     # docs = load_documents_from_folder("./knowledge_base")
-    # kb = KnowledgeBase(model_name="all-MiniLM-L6-v2", chunk_size=800, chunk_overlap=100, chunk_by="words")
+    # kb = KnowledgeBase(
+    #     model_name="all-MiniLM-L6-v2",
+    #     chunk_size=800,
+    #     chunk_overlap=100,
+    #     chunk_by="words"
+    # )
     # kb.build(docs)
-    # kb.save("./kb_store/test1")
-    # kb = KnowledgeBase()
-    # kb.load("./kb_store/test1")
     # context_docs = kb.retrieve(question, k=3)
     # context = "\n\n".join(context_docs)
     # print(context)
     # question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
 
 
+    # ###########################################################################
+    # # # Save and use kb from vector database
+    # # docs = load_documents_from_folder("./knowledge_base")
+    # # kb = KnowledgeBase(model_name="all-MiniLM-L6-v2", chunk_size=800, chunk_overlap=100, chunk_by="words")
+    # # kb.build(docs)
+    # # kb.save("./kb_store/test1")
+    # # kb = KnowledgeBase()
+    # # kb.load("./kb_store/test1")
+    # # context_docs = kb.retrieve(question, k=3)
+    # # context = "\n\n".join(context_docs)
+    # # print(context)
+    # # question = f"Use the following knowledge to answer:\n{context}\n\nQuestion: {question}"
 
 
-    # Run inference
-    result = copilot.infer(question, sys_prompt)
-    print("Answer:\n", result)
+
+
+    # # Run inference
+    # result = copilot.infer(question, sys_prompt)
+    # print("Answer:\n", result)
 

@@ -1,208 +1,163 @@
-"List_of house appliance": {
-  "Livingroom": {
-    "espID": 1,
-    "actuator": [
-      {
-        "id": "led1",
-        "description": "light",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "motor1",
-        "description": "fan",
-        "value_type": "integer",
-        "values": "0-100",
-        "action": [
-          "get",
-          "set"
-        ]
-      }
-    ],
-    "sensor": [
-      {
-        "id": "pir",
-        "description": "PIR sensor",
-        "action": [
-          "get"
-        ]
-      },
-      {
-        "id": "tem",
-        "description": "Temperature sensor",
-        "action": [
-          "get"
-        ]
-      }
-    ]
-  },
-  "Lobby": {
-    "espID": 2,
-    "actuator": [
-      {
-        "id": "led1",
-        "description": "left light",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "led2",
-        "description": "right light",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "motor1",
-        "description": "fan",
-        "value_type": "integer",
-        "values": "0-100",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "motor2",
-        "description": "slider for door",
-        "value_type": "integer",
-        "values": "0-100",
-        "action": [
-          "get",
-          "set"
-        ]
-      }
-    ],
-    "sensor": [
-      {
-        "id": "pir",
-        "description": "PIR sensor",
-        "action": [
-          "get"
-        ]
-      },
-      {
-        "id": "tem",
-        "description": "Temperature sensor",
-        "action": [
-          "get"
-        ]
-      }
-    ]
-  },
-  "Bedroom + balcony": {
-    "espID": 3,
-    "actuator": [
-      {
-        "id": "led1",
-        "description": "room light",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "led2",
-        "description": "bed light",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "led3",
-        "description": "balcony light outside",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "motor1",
-        "description": "fan",
-        "value_type": "integer",
-        "values": "0-100",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "motor2",
-        "description": "slider for window cover",
-        "value_type": "integer",
-        "values": "0-100",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "servo",
-        "description": "lock",
-        "value_type": "boolean",
-        "values": "True/False",
-        "action": [
-          "get",
-          "set"
-        ]
-      },
-      {
-        "id": "pump",
-        "description": "to watering bonsai outside",
-        "value_type": "unknown",
-        "action": [
-          "get",
-          "set"
-        ]
-      }
-    ],
-    "sensor": [
-      {
-        "id": "pir",
-        "description": "PIR sensor",
-        "action": [
-          "get"
-        ]
-      },
-      {
-        "id": "tem",
-        "description": "Temperature sensor",
-        "action": [
-          "get"
-        ]
-      },
-      {
-        "id": "tem_out",
-        "description": "Temperature sensor outside",
-        "action": [
-          "get"
-        ]
-      },
-      {
-        "id": "mois",
-        "description": "Moisture sensor",
-        "action": [
-          "get"
-        ]
-      }
-    ]
+{
+  "List_of house appliance": {
+    "Livingroom": {
+      "espID": 1,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "light",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "motor1",
+          "description": "fan",
+          "value_type": "integer",
+          "values": "0-100",
+          "action": ["get", "set"]
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "action": ["get"]
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "action": ["get"]
+        }
+      ]
+    },
+    "Lobby": {
+      "espID": 2,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "left light",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "led2",
+          "description": "right light",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "motor1",
+          "description": "fan",
+          "value_type": "integer",
+          "values": "0-100",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "motor2",
+          "description": "slider for door",
+          "value_type": "integer",
+          "values": "0-100",
+          "action": ["get", "set"]
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "action": ["get"]
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "action": ["get"]
+        }
+      ]
+    },
+    "Bedroom + balcony": {
+      "espID": 3,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "room light",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "led2",
+          "description": "bed light",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "led3",
+          "description": "balcony light outside",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "motor1",
+          "description": "fan",
+          "value_type": "integer",
+          "values": "0-100",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "motor2",
+          "description": "slider for window cover",
+          "value_type": "integer",
+          "values": "0-100",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "servo",
+          "description": "lock",
+          "value_type": "boolean",
+          "values": "True/False",
+          "action": ["get", "set"]
+        },
+        {
+          "id": "pump",
+          "description": "to watering bonsai outside",
+          "value_type": "unknown",
+          "action": ["get", "set"]
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "action": ["get"]
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "action": ["get"]
+        },
+        {
+          "id": "tem_out",
+          "description": "Temperature sensor outside",
+          "value_type": "float",
+          "action": ["get"]
+        },
+        {
+          "id": "mois",
+          "description": "Moisture sensor",
+          "value_type": "float",
+          "action": ["get"]
+        }
+      ]
+    }
   }
 }

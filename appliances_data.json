@@ -1,0 +1,287 @@
+{
+  "List_of house appliance (current values)": {
+    "Livingroom": {
+      "espID": 1,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "Light",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "motor1",
+          "description": "Fan",
+          "value_type": "integer",
+          "value": 50,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "value": 25.0,
+          "constraints": {
+            "type": "float",
+            "min": -40.0,
+            "max": 85.0,
+            "unit": "C"
+          }
+        }
+      ]
+    },
+    "Lobby": {
+      "espID": 2,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "Left light",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "led2",
+          "description": "Right light",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "motor1",
+          "description": "Fan",
+          "value_type": "integer",
+          "value": 50,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        },
+        {
+          "id": "motor2",
+          "description": "Slider for door",
+          "value_type": "integer",
+          "value": 0,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "value": 25.0,
+          "constraints": {
+            "type": "float",
+            "min": -40.0,
+            "max": 85.0,
+            "unit": "C"
+          }
+        }
+      ]
+    },
+    "Bedroom + balcony": {
+      "espID": 3,
+      "actuator": [
+        {
+          "id": "led1",
+          "description": "Room light",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "led2",
+          "description": "Bed light",
+          "value_type": "boolean",
+          "value": true,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "led3",
+          "description": "Balcony light outside",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "motor1",
+          "description": "Fan",
+          "value_type": "integer",
+          "value": 50,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        },
+        {
+          "id": "motor2",
+          "description": "Slider for window cover",
+          "value_type": "integer",
+          "value": 0,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        },
+        {
+          "id": "servo",
+          "description": "Lock",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "pump",
+          "description": "to watering bonsai outside",
+          "value_type": "integer",
+          "value": 0,
+          "constraints": {
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "unit": "%"
+          }
+        }
+      ],
+      "sensor": [
+        {
+          "id": "pir",
+          "description": "PIR sensor",
+          "value_type": "boolean",
+          "value": false,
+          "constraints": {
+            "type": "boolean",
+            "allowed": [
+              true,
+              false
+            ]
+          }
+        },
+        {
+          "id": "tem",
+          "description": "Temperature sensor",
+          "value_type": "float",
+          "value": 25.0,
+          "constraints": {
+            "type": "float",
+            "min": -40.0,
+            "max": 85.0,
+            "unit": "C"
+          }
+        },
+        {
+          "id": "tem_out",
+          "description": "Temperature sensor outside",
+          "value_type": "float",
+          "value": 25.0,
+          "constraints": {
+            "type": "float",
+            "min": -40.0,
+            "max": 85.0,
+            "unit": "C"
+          }
+        },
+        {
+          "id": "mois",
+          "description": "Moisture sensor outside",
+          "value_type": "float",
+          "value": 50.0,
+          "constraints": {
+            "type": "float",
+            "min": 0.0,
+            "max": 100.0,
+            "unit": "%moist"
+          }
+        }
+      ]
+    }
+  }
+}
