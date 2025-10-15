@@ -401,6 +401,9 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
 
     return f'Device "{device_name}" not found in espID={esp_id}.'
 
+
+
+
 ###### SET APPLIANCE VALUE ######
 def set_appliance_value(esp_id: int, device_name: str, value) -> str:
     if not _APPLIANCES_FILE.exists():
@@ -520,6 +523,9 @@ def set_appliance_value(esp_id: int, device_name: str, value) -> str:
     return get_appliance_value(esp_id, device_name)
 
 
+
+
+###### RESET ALL APPLIANCE VALUE ######
 def reset_all_appliances_value() -> str:
     if not _APPLIANCES_FILE.exists():
         return f'Data file "{_APPLIANCES_FILE}" not found.'
@@ -551,7 +557,7 @@ def reset_all_appliances_value() -> str:
         return f'Failed to save "{_APPLIANCES_FILE}": {e}'
     return "All appliances reset."
 
-
+###### RESET APPLIANCE VALUE ######
 def reset_appliance_value(esp_id: int, device_name: str) -> str:
     if not _APPLIANCES_FILE.exists():
         return f'Data file "{_APPLIANCES_FILE}" not found.'
@@ -606,6 +612,8 @@ def reset_appliance_value(esp_id: int, device_name: str) -> str:
     except Exception as e:
         return f'Failed to save "{_APPLIANCES_FILE}": {e}'
     return get_appliance_value(esp_id, device_name)
+
+
 
 
 def execute_appliance(json_str: str) -> str:
@@ -712,4 +720,4 @@ if __name__ == "__main__":
     # print(execute_appliance(string))
 
     reset_all_appliances_value()
-    # print(get_all_appliances_status())
+    print(get_all_appliances_status())
