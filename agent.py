@@ -247,7 +247,7 @@ class ToolCallingAgent:
 def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "http://localhost:11434") -> ToolCallingAgent:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
-    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=10)
+    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=16)
 
 def load_system_prompt(filename):
     try:
@@ -266,7 +266,7 @@ if __name__ == "__main__":
 
     #gpt-oss:20b-cloud
     #qwen3:1.7b
-    agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
+    agent = build_agent(sys_prompt, model="qwen3:1.7b")
 
     # Interactive multi-turn terminal chat:
     asyncio.run(agent.chat_cli())
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
     # turn on the left in the lobby, switch the fan in bedroom to half power
 
-    # user_prompt = "check the current time, if it is later than 4:00pm, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, if the current weather is raining then set all fan to 50, but if the current weather is not raining then set every fan in the house to 100%"
+    # user_prompt = "check the current time, if it is later than 8:00pm, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, if the current weather is raining then set all fan to 50, but if the current weather is not raining then set every fan in the house to 100%"
     # final = asyncio.run(agent.run(user_prompt))
     # print("\n=== Final Answer ===\n")
     # print(final)

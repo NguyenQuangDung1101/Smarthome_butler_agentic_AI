@@ -20,9 +20,12 @@ LOCATION_COORDS = {
 }
 
 def get_current_datetime():
-    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    output = f"Current date: {datetime.now().strftime('%Y-%m-%d')} - Current time: {datetime.now().strftime('%H:%M:%S')}"
-
+    now = datetime.now()
+    date_str = now.strftime('%Y-%m-%d')
+    time_str = now.strftime('%H:%M:%S')
+    weekday_str = now.strftime('%A')
+    
+    output = f"Current date: {date_str} - Day: {weekday_str} - Current time: {time_str}"
     return output
 
 WEATHER_CODES = {
@@ -671,23 +674,35 @@ def execute_appliance(json_str: str) -> str:
 
     data = json.loads(json_str)
 
+    log_check = ""
+
     if isinstance(data, list):
+        new_data = []
         for item in data:
+            keep_item = Truekeep_item = True
             if not isinstance(item, dict):
                 continue
             action = (item.get("action") or "").lower()
+            if all(n not in action for n in ["set", "get"]):
+                log_check += f'Action "{action}" is not recognized\n'
+                continue
             esp = item.get("espID")
             dev = item.get("device_name")
             if action == "set" and esp is not None and isinstance(dev, str) and dev.strip():
+                if all(n not in dev.lower() for n in ["led", "motor", "servo", "pump"]) and any(n in dev.lower() for n in ["tem", "mois", "pir"]):
+                    log_check += f'Device "{dev}" is sensor and dont have "set" action\n'
+                    keep_item = False
+                    continue
                 set_appliance_value(int(esp), dev, item.get("value"))
+            new_data.append(item)
 
-    if isinstance(data, list):
-        uniform, cols = is_uniform_obj_list(data)
-        out = table_from_obj_list(data, cols) if uniform else "\n".join(kv_format(data))
-    elif isinstance(data, dict):
-        out = "\n".join(kv_format(data))
+    if isinstance(new_data, list):
+        uniform, cols = is_uniform_obj_list(new_data)
+        out = table_from_obj_list(new_data, cols) if uniform else "\n".join(kv_format(new_data))
+    elif isinstance(new_data, dict):
+        out = "\n".join(kv_format(new_data))
     else:
-        out = to_str(data)
+        out = to_str(new_data)
 
     status_lines = []
     try:
@@ -710,14 +725,17 @@ def execute_appliance(json_str: str) -> str:
     if status_lines:
         out = f"{out}\n\n---\nAppliance status:\n" + "\n".join(status_lines)
 
-    return out
+    return f"{log_check}{out}"
 
 
 if __name__ == "__main__":
     # print(get_current_datetime_tool())
 
-    string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": 50}]"
+    string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, \
+               {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": 50}, \
+               {\"espID\": 3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"set\", \"value\": 20}]"
     # print(execute_appliance(string))
 
     reset_all_appliances_value()
     print(get_all_appliances_status())
+    # print(get_current_datetime())

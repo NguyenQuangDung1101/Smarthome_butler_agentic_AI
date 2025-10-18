@@ -6,6 +6,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 import json
+import time as _time
 from sentence_transformers import SentenceTransformer
 
 # Set up logging
@@ -28,18 +29,21 @@ class Copilot:
             logger.error(f"Error fetching model list: {e}")
             return []
 
-    def infer(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None):
+    def infer(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None,
+              timeout=8000, retries=3, backoff=2.5):
+
         prompt = f"{system_prompt}\n\n{user_prompt}"
 
+        # Base kwargs for Ollama client
         kwargs = {
             "model": self.model,
             "prompt": prompt,
             "options": {
-                "gpu_layers": 999
+                    "gpu_layers": 999
             }
         }
 
-        # Only add image if model supports it
+        # Only add image if model supports it (your original rule)
         if "gemma3:4b" in self.model and image_path:
             try:
                 with open(image_path, "rb") as f:
@@ -49,12 +53,58 @@ class Copilot:
             except Exception as e:
                 logger.error(f"Error loading image: {e}")
 
-        try:
-            response = self.client.generate(**kwargs)
-            return response["response"]
-        except Exception as e:
-            logger.error(f"Inference failed: {e}")
-            return None
+        last_err = None
+
+
+
+        for attempt in range(retries):
+            try:
+                # For cloud/large models, use HTTP streaming which is more resilient
+                use_streaming_http = "cloud" in (self.model or "").lower()
+
+                if use_streaming_http:
+                    payload = {
+                        "model": self.model,
+                        "prompt": prompt,
+                        "options": kwargs.get("options", {}),
+                        "stream": True,
+                    }
+                    if "images" in kwargs:
+                        payload["images"] = kwargs["images"]
+
+                    url = f"{self.host}/api/generate"
+                    resp_text = ""
+                    with requests.post(url, json=payload, stream=True, timeout=timeout, verify=False) as r:
+                        r.raise_for_status()
+                        for line in r.iter_lines():
+                            if not line:
+                                continue
+                            try:
+                                obj = json.loads(line.decode("utf-8"))
+                            except Exception:
+                                continue
+                            chunk = obj.get("response", "")
+                            if chunk:
+                                resp_text += chunk
+                            if obj.get("done"):
+                                break
+
+                    if resp_text.strip():
+                        return resp_text
+                    raise RuntimeError("Empty response (streaming HTTP)")
+                else:
+                    # Original client path
+                    response = self.client.generate(**kwargs)
+                    return response["response"]
+
+            except Exception as e:
+                last_err = e
+                logger.error(f"Inference failed (attempt {attempt+1}/{retries}): {e}")
+                if attempt < retries:
+                    _time.sleep(backoff ** attempt)
+
+        logger.error(f"Inference failed: {last_err}")
+        return None
 
     def infer_client(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None, timeout=30, retries=2, backoff=1.5):
         image_b64 = None

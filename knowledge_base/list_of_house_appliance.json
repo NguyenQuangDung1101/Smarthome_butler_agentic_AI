@@ -5,14 +5,14 @@
       "actuator": [
         {
           "id": "led1",
-          "description": "light",
+          "description": "Light",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "motor1",
-          "description": "fan",
+          "description": "Fan",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
@@ -38,28 +38,28 @@
       "actuator": [
         {
           "id": "led1",
-          "description": "left light",
+          "description": "Left light",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "led2",
-          "description": "right light",
+          "description": "Right light",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "motor1",
-          "description": "fan",
+          "description": "Fan",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
         },
         {
           "id": "motor2",
-          "description": "slider for door",
+          "description": "Slider for main door",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
@@ -85,50 +85,51 @@
       "actuator": [
         {
           "id": "led1",
-          "description": "room light",
+          "description": "Room light",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "led2",
-          "description": "bed light",
+          "description": "Bed light",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "led3",
-          "description": "balcony light outside",
+          "description": "Balcony light outside",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "motor1",
-          "description": "fan",
+          "description": "Fan",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
         },
         {
           "id": "motor2",
-          "description": "slider for window cover",
+          "description": "Slider for window curtain",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
         },
         {
           "id": "servo",
-          "description": "lock",
+          "description": "Lock",
           "value_type": "boolean",
           "values": "True/False",
           "action": ["get", "set"]
         },
         {
           "id": "pump",
-          "description": "to watering bonsai outside",
-          "value_type": "unknown",
+          "description": "Pump to watering bonsai outside",
+          "value_type": "boolean",
+          "values": "True/False",
           "action": ["get", "set"]
         }
       ],

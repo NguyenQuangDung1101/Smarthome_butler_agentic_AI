@@ -1,0 +1,477 @@
+{
+  "schedule": {
+    "weekday": {
+      "applicable_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "initial_settings": {
+        "time": "00:00:00",
+        "appliances": [
+          {
+            "espID": 1,
+            "actuator_id": "led1",
+            "value": false,
+            "note": "Turn off living room light"
+          },
+          {
+            "espID": 1,
+            "actuator_id": "motor1",
+            "value": 0,
+            "note": "Turn off living room fan"
+          },
+          {
+            "espID": 2,
+            "actuator_id": "led1",
+            "value": false,
+            "note": "Turn off lobby left light"
+          },
+          {
+            "espID": 2,
+            "actuator_id": "led2",
+            "value": false,
+            "note": "Turn off lobby right light"
+          },
+          {
+            "espID": 2,
+            "actuator_id": "motor1",
+            "value": 0,
+            "note": "Turn off lobby fan"
+          },
+          {
+            "espID": 2,
+            "actuator_id": "motor2",
+            "value": 0,
+            "note": "Close house door completely"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "led1",
+            "value": false,
+            "note": "Turn off bedroom room light"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "led2",
+            "value": false,
+            "note": "Turn off bed light"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "led3",
+            "value": false,
+            "note": "Turn off balcony light"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "motor1",
+            "value": 50,
+            "note": "Set bedroom fan to 50% for comfortable sleep"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "motor2",
+            "value": 0,
+            "note": "Close window curtain"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "servo",
+            "value": true,
+            "note": "Lock bedroom door"
+          },
+          {
+            "espID": 3,
+            "actuator_id": "pump",
+            "value": false,
+            "note": "Turn off bonsai watering pump"
+          }
+        ]
+      },
+      "owner_activity": [
+        {
+          "time": "06:30:00",
+          "activity": "Wake up",
+          "description": "Owner wakes up and starts morning routine"
+        },
+        {
+          "time_period": {
+            "start": "06:30:00",
+            "end": "07:00:00"
+          },
+          "activity": "Personal hygiene",
+          "description": "Owner performs morning hygiene routine (shower, brush teeth, get dressed)"
+        },
+        {
+          "time_period": {
+            "start": "07:00:00",
+            "end": "07:20:00"
+          },
+          "activity": "Breakfast",
+          "description": "Owner has breakfast in living room"
+        },
+        {
+          "time": "07:30:00",
+          "activity": "Leave for work",
+          "description": "Owner leaves home and goes to work"
+        },
+        {
+          "time_period": {
+            "start": "07:30:00",
+            "end": "18:00:00"
+          },
+          "activity": "At work",
+          "description": "Owner is away at work"
+        },
+        {
+          "time": "18:00:00",
+          "activity": "Arrive home from work",
+          "description": "Owner returns home from work"
+        },
+        {
+          "time_period": {
+            "start": "18:30:00",
+            "end": "19:00:00"
+          },
+          "activity": "Dinner",
+          "description": "Owner has dinner in living room"
+        },
+        {
+          "time_period": {
+            "start": "19:00:00",
+            "end": "22:00:00"
+          },
+          "activity": "Relaxation and leisure",
+          "description": "Owner relaxes, watches TV, reads, or engages in hobbies"
+        },
+        {
+          "time": "22:00:00",
+          "activity": "Prepare for bed",
+          "description": "Owner gets ready for sleep (hygiene, change clothes)"
+        },
+        {
+          "time": "22:30:00",
+          "activity": "Go to bed",
+          "description": "Owner goes to sleep"
+        }
+      ],
+      "appliance_setting": [
+        {
+          "time": "06:30:00",
+          "description": "Morning wake up - Enable bedroom lighting",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 3,
+              "actuator_id": "led2",
+              "value": true,
+              "note": "Turn on bed light for waking up"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "servo",
+              "value": false,
+              "note": "Unlock bedroom door"
+            }
+          ]
+        },
+        {
+          "time": "06:45:00",
+          "description": "Prepare lobby for morning exit",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 2,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on lobby left light"
+            }
+          ]
+        },
+        {
+          "time": "07:00:00",
+          "description": "Breakfast time - Setup living room",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 1,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on living room light for breakfast"
+            },
+            {
+              "espID": 1,
+              "actuator_id": "motor1",
+              "value": 30,
+              "note": "Set living room fan to 30% for comfort"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led2",
+              "value": false,
+              "note": "Turn off bed light, owner have breakfast in livingroom"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "motor1",
+              "value": 0,
+              "note": "Turn off bedroom fan, owner have breakfast in livingroom"
+            }
+          ]
+        },
+        {
+          "time": "07:00:00",
+          "description": "Morning bonsai watering",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 3,
+              "actuator_id": "pump",
+              "value": true,
+              "note": "Water bonsai"
+            }
+          ]
+        },
+        {
+          "time": "07:30:00",
+          "description": "Owner leaving - Secure home and save energy",
+          "note": "Ask for user permission before execute",
+          "appliances": [
+            {
+              "espID": 1,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off living room light"
+            },
+            {
+              "espID": 1,
+              "actuator_id": "motor1",
+              "value": 0,
+              "note": "Turn off living room fan"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off lobby left light"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led2",
+              "value": false,
+              "note": "Turn off lobby right light"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "motor2",
+              "value": 0,
+              "note": "Close house door"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off bedroom room light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led2",
+              "value": false,
+              "note": "Turn off bed light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led3",
+              "value": false,
+              "note": "Turn off balcony light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "motor1",
+              "value": 0,
+              "note": "Turn off bedroom fan"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "motor2",
+              "value": 0,
+              "note": "Close window curtain"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "servo",
+              "value": true,
+              "note": "Lock bedroom door"
+            }
+          ]
+        },
+        {
+          "time": "17:00:00",
+          "description": "Turn on lights as evening approaches",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 1,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on living room light at 5pm"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on lobby left light"
+            }
+          ]
+        },
+        {
+          "time": "18:00:00",
+          "description": "Welcome home - Open door and prepare living space",
+          "note": "Ask for user permission before execute",
+          "appliances": [
+            {
+              "espID": 2,
+              "actuator_id": "motor2",
+              "value": 100,
+              "note": "Open lobby door fully"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led2",
+              "value": true,
+              "note": "Turn on lobby right light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "servo",
+              "value": false,
+              "note": "Unlock bedroom door"
+            }
+          ]
+        },
+        {
+          "time": "18:30:00",
+          "description": "Dinner time - Setup living room for dining",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 1,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on living room light for dinner"
+            },
+            {
+              "espID": 1,
+              "actuator_id": "motor1",
+              "value": 40,
+              "note": "Set living room fan to 40% for comfortable dining"
+            }
+          ]
+        },
+        {
+          "time": "18:30:00",
+          "description": "Evening bonsai watering",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 3,
+              "actuator_id": "pump",
+              "value": true,
+              "note": "Water bonsai"
+            }
+          ]
+        },
+        {
+          "time": "19:00:00",
+          "description": "Evening relaxation - Adjust living room comfort",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 1,
+              "actuator_id": "motor1",
+              "value": 30,
+              "note": "Reduce living room fan to 30%"
+            }
+          ]
+        },
+        {
+          "time": "22:00:00",
+          "description": "Bedtime preparation - Setup bedroom and secure home",
+          "note": "Automatic execution",
+          "appliances": [
+            {
+              "espID": 3,
+              "actuator_id": "led1",
+              "value": true,
+              "note": "Turn on bedroom room light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led2",
+              "value": true,
+              "note": "Turn on bed light"
+            },
+            {
+              "espID": 1,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off living room light"
+            },
+            {
+              "espID": 1,
+              "actuator_id": "motor1",
+              "value": 0,
+              "note": "Turn off living room fan"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "motor2",
+              "value": 0,
+              "note": "Close lobby door"
+            }
+          ]
+        },
+        {
+          "time": "22:30:00",
+          "description": "Sleep time - Turn off all lights and enable bedroom fan",
+          "note": "Ask for user permission before execute",
+          "appliances": [
+            {
+              "espID": 3,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off bedroom room light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "led2",
+              "value": false,
+              "note": "Turn off bed light"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "motor1",
+              "value": 50,
+              "note": "Set bedroom fan to 50% for sleep comfort"
+            },
+            {
+              "espID": 3,
+              "actuator_id": "servo",
+              "value": true,
+              "note": "Lock bedroom door"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led1",
+              "value": false,
+              "note": "Turn off lobby left light"
+            },
+            {
+              "espID": 2,
+              "actuator_id": "led2",
+              "value": false,
+              "note": "Turn off lobby right light"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
