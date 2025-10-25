@@ -2,13 +2,14 @@ import os
 import re
 import json
 import asyncio
+from datetime import datetime
 from typing import Dict, Any, Optional, List
 import logging
 logger = logging.getLogger("OLLama")
 logging.basicConfig(level=logging.INFO)
 # Reuse your existing LLM + tools
-from local_llm import Copilot
-from tools import execute_appliance
+from local_llm import Copilot, load_system_prompt
+from appliance_util import execute_appliance
 from tools_call import call_tool as async_call_tool  # your async tool dispatcher
 from tools_call import TOOLS as TOOL_SPEC
 
@@ -95,6 +96,8 @@ class ToolCallingAgent:
         self.user_turn = 0
         self.turn_step = 0  # resets per user turn
         self.conversation: List[str] = []
+        self.first_comunicate = True
+        self.latest_appliance_execution = {}
 
     def _compose_prompt(self) -> str:
         return "\n".join(self.conversation)
@@ -157,6 +160,7 @@ class ToolCallingAgent:
         self._trim_history_multi()
 
         prompt_now = self._compose_prompt()
+        # print(prompt_now)
         llm_out = self.llm.infer(
             user_prompt=prompt_now,
             system_prompt=(
@@ -169,39 +173,53 @@ class ToolCallingAgent:
             self._append_agent("The LLM did not return a response.")
             return None
 
-        final = extract_final_answer(llm_out)
-        if final is not None:
-            self._append_final(final)
-            return final
+        self._append_agent(f"LLM output: {llm_out}")
 
+        check_appliance = True
         appliance = extract_appliance_answer(llm_out)
         if appliance is not None:
             self._append_agent(f"Execute appliance: {appliance}")
             try:
-                print(execute_appliance(appliance))
-                result = "Appliance executed successfully"
+                formated, log_to_save = execute_appliance(appliance)
+                print(formated)
+                result = f"Appliance executed successfully{log_to_save}"
+                check_appliance = False
+                self.latest_appliance_execution = {
+                    "execution": appliance,
+                    "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                }
             except Exception as e:
                 result = f"Appliance execution failed: {e}"
             self._append_agent(result)
 
         calls = extract_tool_calls(llm_out)
-        if not calls:
-            self._append_agent("Your previous output didn't include a valid <tool_call> or <final_answer>. Please try again.")
+        if calls:
+            for call in calls:
+                name = call.get("name")
+                args = call.get("arguments", {}) or {}
+                self._append_agent(f"Executing tool: {name} with arguments: {json.dumps(args)}")
+                try:
+                    result = await call_tool_syncish(name, args)
+                except Exception as e:
+                    result = {"content":[{"type":"text","text": f"[agent] Tool '{name}' failed: {e}"}]}
+                self._append_tool_result(name, result)
+
+        if check_appliance:
+            self._append_agent("No appliance setting was applied")
+
+        final = extract_final_answer(llm_out)
+        if not any([appliance, calls, final]):
+            self._append_agent("Your previous output didn't include a valid <tool_call>, <appliance>, or <final_answer>. Please try again.")
             return None
 
-        for call in calls:
-            name = call.get("name")
-            args = call.get("arguments", {}) or {}
-            self._append_agent(f"Executing tool: {name} with arguments: {json.dumps(args)}")
-            try:
-                result = await call_tool_syncish(name, args)
-            except Exception as e:
-                result = {"content":[{"type":"text","text": f"[agent] Tool '{name}' failed: {e}"}]}
-            self._append_tool_result(name, result)
+        if final is not None:
+            self._append_final(final)
+            return final
 
         return None
 
     async def run(self, user_prompt: str, use_kb=False, kb_path="./kb_store/test1") -> str:
+        self.first_comunicate = False
         self._append_user(user_prompt)
         for _ in range(1, self.max_steps + 1):
             final = await self.step_once()
@@ -211,6 +229,7 @@ class ToolCallingAgent:
         return "Reached max reasoning steps without a <final_answer>. Please refine your request."
 
     async def chat_cli(self):
+        self.first_comunicate = False
         print("Interactive mode. After each step, press Enter to continue reasoning or type a new prompt to start a new turn.\n")
         while True:
             try:
@@ -220,6 +239,9 @@ class ToolCallingAgent:
                 return
             if not user_text:
                 continue
+            if user_text.lower() == "exit()":
+                print("Bye.")
+                return
             self._append_user(user_text)
             while True:
                 final = await self.step_once()
@@ -236,6 +258,9 @@ class ToolCallingAgent:
                     return
                 if follow == "":
                     continue
+                elif follow == "exit()":
+                    print("Bye.")
+                    return
                 else:
                     self._append_user(follow)
                     continue
@@ -249,13 +274,6 @@ def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
     return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=16)
 
-def load_system_prompt(filename):
-    try:
-        with open(filename, 'r') as file:
-            return file.read().strip()
-    except Exception as e:
-        logger.error(f"Error reading system prompt from file: {e}")
-        return None
 
 if __name__ == "__main__":
     role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
@@ -266,7 +284,7 @@ if __name__ == "__main__":
 
     #gpt-oss:20b-cloud
     #qwen3:1.7b
-    agent = build_agent(sys_prompt, model="qwen3:1.7b")
+    agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
     # Interactive multi-turn terminal chat:
     asyncio.run(agent.chat_cli())
@@ -275,8 +293,7 @@ if __name__ == "__main__":
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
     # turn on the left in the lobby, switch the fan in bedroom to half power
 
-    # user_prompt = "check the current time, if it is later than 8:00pm, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, if the current weather is raining then set all fan to 50, but if the current weather is not raining then set every fan in the house to 100%"
+    # user_prompt = "check the current time, if it is later than 02:00pm, turn the bedroom light off and turn the bed light on, if ealier then turn the livingroom light on and set living room fan to 78%, if the current weather is raining then set all fan to 50, but if the current weather is not raining then set every fan in the house to 100%"
     # final = asyncio.run(agent.run(user_prompt))
     # print("\n=== Final Answer ===\n")
     # print(final)
-

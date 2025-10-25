@@ -5,7 +5,7 @@ import json
 import subprocess
 import platform
 from typing import Any, Dict
-from tools import get_current_datetime, get_hourly_forecast, get_current_location, execute_appliance
+from tools import get_current_datetime, get_hourly_forecast, get_current_location
 
 # ── LOAD TOOLS DEFINITION FROM JSON ──────────────────────────────────────
 TOOLS_JSON_PATH = os.path.join(os.path.dirname(__file__), "tool_list.json")

@@ -30,7 +30,7 @@ class Copilot:
             return []
 
     def infer(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None,
-              timeout=8000, retries=3, backoff=2.5):
+              timeout=10000, retries=5, backoff=3):
 
         prompt = f"{system_prompt}\n\n{user_prompt}"
 
@@ -55,8 +55,6 @@ class Copilot:
 
         last_err = None
 
-
-
         for attempt in range(retries):
             try:
                 # For cloud/large models, use HTTP streaming which is more resilient
@@ -76,19 +74,86 @@ class Copilot:
                     resp_text = ""
                     with requests.post(url, json=payload, stream=True, timeout=timeout, verify=False) as r:
                         r.raise_for_status()
-                        for line in r.iter_lines():
-                            if not line:
+                        # First try to read line by line (JSON-lines)
+                        for raw in r.iter_lines(decode_unicode=False):
+                            if raw is None:
                                 continue
                             try:
-                                obj = json.loads(line.decode("utf-8"))
+                                line = raw.decode("utf-8")
                             except Exception:
                                 continue
-                            chunk = obj.get("response", "")
+                            line = line.strip()
+                            if not line:
+                                continue
+
+                            # Support SSE-style 'data: {...}' lines
+                            if line.startswith("data:"):
+                                line = line[len("data:"):].strip()
+
+                            # Some servers prefix with event: or other SSE fields; ignore those
+                            if line.startswith("event:") or line.startswith("id:"):
+                                continue
+
+                            # Try JSON parse first
+                            try:
+                                obj = json.loads(line)
+                            except Exception:
+                                # Not JSON; skip this line entirely (don't append raw JSON)
+                                logger.debug(f"Skipping non-JSON line: {line[:100]}...")
+                                continue
+
+                            # Accept several possible response fields
+                            chunk = None
+                            for k in ("response", "text", "chunk", "data"):
+                                if isinstance(obj, dict) and k in obj:
+                                    val = obj.get(k)
+                                    if isinstance(val, str) and val.strip():  # Only add non-empty strings
+                                        chunk = val
+                                        break
+
+                            # If object directly is a string
+                            if chunk is None and isinstance(obj, str) and obj.strip():
+                                chunk = obj
+
                             if chunk:
                                 resp_text += chunk
-                            if obj.get("done"):
+
+                            # If the server includes a done flag, stop
+                            if isinstance(obj, dict) and obj.get("done"):
                                 break
 
+                    if resp_text.strip():
+                        # Filter out responses that are clearly just JSON metadata
+                        if not (resp_text.startswith('{"model"') and '"done":' in resp_text):
+                            return resp_text
+                        else:
+                            logger.warning("Received only JSON metadata, no actual response content")
+                            resp_text = ""  # Clear it and try fallback
+                    
+                    if not resp_text.strip():
+                        logger.warning("Empty response from streaming, trying non-streaming fallback")
+                        try:
+                            # Try a non-streaming request as fallback
+                            fallback_payload = payload.copy()
+                            fallback_payload["stream"] = False
+                            r2 = requests.post(url, json=fallback_payload, timeout=timeout, verify=False)
+                            r2.raise_for_status()
+                            try:
+                                data = r2.json()
+                            except Exception:
+                                data = {"response": r2.text}
+
+                            # collect text from common fields
+                            if isinstance(data, dict):
+                                for k in ("response", "text", "result", "data"):
+                                    if k in data and isinstance(data[k], str) and data[k].strip():
+                                        resp_text = data[k]
+                                        break
+                            elif isinstance(data, str):
+                                resp_text = data
+                        except Exception as e:
+                            logger.debug(f"Non-streaming fallback failed: {e}")
+                    
                     if resp_text.strip():
                         return resp_text
                     raise RuntimeError("Empty response (streaming HTTP)")
@@ -340,7 +405,6 @@ def load_system_prompt(filename):
     except Exception as e:
         logger.error(f"Error reading system prompt from file: {e}")
         return None
-
 
 
 
