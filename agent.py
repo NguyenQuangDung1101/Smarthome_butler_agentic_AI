@@ -98,6 +98,7 @@ class ToolCallingAgent:
         self.conversation: List[str] = []
         self.first_comunicate = True
         self.latest_appliance_execution = {}
+        self.latest_final = {}
 
     def _compose_prompt(self) -> str:
         return "\n".join(self.conversation)
@@ -214,6 +215,10 @@ class ToolCallingAgent:
 
         if final is not None:
             self._append_final(final)
+            self.latest_final = {
+                "final": final,
+                "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            }
             return final
 
         return None
@@ -243,7 +248,9 @@ class ToolCallingAgent:
                 print("Bye.")
                 return
             self._append_user(user_text)
+            i = 0
             while True:
+                i += 1
                 final = await self.step_once()
                 self._trim_history_multi()
                 if final is not None:
@@ -252,6 +259,9 @@ class ToolCallingAgent:
                     print()
                     break
                 try:
+                    if i >= self.max_steps:
+                        print("Reached max reasoning steps without a <final_answer>. Please refine your request.")
+                        i = 0
                     follow = input("(Enter=continue to answer the current prompt, or type a new prompt): ").strip()
                 except (EOFError, KeyboardInterrupt):
                     print("\nBye.")
