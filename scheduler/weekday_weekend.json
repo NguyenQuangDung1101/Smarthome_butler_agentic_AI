@@ -158,7 +158,7 @@
           "description": "Morning wake up - Enable bedroom lighting",
           "note": "Automatic execution",
           "appliances": [
-            {
+            { 
               "espID": 3,
               "actuator_id": "led2",
               "value": true,
