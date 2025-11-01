@@ -170,6 +170,7 @@ class ToolCallingAgent:
                 f"{self.system_prompt}"
             )
         )
+        # print(f"[LLM OUTPUT]:\n{llm_out}\n")
         if not llm_out:
             self._append_agent("The LLM did not return a response.")
             return None
@@ -206,7 +207,7 @@ class ToolCallingAgent:
                 self._append_tool_result(name, result)
 
         if check_appliance:
-            self._append_agent("No appliance setting was applied")
+            self._append_agent("No appliance setting was applied")        
 
         final = extract_final_answer(llm_out)
         if not any([appliance, calls, final]):
@@ -286,20 +287,26 @@ def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "
 
 
 if __name__ == "__main__":
-    role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
-    instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
+    # role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
+    # instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
 
-    parts = [role_sys_prompt, instruction_sys_prompt]
-    sys_prompt = "\n\n".join([p for p in parts if p])
+    # parts = [role_sys_prompt, instruction_sys_prompt]
+    # sys_prompt = "\n\n".join([p for p in parts if p])
 
-    #gpt-oss:20b-cloud
-    #qwen3:1.7b
-    agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
+    # #gpt-oss:20b-cloud
+    # #qwen3:1.7b
+    # agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
-    # Interactive multi-turn terminal chat:
-    asyncio.run(agent.chat_cli())
+    # # Interactive multi-turn terminal chat:
+    # asyncio.run(agent.chat_cli())
 
 
+    a = '<appliance>[{"espID": 3, "device_type": "actuator", "device_name": "led2", "action": "set", "value": true}, {"espID": 3, "device_type": "actuator", "device_name": "servo", "action": "set", "value": false}]</appliance> <final_answer>All scheduled actions have been set: bed light turned on and bedroom door unlocked. Let me know if anything else needs adjustment.</final_answer>'
+    appliance = extract_appliance_answer(a)
+    print(appliance)
+    print(extract_final_answer(a))
+
+    
     # What is the weather here at the current time (get the current date, current time, current location, get the weather information and check the relevant current time)"
     # turn on the left in the lobby, switch the fan in bedroom to half power
 

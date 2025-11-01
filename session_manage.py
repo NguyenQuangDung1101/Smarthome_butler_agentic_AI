@@ -137,7 +137,6 @@ class SessionManager:
 
         # print(sys_prompt)
 
-
         agent = build_agent(sys_prompt, model=model)
         session_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.schedule_session[session_id] = {
@@ -164,6 +163,9 @@ class SessionManager:
         print(f"Running agent session ID (schedule): {session_id}")
         final = asyncio.run(agent.run(user_prompt))
 
+        print("\n=== Final Answer ===\n")
+        print(final)
+
         self.schedule_infer_history[schedule_infer_id] = {
             "date_time": schedule_infer_id,
             "session_id": session_id,
@@ -175,7 +177,7 @@ class SessionManager:
     def schedule_session_loop(self):
         while True:
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            schedule_infer_id = "2025-10-31 06:35:06"
+            # schedule_infer_id = "2025-10-31 07:15:06"
             current_moment = self.get_moment(schedule_infer_id)
             if not current_moment:
                 user_prompt = f"It is {schedule_infer_id}, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary."
@@ -188,13 +190,15 @@ class SessionManager:
                 # Not init
                 if "appliance_setting" not in f"{current_moment.get('moment', None)}":
                     user_prompt = f"It is {schedule_infer_id}, here is owner's activity period:\n{json.dumps(current_moment['moment'], indent=2)}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary."
+                    # print(user_prompt)
                     self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
                 else:
                     user_prompt = f"It is {schedule_infer_id}, here is some of the moment may have reached:\n{json.dumps(current_moment['moment'], indent=2)}\nPlease have a check on the house appliances system and take action to set up the appliances accordingly."
+                    # print(user_prompt)
                     self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
             
-
-            time.sleep(10)
+            print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n")
+            time.sleep(3)
             # break # For testing
 
             
