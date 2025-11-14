@@ -29,11 +29,11 @@ class Copilot:
             logger.error(f"Error fetching model list: {e}")
             return []
 
-    def infer(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None,
+    def infer(self, user_prompt, system_prompt=None, image_path=None,
               timeout=10000, retries=5, backoff=3):
 
-        prompt = f"{system_prompt}\n\n{user_prompt}"
-
+        prompt = f"{system_prompt}\n\n{user_prompt}" if system_prompt else user_prompt
+        # print("Final Prompt:\n", prompt)
         # Base kwargs for Ollama client
         kwargs = {
             "model": self.model,

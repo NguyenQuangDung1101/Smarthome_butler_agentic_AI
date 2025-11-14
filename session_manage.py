@@ -23,8 +23,31 @@ class SessionManager:
     def get_list_of_schedule_infer_history(self):
         return list(self.schedule_infer_history.keys())
 
-    def append_context_question(self, sys_prompt, context_text):
-        return sys_prompt + "\n\n[ASKING USER]" + context_text
+    def append_context_question(self, prompt="", context_text=None):
+        if not context_text:
+            return None
+        return prompt + "\n\n[ASKING USER]:" + context_text
+
+    def get_latest_schedule_infer_history(self):
+        latest = None
+        latest_time = None
+
+        for infer_id, entry in self.schedule_infer_history.items():
+            dt_str = entry.get("date_time", infer_id)
+            try:
+                t = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                continue
+            if latest_time is None or t > latest_time:
+                latest_time = t
+                latest = {
+                    "date_time": dt_str,
+                    "session_id": entry.get("session_id"),
+                    "result": entry.get("result"),
+                    "appliance_execute": entry.get("appliance_execute")
+                }
+
+        return latest
 
     def get_latest_appliance_execution_by_agent(self):
         latest = None
@@ -87,9 +110,6 @@ class SessionManager:
         parts = [role_sys_prompt, instruction_sys_prompt]
         sys_prompt = "\n\n".join([p for p in parts if p])
 
-        if context_text:
-            sys_prompt = self.append_context_question(sys_prompt, context_text)
-
         agent = build_agent(sys_prompt, model=model)
         session_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.normal_session[session_id] = {
@@ -113,7 +133,8 @@ class SessionManager:
         context_text = session["context_text"]
         
         print(f"Running agent session ID (normal): {session_id}")
-        asyncio.run(agent.chat_cli())
+        user_prompt = self.append_context_question(context_text=context_text)
+        asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     #################################################################################################
     def create_new_schedule_session(self, model="gpt-oss:20b-cloud", context_text=None):
@@ -129,13 +150,11 @@ class SessionManager:
         if self.get_latest_appliance_execution_by_agent():
             sys_prompt += f"\n\n[LATEST APPLIANCE EXECUTION BY AGENT]: {self.get_latest_appliance_execution_by_agent()['time']}\n{self.get_latest_appliance_execution_by_agent()['execution']}"
 
+        if self.get_latest_schedule_infer_history():
+            sys_prompt += f"\n\n[LATEST SCHEDULE INFER HISTORY]: {self.get_latest_schedule_infer_history()}"
+        
         if self.get_latest_final_by_agent_normal():
-            sys_prompt += f"\n\n[LATEST FINAL BY AGENT IN NORMAL SESSION]: {self.get_latest_final_by_agent_normal()['time']}\n{self.get_latest_final_by_agent_normal()['final']}"
-
-        if context_text:
-            sys_prompt = self.append_context_question(sys_prompt, context_text)
-
-        # print(sys_prompt)
+            sys_prompt += f"\n\n[LATEST FINAL RESPONSE BY AGENT IN NORMAL SESSION]: {self.get_latest_final_by_agent_normal()['time']}\n{self.get_latest_final_by_agent_normal()['final']}"
 
         agent = build_agent(sys_prompt, model=model)
         session_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -159,13 +178,18 @@ class SessionManager:
         session = self.schedule_session.get(session_id)
         agent = session["agent"]
         context_text = session["context_text"]
+
+        user_prompt = self.append_context_question(user_prompt, context_text) if context_text else user_prompt
         
         print(f"Running agent session ID (schedule): {session_id}")
-        final = asyncio.run(agent.run(user_prompt))
-
-        print("\n=== Final Answer ===\n")
-        print(final)
-
+        if context_text:
+            asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
+            final = getattr(agent, "latest_final", None)["final"] if getattr(agent, "latest_final", None) else None
+        else:
+            final = asyncio.run(agent.run(user_prompt))
+            print("\n=== Final Answer ===\n")
+            print(final)
+            
         self.schedule_infer_history[schedule_infer_id] = {
             "date_time": schedule_infer_id,
             "session_id": session_id,
@@ -177,27 +201,42 @@ class SessionManager:
     def schedule_session_loop(self):
         while True:
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            # schedule_infer_id = "2025-10-31 07:15:06"
+            schedule_infer_id = "2025-11-12 18:05:06"
             current_moment = self.get_moment(schedule_infer_id)
             if not current_moment:
                 user_prompt = f"It is {schedule_infer_id}, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary."
                 self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
+                self.schedule_infer_history[schedule_infer_id].update({"moment": "No moment reached."})
             elif current_moment.get('schedule_check', None) == "init":
                 # Init
                 user_prompt = f"It is {schedule_infer_id}, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{json.dumps(current_moment['moment']['data'], indent=2)}\nPlease provide your suggestions or actions to ensure the appliances are set up correctly."
                 self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
+                self.schedule_infer_history[schedule_infer_id].update({"moment": f"Init moment:\n{json.dumps(current_moment['moment']['data'], indent=2)}"})
             else:
                 # Not init
                 if "appliance_setting" not in f"{current_moment.get('moment', None)}":
                     user_prompt = f"It is {schedule_infer_id}, here is owner's activity period:\n{json.dumps(current_moment['moment'], indent=2)}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary."
                     # print(user_prompt)
                     self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
+                    self.schedule_infer_history[schedule_infer_id].update({"moment": f"Moment:\n{json.dumps(current_moment['moment'], indent=2)}"})
                 else:
+                    context_text = None
+                    for item in current_moment['moment']:
+                        if item['type'] == 'appliance_setting' and 'Ask for user permission before execute' in item['data'].get('note', ''):
+                            context_text = f"{context_text}\n{item['data'].get('appliances', '')}"
+                    
+                    if context_text:
+                        context_text = "Some appliance settings require user permission before execution. Please confirm the following appliances to be set:" + context_text
+                        # user_text = input(f"{context_text}\nYou: ").strip()
+                        # context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
+
                     user_prompt = f"It is {schedule_infer_id}, here is some of the moment may have reached:\n{json.dumps(current_moment['moment'], indent=2)}\nPlease have a check on the house appliances system and take action to set up the appliances accordingly."
                     # print(user_prompt)
-                    self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
-            
+                    self.infer_schedule_session(user_prompt=user_prompt, context_text=context_text, schedule_infer_id=schedule_infer_id)
+                    self.schedule_infer_history[schedule_infer_id].update({"moment": f"Moment:\n{json.dumps(current_moment['moment'], indent=2)}"})
+
             print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n")
+            break
             time.sleep(3)
             # break # For testing
 
@@ -373,6 +412,7 @@ if __name__ == "__main__":
     # print(test.get_moment("2025-10-31 06:35:06"))
     # print("###############################")
     # print(test.get_moment("2025-10-31 09:30:06"))
+    # test.infer_normal_session()
     test.schedule_session_loop()
     # test.infer_normal_session()
     # test.create_new_schedule_session()

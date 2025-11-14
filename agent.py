@@ -99,6 +99,12 @@ class ToolCallingAgent:
         self.first_comunicate = True
         self.latest_appliance_execution = {}
         self.latest_final = {}
+        self.conversation_sunmmary = None
+        self.conversation_sunmmary_updated = False
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Helper functions
+    # ──────────────────────────────────────────────────────────────────────────────
 
     def _compose_prompt(self) -> str:
         return "\n".join(self.conversation)
@@ -155,7 +161,25 @@ class ToolCallingAgent:
                     break
             del self.conversation[start_idx:end_idx]
 
+    def update_conversation_summary(self):
+        curr_conversation = self._compose_prompt()
+        self.conversation_sunmmary = self.llm.infer(
+            user_prompt=curr_conversation,
+            system_prompt="[SYSTEM]\nSummarize the conversation concisely, focusing on key points and decisions made."
+        )
+        self.conversation_sunmmary_updated = True
+    
+    def get_conversation_summary(self):
+        if not self.conversation_sunmmary_updated or not self.conversation_sunmmary:
+            self.update_conversation_summary()
+        return self.conversation_sunmmary
+
+    # ──────────────────────────────────────────────────────────────────────────────
+    # Inference function
+    # ──────────────────────────────────────────────────────────────────────────────
+
     async def step_once(self) -> Optional[str]:
+        self.conversation_sunmmary_updated = False
         self.turn_step += 1
         self.conversation.append(f"\n[INFERENCE {self.turn_step}]:\n")
         self._trim_history_multi()
@@ -234,12 +258,17 @@ class ToolCallingAgent:
                 return final
         return "Reached max reasoning steps without a <final_answer>. Please refine your request."
 
-    async def chat_cli(self):
+    async def chat_cli(self, first_user_prompt=None):
         self.first_comunicate = False
+        check_first_prompt = True if first_user_prompt else False
         print("Interactive mode. After each step, press Enter to continue reasoning or type a new prompt to start a new turn.\n")
         while True:
             try:
-                user_text = input("You: ").strip()
+                if first_user_prompt and check_first_prompt:
+                    user_text = first_user_prompt
+                    check_first_prompt = False
+                else:
+                    user_text = input("You: ").strip()
             except (EOFError, KeyboardInterrupt):
                 print("\nBye.")
                 return
