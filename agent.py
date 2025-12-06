@@ -165,7 +165,7 @@ class ToolCallingAgent:
         curr_conversation = self._compose_prompt()
         self.conversation_sunmmary = self.llm.infer(
             user_prompt=curr_conversation,
-            system_prompt="[SYSTEM]\nSummarize the conversation concisely, focusing on key points and decisions made."
+            system_prompt="[SYSTEM]\nSummarize the conversation concisely, focusing on key points and briefly note the decisions made. Do not use icons"
         )
         self.conversation_sunmmary_updated = True
     
@@ -191,6 +191,7 @@ class ToolCallingAgent:
             system_prompt=(
                 "[SYSTEM]\nFollow the instructions precisely. Only output "
                 "<tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>.\n"
+                "<final_answer> must be a standalone response, mutually exclusive with <tool_call> and <appliance>.\n"
                 f"{self.system_prompt}"
             )
         )
@@ -207,7 +208,7 @@ class ToolCallingAgent:
             self._append_agent(f"Execute appliance: {appliance}")
             try:
                 formated, log_to_save = execute_appliance(appliance)
-                print(formated)
+                print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")
                 result = f"Appliance executed successfully{log_to_save}"
                 check_appliance = False
                 self.latest_appliance_execution = {

@@ -101,8 +101,32 @@ class SessionManager:
 
         return latest
 
+    def get_latest_convesation_summary_by_agent_normal(self):
+        latest = None
+        latest_time = None
+        latest_agent = None
+
+        for session_id, sess in self.normal_session.items():
+            agent = sess.get("agent")
+            if not agent:
+                continue
+            lf = getattr(agent, "latest_final", None)
+            if not lf or "time" not in lf:
+                continue
+            try:
+                t = datetime.strptime(lf["time"], "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                continue
+            if latest_time is None or t > latest_time:
+                latest_time = t
+                latest_agent = agent
+        if latest_agent:
+            latest = latest_agent.get_conversation_summary()
+
+        return latest
+
     #################################################################################################
-    def create_new_normal_session(self, model="gpt-oss:20b-cloud", context_text=None):
+    def create_new_normal_session(self, model="gpt-oss:120b-cloud", context_text=None):
         print("Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -137,7 +161,7 @@ class SessionManager:
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     #################################################################################################
-    def create_new_schedule_session(self, model="gpt-oss:20b-cloud", context_text=None):
+    def create_new_schedule_session(self, model="gpt-oss:120b-cloud", context_text=None):
         print("Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -153,8 +177,13 @@ class SessionManager:
         if self.get_latest_schedule_infer_history():
             sys_prompt += f"\n\n[LATEST SCHEDULE INFER HISTORY]: {self.get_latest_schedule_infer_history()}"
         
-        if self.get_latest_final_by_agent_normal():
-            sys_prompt += f"\n\n[LATEST FINAL RESPONSE BY AGENT IN NORMAL SESSION]: {self.get_latest_final_by_agent_normal()['time']}\n{self.get_latest_final_by_agent_normal()['final']}"
+        # if self.get_latest_final_by_agent_normal():
+        #     sys_prompt += f"\n\n[LATEST FINAL RESPONSE BY AGENT IN NORMAL SESSION]: {self.get_latest_final_by_agent_normal()['time']}\n{self.get_latest_final_by_agent_normal()['final']}"
+
+        latest_summary = self.get_latest_convesation_summary_by_agent_normal()
+        print(f"Latest summary: {latest_summary}")
+        if latest_summary:
+            sys_prompt += f"\n\n[LATEST CONVERSATION SUMMARY BY AGENT IN NORMAL SESSION]:\n{latest_summary}"
 
         agent = build_agent(sys_prompt, model=model)
         session_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -201,7 +230,7 @@ class SessionManager:
     def schedule_session_loop(self):
         while True:
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            schedule_infer_id = "2025-11-12 18:05:06"
+            schedule_infer_id = "2025-11-17 07:31:06"
             current_moment = self.get_moment(schedule_infer_id)
             if not current_moment:
                 user_prompt = f"It is {schedule_infer_id}, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary."
@@ -412,7 +441,7 @@ if __name__ == "__main__":
     # print(test.get_moment("2025-10-31 06:35:06"))
     # print("###############################")
     # print(test.get_moment("2025-10-31 09:30:06"))
-    # test.infer_normal_session()
+    test.infer_normal_session()
     test.schedule_session_loop()
     # test.infer_normal_session()
     # test.create_new_schedule_session()
