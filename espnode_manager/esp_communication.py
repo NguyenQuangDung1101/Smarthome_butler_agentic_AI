@@ -1,42 +1,32 @@
-import paho.mqtt.client as mqtt
+import json
+import socket
 
-BROKER = "test.mosquitto.org"
-PORT = 1883
-TOPIC = "esp32/led_blink"
+ESP_IP = "192.168.96.157"   # your ESP32 IP
+ESP_PORT = 5000
 
-def main():
-    client = mqtt.Client()
-    client.connect(BROKER, PORT, 60)
+def send_commands(commands):
+    payload = json.dumps(commands) + "\n"  # JSON array in one line
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((ESP_IP, ESP_PORT))
+        s.sendall(payload.encode("utf-8"))
+        print(f"Sent commands list ({len(commands)} items).")
 
-    print("Connected to MQTT broker.")
-    print("Type a number (times to blink). Type 'q' to quit.\n")
 
-    while True:
-        user_input = input("Enter blink count: ")
-
-        if user_input.lower() == 'q':
-            break
-
-        # try to ensure it's a valid integer
-        try:
-            n = int(user_input)
-            if n < 0:
-                print("Please enter a non-negative integer.")
-                continue
-        except ValueError:
-            print("Please enter a valid integer.")
-            continue
-
-        # publish as string
-        result = client.publish(TOPIC, str(n))
-        status = result[0]
-        if status == 0:
-            print(f"Sent '{n}' to topic '{TOPIC}'")
-        else:
-            print("Failed to send message")
-
-    client.disconnect()
-    print("Disconnected.")
 
 if __name__ == "__main__":
-    main()
+    commands = [
+        # set + get led1
+        {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": False},
+        {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"},
+
+        # set + get motor1
+        {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50},
+        {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"},
+
+        # get sensors
+        {"espID": 1, "device_type": "sensor", "device_name": "pir",
+         "action": "get"},
+        {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
+    ]
+
+    send_commands(commands)

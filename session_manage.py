@@ -126,7 +126,7 @@ class SessionManager:
         return latest
 
     #################################################################################################
-    def create_new_normal_session(self, model="gpt-oss:120b-cloud", context_text=None):
+    def create_new_normal_session(self, model="gpt-oss:20b-cloud", context_text=None):
         print("Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -161,7 +161,7 @@ class SessionManager:
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     #################################################################################################
-    def create_new_schedule_session(self, model="gpt-oss:120b-cloud", context_text=None):
+    def create_new_schedule_session(self, model="gpt-oss:20b-cloud", context_text=None):
         print("Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -442,7 +442,7 @@ if __name__ == "__main__":
     # print("###############################")
     # print(test.get_moment("2025-10-31 09:30:06"))
     test.infer_normal_session()
-    test.schedule_session_loop()
+    # test.schedule_session_loop()
     # test.infer_normal_session()
     # test.create_new_schedule_session()
     # {'execution': '[{"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true}]', 'time': '2025-10-25 15:49:51', 'session_id': '2025-10-25 15:49:34', 'session_type': 'normal'}

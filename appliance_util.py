@@ -503,7 +503,20 @@ def reset_appliance_value(esp_id: int, device_name: str) -> str:
     return get_appliance_value(esp_id, device_name)
 
 
-
+########### HELPER ###########
+def parse_json_data(json_list: str):
+    esp1_json = []
+    esp2_json = []
+    esp3_json = []
+    for request in json_list:
+        esp_id = request.get("espID")
+        if esp_id == 1:
+            esp1_json.append(request)
+        elif esp_id == 2:
+            esp2_json.append(request)
+        elif esp_id == 3:
+            esp3_json.append(request)
+    return esp1_json, esp2_json, esp3_json
 
 def execute_appliance(json_str: str) -> str:
     def to_str(v):
@@ -615,16 +628,27 @@ def execute_appliance(json_str: str) -> str:
 
 
 
+
+
+
+
 if __name__ == "__main__":
     # print(get_current_datetime_tool())
 
     string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, \
                {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": 50}, \
                {\"espID\": 3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"set\", \"value\": 20}]"
-    formated, log_to_save = execute_appliance(string)
-    print(log_to_save)
-    print(formated)
-    print("-----")
-    reset_all_appliances_value()
-    print(get_all_appliances_status())
+    # formated, log_to_save = execute_appliance(string)
+    esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))
+    print("#################")
+    print(esp1_json)
+    print("#################")
+    print(esp2_json)
+    print("#################")
+    print(esp3_json)
+    # print(log_to_save)
+    # print(formated)
+    # print("-----")
+    # reset_all_appliances_value()
+    # print(get_all_appliances_status())
     # print(get_current_datetime())
