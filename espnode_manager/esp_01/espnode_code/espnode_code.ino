@@ -17,8 +17,55 @@ int  motor1_value = 0;      // Fan 0–100 (%)
 bool  pir_value   = false;  // PIR sensor (boolean)
 float tem_value   = 25.0;   // Temperature (°C)
 
-// ===== Per-appliance handlers =====
-void handle_led1(const char* action, JsonVariant valueField) {
+// ===== Helper: send JSON response back to Python =====
+void send_response(WiFiClient &client,
+                   const char* device_type,
+                   const char* device_name,
+                   bool bool_value)
+{
+  StaticJsonDocument<128> resp;
+  resp["espID"]       = espID;
+  resp["device_type"] = device_type;
+  resp["device_name"] = device_name;
+  resp["value"]       = bool_value;
+
+  serializeJson(resp, client);
+  client.print('\n');
+}
+
+void send_response(WiFiClient &client,
+                   const char* device_type,
+                   const char* device_name,
+                   int int_value)
+{
+  StaticJsonDocument<128> resp;
+  resp["espID"]       = espID;
+  resp["device_type"] = device_type;
+  resp["device_name"] = device_name;
+  resp["value"]       = int_value;
+
+  serializeJson(resp, client);
+  client.print('\n');
+}
+
+void send_response(WiFiClient &client,
+                   const char* device_type,
+                   const char* device_name,
+                   float float_value)
+{
+  StaticJsonDocument<128> resp;
+  resp["espID"]       = espID;
+  resp["device_type"] = device_type;
+  resp["device_name"] = device_name;
+  resp["value"]       = float_value;
+
+  serializeJson(resp, client);
+  client.print('\n');
+}
+
+// ======================================== Per-appliance handlers ========================================
+
+void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     Serial.print("current value of led1: ");
     Serial.println(led1_value ? "true" : "false");
@@ -32,9 +79,12 @@ void handle_led1(const char* action, JsonVariant valueField) {
   } else {
     Serial.println("Unknown action for led1.");
   }
+
+  // Send back the current value
+  send_response(client, "actuator", "led1", led1_value);
 }
 
-void handle_motor1(const char* action, JsonVariant valueField) {
+void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     Serial.print("current value of motor1: ");
     Serial.println(motor1_value);
@@ -48,39 +98,35 @@ void handle_motor1(const char* action, JsonVariant valueField) {
   } else {
     Serial.println("Unknown action for motor1.");
   }
+
+  // Send back the current value
+  send_response(client, "actuator", "motor1", motor1_value);
 }
 
-void handle_pir(const char* action, JsonVariant valueField) {
+void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     Serial.print("current value of pir: ");
     Serial.println(pir_value ? "true" : "false");
-  } else if (strcmp(action, "set") == 0) {
-    bool newValue = valueField.isNull() ? pir_value : valueField.as<bool>();
-    Serial.print("Old value of pir: ");
-    Serial.print(pir_value ? "true" : "false");
-    Serial.print(", New value of: ");
-    Serial.println(newValue ? "true" : "false");
-    pir_value = newValue;
   } else {
     Serial.println("Unknown action for pir.");
   }
+
+  // Send back the current value
+  send_response(client, "sensor", "pir", pir_value);
 }
 
-void handle_tem(const char* action, JsonVariant valueField) {
+void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     Serial.print("current value of tem: ");
     Serial.println(tem_value, 2);
-  } else if (strcmp(action, "set") == 0) {
-    float newValue = valueField.isNull() ? tem_value : valueField.as<float>();
-    Serial.print("Old value of tem: ");
-    Serial.print(tem_value, 2);
-    Serial.print(", New value of: ");
-    Serial.println(newValue, 2);
-    tem_value = newValue;
   } else {
     Serial.println("Unknown action for tem.");
   }
+
+  // Send back the current value
+  send_response(client, "sensor", "tem", tem_value);
 }
+// ========================================================================================================
 
 // ===== Handle ONE command object =====
 // {
@@ -90,7 +136,7 @@ void handle_tem(const char* action, JsonVariant valueField) {
 //   "action": "get" | "set",
 //   "value": ...   // only for "set"
 // }
-void handleCommand(JsonObject obj) {
+void handleCommand(WiFiClient &client, JsonObject obj) {
   int cmdEspID = obj["espID"] | -1;
   const char* device_type  = obj["device_type"] | "";
   const char* device_name  = obj["device_name"] | "";
@@ -110,17 +156,17 @@ void handleCommand(JsonObject obj) {
 
   if (strcmp(device_type, "actuator") == 0) {
     if (strcmp(device_name, "led1") == 0) {
-      handle_led1(action, valueField);
+      handle_led1(client, action, valueField);
     } else if (strcmp(device_name, "motor1") == 0) {
-      handle_motor1(action, valueField);
+      handle_motor1(client, action, valueField);
     } else {
       Serial.println("Unknown actuator device_name.");
     }
   } else if (strcmp(device_type, "sensor") == 0) {
     if (strcmp(device_name, "pir") == 0) {
-      handle_pir(action, valueField);
+      handle_pir(client, action, valueField);
     } else if (strcmp(device_name, "tem") == 0) {
-      handle_tem(action, valueField);
+      handle_tem(client, action, valueField);
     } else {
       Serial.println("Unknown sensor device_name.");
     }
@@ -160,7 +206,7 @@ void loop() {
   Serial.println("Client connected.");
   client.setTimeout(3000);  // 3s timeout
 
-  // Read entire JSON array (one line)
+  // Read one JSON line (single command object from Python)
   String line = client.readStringUntil('\n');
   if (line.length() > 0) {
     Serial.print("Received: ");
@@ -172,16 +218,16 @@ void loop() {
       Serial.print("deserializeJson() failed: ");
       Serial.println(error.c_str());
     } else {
-      // Expect a JSON array: [ {cmd1}, {cmd2}, ... ]
+      // Support both array and object (just in case),
+      // but Python is sending a single object now.
       if (doc.is<JsonArray>()) {
         JsonArray arr = doc.as<JsonArray>();
         for (JsonObject obj : arr) {
-          handleCommand(obj);
+          handleCommand(client, obj);
         }
       } else if (doc.is<JsonObject>()) {
-        // fallback: single command as object
         JsonObject obj = doc.as<JsonObject>();
-        handleCommand(obj);
+        handleCommand(client, obj);
       } else {
         Serial.println("Unknown JSON root type (not array/object).");
       }

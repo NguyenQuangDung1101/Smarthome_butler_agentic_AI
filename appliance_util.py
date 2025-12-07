@@ -20,6 +20,9 @@ def _check_constraint(val: Any, c: Dict[str, Any]) -> Tuple[bool, str]:
             return True, ""
         return False, "expected boolean"
     if t == "integer":
+        # bool is a subclass of int in Python, so check for bool first
+        if isinstance(val, bool):
+            return False, "expected integer"
         if not isinstance(val, int):
             return False, "expected integer"
         mn, mx = c.get("min"), c.get("max")
@@ -27,6 +30,9 @@ def _check_constraint(val: Any, c: Dict[str, Any]) -> Tuple[bool, str]:
         if mx is not None and val > mx: return False, f"out of range > {mx}"
         return True, ""
     if t == "float":
+        # bool is a subclass of int, so check for bool first
+        if isinstance(val, bool):
+            return False, "expected float"
         # allow int for float inputs too
         if not isinstance(val, (int, float)):
             return False, "expected float"
@@ -140,6 +146,10 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
     using data loaded from 'appliances_data.json', then return a single human-readable status line:
         Light in "Livingroom" has turned off
     """
+    # Validate esp_id and device_name
+    validation_error = check_espid_device(esp_id, device_name)
+    if validation_error:
+        return validation_error
 
     if not _APPLIANCES_FILE.exists():
         return f'Data file "{_APPLIANCES_FILE}" not found.'
@@ -240,8 +250,6 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
 
     # ---- search in JSON ----
     room_name, room_block = _find_room_by_esp(data, esp_id)
-    if not room_block:
-        return f'Room with espID={esp_id} not found.'
 
     target = _normalize(device_name)
     base, num = _split_base_num(target)
@@ -292,126 +300,95 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
 
 
 
-
-###### SET APPLIANCE VALUE ######
-def set_appliance_value(esp_id: int, device_name: str, value) -> str:
+###### CHECK DEVICE VALUE ######
+def check_device_value(esp_id: int, device_name: str, value: Any) -> str:
+    """
+    Check if the value is valid for the given device.
+    Returns empty string if valid, error message otherwise.
+    """
     if not _APPLIANCES_FILE.exists():
         return f'Data file "{_APPLIANCES_FILE}" not found.'
+    
     try:
         data = json.loads(_APPLIANCES_FILE.read_text(encoding="utf-8"))
     except Exception as e:
         return f'Failed to load "{_APPLIANCES_FILE}": {e}'
-
+    
     def _find_room_by_esp(d: Dict[str, Any], esp: int) -> Tuple[str, Dict[str, Any]]:
         root = d.get("List_of house appliance (current values)", {})
         for room_name, block in root.items():
             if isinstance(block, dict) and block.get("espID") == esp:
                 return room_name, block
         return "", {}
-
+    
     def _normalize(s: str) -> str:
-        return "".join(ch for ch in (s or "").lower().strip() if ch.isalnum())
-
-    def _split_base_num(s: str) -> Tuple[str, int]:
-        base, num = "", ""
-        for ch in s:
-            if ch.isdigit():
-                num += ch
-            else:
-                base += ch
-        return base, (int(num) if num else -1)
-
-    def _id_suffix(i: str) -> int:
-        suf = "".join(ch for ch in i if ch.isdigit())
-        return int(suf) if suf else -1
-
+        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
+    
     room_name, room_block = _find_room_by_esp(data, esp_id)
     if not room_block:
-        return f'Room with espID={esp_id} not found.'
-
+        return f'espID {esp_id} not found.'
+    
     target = _normalize(device_name)
-    base, num = _split_base_num(target)
-
-    items: List[Tuple[str, Dict[str, Any]]] = []
-    for kind in ("actuator", "sensor"):
-        for item in room_block.get(kind, []):
-            items.append((kind, item))
-
-    chosen = None
-    for kind, item in items:
+    
+    # Search for the device in actuators only (sensors cannot be set)
+    for item in room_block.get("actuator", []):
         if _normalize(item.get("id", "")) == target:
-            chosen = (kind, item)
-            break
-    if not chosen:
-        ranked: List[Tuple[int, Tuple[str, Dict[str, Any]]]] = []
-        for kind, item in items:
-            idn = _normalize(item.get("id", ""))
-            descl = _normalize(item.get("description", ""))
-            score = 0
-            if base and (base in idn or base in descl):
-                score += 2
-            if num != -1 and _id_suffix(item.get("id", "")) == num:
-                score += 2
-            if base in ("fan",) and idn.startswith("motor"):
-                score += 1
-            if base in ("door", "window", "slider") and (("door" in descl) or ("window" in descl) or ("slider" in descl)):
-                score += 1
-            if base in ("lock", "servo") and (idn.startswith("servo") or "lock" in descl):
-                score += 1
-            if score > 0:
-                ranked.append((score, (kind, item)))
-        if ranked:
-            ranked.sort(key=lambda x: (-x[0], _normalize(x[1][1].get("id", ""))))
-            chosen = ranked[0][1]
+            # Found the device, check constraints
+            constraints = item.get("constraints", {})
+            ok, why = _check_constraint(value, constraints)
+            if not ok:
+                return f'Invalid value for "{device_name}": {why}'
+            return ""
+    
+    # Device not found in actuators
+    return f'Device "{device_name}" not found or is not an actuator in espID={esp_id}.'
 
-    if not chosen:
-        return f'Device "{device_name}" not found in espID={esp_id}.'
 
-    kind, item = chosen
-    vtype = (item.get("value_type") or "").lower()
-    constraints = item.get("constraints", {}) or {}
-
+###### SET APPLIANCE VALUE ######
+def set_appliance_value(esp_id: int, device_name: str, value) -> str:
+    # Validate esp_id and device_name
+    validation_error = check_espid_device(esp_id, device_name)
+    if validation_error:
+        return validation_error
+    
+    # Validate value against device constraints
+    value_error = check_device_value(esp_id, device_name, value)
+    if value_error:
+        return value_error
+    
+    if not _APPLIANCES_FILE.exists():
+        return f'Data file "{_APPLIANCES_FILE}" not found.'
+    
     try:
-        if vtype == "boolean":
-            if isinstance(value, str):
-                lv = value.strip().lower()
-                if lv in ("true", "1", "yes", "on"):
-                    item["value"] = True
-                elif lv in ("false", "0", "no", "off"):
-                    item["value"] = False
-                else:
-                    return f'Invalid boolean value "{value}" for {device_name}'
-            else:
-                item["value"] = bool(value)
-        elif vtype == "integer":
-            iv = int(value)
-            mn, mx = constraints.get("min"), constraints.get("max")
-            if mn is not None and iv < mn:
-                iv = mn
-            if mx is not None and iv > mx:
-                iv = mx
-            item["value"] = iv
-        elif vtype == "float":
-            fv = float(value)
-            mn, mx = constraints.get("min"), constraints.get("max")
-            if mn is not None and fv < mn:
-                fv = mn
-            if mx is not None and fv > mx:
-                fv = mx
-            item["value"] = fv
-        else:
-            item["value"] = value
+        data = json.loads(_APPLIANCES_FILE.read_text(encoding="utf-8"))
     except Exception as e:
-        return f'Failed to set value for "{device_name}" in espID={esp_id}: {e}'
-
+        return f'Failed to load "{_APPLIANCES_FILE}": {e}'
+    
+    def _find_room_by_esp(d: Dict[str, Any], esp: int) -> Tuple[str, Dict[str, Any]]:
+        root = d.get("List_of house appliance (current values)", {})
+        for room_name, block in root.items():
+            if isinstance(block, dict) and block.get("espID") == esp:
+                return room_name, block
+        return "", {}
+    
+    def _normalize(s: str) -> str:
+        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
+    
+    room_name, room_block = _find_room_by_esp(data, esp_id)
+    target = _normalize(device_name)
+    
+    # Find and update the device value in actuators
+    for item in room_block.get("actuator", []):
+        if _normalize(item.get("id", "")) == target:
+            item["value"] = value
+            break
+    
     try:
         _APPLIANCES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         return f'Failed to save "{_APPLIANCES_FILE}": {e}'
-
-    return get_appliance_value(esp_id, device_name)
-
-
+    
+    return ""
 
 
 ###### RESET ALL APPLIANCE VALUE ######
@@ -448,6 +425,11 @@ def reset_all_appliances_value() -> str:
 
 ###### RESET APPLIANCE VALUE ######
 def reset_appliance_value(esp_id: int, device_name: str) -> str:
+    # Validate esp_id and device_name
+    validation_error = check_espid_device(esp_id, device_name)
+    if validation_error:
+        return validation_error
+    
     if not _APPLIANCES_FILE.exists():
         return f'Data file "{_APPLIANCES_FILE}" not found.'
     try:
@@ -466,8 +448,6 @@ def reset_appliance_value(esp_id: int, device_name: str) -> str:
         return "".join(ch for ch in (s or "").lower().strip() if ch.isalnum())
 
     room_name, room_block = _find_room_by_esp(data, esp_id)
-    if not room_block:
-        return f'Room with espID={esp_id} not found.'
 
     target = _normalize(device_name)
     items: List[Dict[str, Any]] = []
@@ -504,6 +484,36 @@ def reset_appliance_value(esp_id: int, device_name: str) -> str:
 
 
 ########### HELPER ###########
+def check_espid_device(esp_id: int, device_name: str) -> str:
+    """
+    Validate esp_id and device_name pair.
+    Returns empty string if valid, error message otherwise.
+    """
+    # Define valid devices for each ESP
+    esp_devices = {
+        1: ["led1", "motor1", "pir", "tem"],
+        2: ["led1", "led2", "motor1", "motor2", "pir", "tem"],
+        3: ["led1", "led2", "led3", "motor1", "motor2", "servo", "pump", "pir", "tem", "tem_out", "mois"]
+    }
+    
+    # Check if esp_id is valid
+    if esp_id not in esp_devices:
+        return f'espID {esp_id} not found. Valid espIDs are: 1, 2, 3'
+    
+    # Normalize device_name for comparison
+    def _normalize(s: str) -> str:
+        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
+    
+    device_normalized = _normalize(device_name)
+    
+    # Check if device exists for this esp_id
+    valid_devices = esp_devices[esp_id]
+    if device_normalized not in [_normalize(d) for d in valid_devices]:
+        return f'Device "{device_name}" not found in espID={esp_id}. Valid devices: {", ".join(valid_devices)}'
+    
+    return ""
+
+
 def parse_json_data(json_list: str):
     esp1_json = []
     esp2_json = []
@@ -576,24 +586,48 @@ def execute_appliance(json_str: str) -> str:
     log_check = ""
 
     if isinstance(data, list):
+        # new data is accecpted commands only (filter out invalid commands)
         new_data = []
         for item in data:
-            keep_item = Truekeep_item = True
+            keep_item = True
             if not isinstance(item, dict):
                 continue
             action = (item.get("action") or "").lower()
             if all(n not in action for n in ["set", "get"]):
                 log_check += f'Action "{action}" is not recognized\n'
+                keep_item = False
                 continue
             esp = item.get("espID")
             dev = item.get("device_name")
+            dev_type = item.get("device_type")
+            validation_error = check_espid_device(esp, dev.lower())
+            if validation_error:
+                log_check += validation_error + "\n"
+                keep_item = False
+                continue
+            if any(n in dev.lower() for n in ["led", "motor", "servo", "pump"]) and dev_type != "actuator":
+                log_check += f'Device "{dev}" is actuator but device_type is "{dev_type}"\n'
+                keep_item = False
+                continue
+            elif any(n in dev.lower() for n in ["tem", "mois", "pir"]) and dev_type == "actuator":
+                log_check += f'Device "{dev}" is sensor but device_type is "{dev_type}"\n'
+                keep_item = False
+                continue
             if action == "set" and esp is not None and isinstance(dev, str) and dev.strip():
                 if all(n not in dev.lower() for n in ["led", "motor", "servo", "pump"]) and any(n in dev.lower() for n in ["tem", "mois", "pir"]):
                     log_check += f'Device "{dev}" is sensor and dont have "set" action\n'
                     keep_item = False
                     continue
-                set_appliance_value(int(esp), dev, item.get("value"))
-            new_data.append(item)
+                log_from_set = set_appliance_value(int(esp), dev, item.get("value"))
+                if any(n in log_from_set.lower() for n in ["invalid", "not found", "failed"]):
+                    log_check += log_from_set + "\n"
+                    keep_item = False
+                    continue
+            if keep_item:
+                new_data.append(item)
+    
+    print(new_data)
+
 
     if isinstance(new_data, list):
         uniform, cols = is_uniform_obj_list(new_data)
@@ -624,7 +658,7 @@ def execute_appliance(json_str: str) -> str:
     if status_lines:
         out = f"{out}\n---\nCurrent appliance status:\n" + "\n".join(status_lines)
 
-    return f"{log_check}{out}", f"\nCurrent appliance status:\n" + "\n".join(status_lines)
+    return f"{log_check}{out}", f"\n{log_check}\nCurrent appliance status:\n" + "\n".join(status_lines)
 
 
 
@@ -636,19 +670,17 @@ if __name__ == "__main__":
     # print(get_current_datetime_tool())
 
     string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, \
-               {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": 50}, \
-               {\"espID\": 3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"set\", \"value\": 20}]"
-    # formated, log_to_save = execute_appliance(string)
-    esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))
-    print("#################")
-    print(esp1_json)
-    print("#################")
-    print(esp2_json)
-    print("#################")
-    print(esp3_json)
-    # print(log_to_save)
-    # print(formated)
-    # print("-----")
+               {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": true}, \
+               {\"espID\": 2, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"set\", \"value\": 20}]"
+    formated, log_to_save = execute_appliance(string)
+    # esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))
+    # print("#################")
+    # print(esp1_json)
+    # print("#################")
+    # print(esp2_json)
+    # print("#################")
+    # print(esp3_json)
+    print(log_to_save)
     # reset_all_appliances_value()
     # print(get_all_appliances_status())
     # print(get_current_datetime())
