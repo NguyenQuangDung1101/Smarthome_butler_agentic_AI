@@ -37,5 +37,31 @@
             "properties": {},
             "required": []
         }
+    },
+    {
+        "name": "search_and_read_web_link",
+        "description": "Search the web based on the given query using SerpAPI and optionally read content from the top result links. Returns titles, links, snippets, and optionally extracted content from the pages.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Search query string to look up using SerpAPI."
+                },
+                "num_results": {
+                    "type": "integer",
+                    "description": "Number of top search results to retrieve and optionally read content from. Default is 1."
+                },
+                "read": {
+                    "type": "boolean",
+                    "description": "Whether to fetch and read content from the result links. Default is true.(If false, only titles, links, and snippets are returned.)"
+                }
+            },
+            "required": [
+                "query",
+                "num_results",
+                "read"
+            ]
+        }
     }
 ]

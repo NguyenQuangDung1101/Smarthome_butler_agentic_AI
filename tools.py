@@ -4,7 +4,9 @@ import requests
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, Optional
-
+from bs4 import BeautifulSoup
+import os
+from local_llm import Copilot
 
 # --------------------------------------------------------
 # -------------- DATE, TIME, WEATHER TOOL ----------------
@@ -114,10 +116,75 @@ def get_current_location(return_value = False):
 
 
 
+# --------------------------------------------------------
+# ------------------- SEARCHING TOOL ---------------------
+# --------------------------------------------------------
 
+def search_and_read_web_link(
+    query: str,
+    num_results: int = 3,
+    read: bool = True,
+    api_key: Optional[str] = "d74c53982d4259c26022ca3e2a0c66d78e43e424057fb9dfa165cb93652b5164",
+    timeout: int = 15
+) -> List[Dict[str, Any]]:
+    """
+    Search using SerpAPI and optionally fetch text from result links.
+    Returns a list of dicts: {'title','link','snippet','content'} where 'content' is None or short extracted text.
+    """
+    api_key = api_key or os.getenv("SERPAPI_API_KEY")
+    if not api_key:
+        raise ValueError("SerpAPI key required. Set SERPAPI_API_KEY env or pass api_key.")
+    params = {
+        "engine": "google",
+        "q": query,
+        "num": num_results,
+        "api_key": api_key,
+    }
+    resp = requests.get("https://serpapi.com/search.json", params=params, timeout=timeout)
+    if resp.status_code != 200:
+        raise RuntimeError(f"SerpAPI request failed: {resp.status_code} - {resp.text}")
+    data = resp.json()
+    organic = data.get("organic_results", [])  # list of results
+    results: List[Dict[str, Any]] = []
+    headers = {"User-Agent": "Mozilla/5.0 (compatible)"}
+    for item in organic[:num_results]:
+        title = item.get("title")
+        link = item.get("link") or item.get("displayed_link")
+        snippet = item.get("snippet") or item.get("snippet")  # fallback
+        content = None
+        if read and link:
+            try:
+                r2 = requests.get(link, timeout=timeout, headers=headers)
+                if r2.status_code == 200 and "text" in r2.headers.get("Content-Type", ""):
+                    soup = BeautifulSoup(r2.text, "html.parser")
+                    text = " ".join(soup.stripped_strings)
+                    # truncate to reasonable length
+                    if len(text) > 7000:
+                        text = text[:7000] + " ... [truncated]"
+                    content = text
+                else:
+                    content = f"Unable to read content (status {r2.status_code})"
+            except Exception as e:
+                content = f"Failed to fetch/read: {e}"
+        results.append({"title": title, "link": link, "snippet": snippet, "content": content})
+
+    llm = Copilot(host="http://localhost:11434", model="gpt-oss:20b-cloud")
+    summary_search_results = llm.infer(
+        user_prompt = f"Retrieved data for the query: '{query}'. Here are the search results:\n{json.dumps(results, indent=2)}\n\nPlease provide a concise summary of the key information relevant to the query.(return full information in detail if the query is asking for specific information)",
+        system_prompt = "You will receive search results from the internet (may from multiple different sources). Summarize the key information relevant to the query in a concise manner.",
+    )
+    sum_append_link = "Links to the sources:\n"
+    for item in results:
+        sum_append_link += f"Link: {item["link"]} - Title: {item["title"]}\n"
+
+    # return results
+    return f"{sum_append_link}Sumary:\n{summary_search_results}"
 
 
 if __name__ == "__main__":
-    print(get_current_datetime_tool())
-    print(get_current_datetime())
-    
+    # print(get_current_datetime())
+    # print(get_current_location())
+    # print(get_hourly_forecast("ha noi", "2024-06-15"))
+
+    res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
+    print(res)

@@ -5,7 +5,7 @@ import json
 import subprocess
 import platform
 from typing import Any, Dict
-from tools import get_current_datetime, get_hourly_forecast, get_current_location
+from tools import get_current_datetime, get_hourly_forecast, get_current_location, search_and_read_web_link
 
 # ── LOAD TOOLS DEFINITION FROM JSON ──────────────────────────────────────
 TOOLS_JSON_PATH = os.path.join(os.path.dirname(__file__), "tool_list.json")
@@ -39,12 +39,24 @@ def tool_get_current_location(arguments: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {"content": [{"type": "text", "text": f"Error in get_current_location: {e}"}]}
 
+def tool_search_and_read_web_link(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    query = arguments.get("query", "")
+    num_results = arguments.get("num_results", 1)
+    read = arguments.get("read", True)
+    try:
+        text = search_and_read_web_link(query, num_results, read)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in search_and_read_web_link: {e}"}]}
+
+
 
 # ── TOOL DISPATCH MAP ────────────────────────────────────────────────────
 TOOL_DISPATCH = {
     "get_current_datetime": tool_get_current_datetime,
     "get_hourly_forecast": tool_get_hourly_forecast,
     "get_current_location": tool_get_current_location,
+    "search_and_read_web_link": tool_search_and_read_web_link,
 }
 
 # ── PUBLIC ENTRYPOINT (kept async signature) ─────────────────────────────

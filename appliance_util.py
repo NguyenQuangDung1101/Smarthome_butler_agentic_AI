@@ -131,6 +131,50 @@ def format_all_statuses_from_dict(data: Dict[str, Any]) -> str:
         lines.append("")
     return "\n".join(lines)
 
+def check_espid_device(esp_id: int, device_name: str) -> str:
+    """
+    Validate esp_id and device_name pair.
+    Returns empty string if valid, error message otherwise.
+    """
+    # Define valid devices for each ESP
+    esp_devices = {
+        1: ["led1", "motor1", "pir", "tem"],
+        2: ["led1", "led2", "motor1", "motor2", "pir", "tem"],
+        3: ["led1", "led2", "led3", "motor1", "motor2", "servo", "pump", "pir", "tem", "tem_out", "mois"]
+    }
+    
+    # Check if esp_id is valid
+    if esp_id not in esp_devices:
+        return f'espID {esp_id} not found. Valid espIDs are: 1, 2, 3'
+    
+    # Normalize device_name for comparison
+    def _normalize(s: str) -> str:
+        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
+    
+    device_normalized = _normalize(device_name)
+    
+    # Check if device exists for this esp_id
+    valid_devices = esp_devices[esp_id]
+    if device_normalized not in [_normalize(d) for d in valid_devices]:
+        return f'Device "{device_name}" not found in espID={esp_id}. Valid devices: {", ".join(valid_devices)}'
+    
+    return ""
+
+def parse_json_data(json_list: str):
+    esp1_json = []
+    esp2_json = []
+    esp3_json = []
+    for request in json_list:
+        esp_id = request.get("espID")
+        if esp_id == 1:
+            esp1_json.append(request)
+        elif esp_id == 2:
+            esp2_json.append(request)
+        elif esp_id == 3:
+            esp3_json.append(request)
+    return esp1_json, esp2_json, esp3_json
+
+
 
 ###### GET ALL APPLIANCES STATUS ######
 def get_all_appliances_status() -> str:
@@ -483,50 +527,7 @@ def reset_appliance_value(esp_id: int, device_name: str) -> str:
     return get_appliance_value(esp_id, device_name)
 
 
-########### HELPER ###########
-def check_espid_device(esp_id: int, device_name: str) -> str:
-    """
-    Validate esp_id and device_name pair.
-    Returns empty string if valid, error message otherwise.
-    """
-    # Define valid devices for each ESP
-    esp_devices = {
-        1: ["led1", "motor1", "pir", "tem"],
-        2: ["led1", "led2", "motor1", "motor2", "pir", "tem"],
-        3: ["led1", "led2", "led3", "motor1", "motor2", "servo", "pump", "pir", "tem", "tem_out", "mois"]
-    }
-    
-    # Check if esp_id is valid
-    if esp_id not in esp_devices:
-        return f'espID {esp_id} not found. Valid espIDs are: 1, 2, 3'
-    
-    # Normalize device_name for comparison
-    def _normalize(s: str) -> str:
-        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
-    
-    device_normalized = _normalize(device_name)
-    
-    # Check if device exists for this esp_id
-    valid_devices = esp_devices[esp_id]
-    if device_normalized not in [_normalize(d) for d in valid_devices]:
-        return f'Device "{device_name}" not found in espID={esp_id}. Valid devices: {", ".join(valid_devices)}'
-    
-    return ""
 
-
-def parse_json_data(json_list: str):
-    esp1_json = []
-    esp2_json = []
-    esp3_json = []
-    for request in json_list:
-        esp_id = request.get("espID")
-        if esp_id == 1:
-            esp1_json.append(request)
-        elif esp_id == 2:
-            esp2_json.append(request)
-        elif esp_id == 3:
-            esp3_json.append(request)
-    return esp1_json, esp2_json, esp3_json
 
 def execute_appliance(json_str: str) -> str:
     def to_str(v):
