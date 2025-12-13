@@ -10,7 +10,7 @@ WiFiServer server(5000);
 int espID = 1;
 
 // Actuators
-bool led1_value   = true;   // Light (boolean)
+bool led1_value   = false;   // Light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
 
 // Sensors

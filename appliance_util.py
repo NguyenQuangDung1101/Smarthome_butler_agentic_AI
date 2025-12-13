@@ -2,6 +2,7 @@ import pandas as pd
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union
+from espnode_manager.esp_communication import send_command
 
 
 
@@ -160,7 +161,7 @@ def check_espid_device(esp_id: int, device_name: str) -> str:
     
     return ""
 
-def parse_json_data(json_list: str):
+def parse_json_data(json_list: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     esp1_json = []
     esp2_json = []
     esp3_json = []
@@ -235,6 +236,12 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
         desc = item.get("description", item.get("id", "appliance"))
         vtype = (item.get("value_type") or "").lower()
         val = item.get("value")
+        # get current value from esp node (hardware)
+        response_value = send_command({"espID": esp_id, "device_type": "actuator", "device_name": device_name, "action": "get"}, esp_id - 1)
+        if response_value != val:
+            set_status = set_appliance_value(esp_id, device_name, response_value, do_set=True)
+            val = response_value
+
         ok, why = _check_constraint(val, item.get("constraints", {}))
         invalid = f" [INVALID: {why}]" if not ok else ""
 
@@ -263,6 +270,12 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
         desc = item.get("description", item.get("id", "sensor"))
         vtype = (item.get("value_type") or "").lower()
         val = item.get("value")
+        # get current value from esp node (hardware)
+        response_value = send_command({"espID": esp_id, "device_type": "sensor", "device_name": device_name, "action": "get"}, esp_id - 1)
+        if response_value != val:
+            set_status = set_appliance_value(esp_id, device_name, response_value, do_set=True)
+            val = response_value
+
         ok, why = _check_constraint(val, item.get("constraints", {}))
         invalid = f" [INVALID: {why}]" if not ok else ""
 
@@ -299,10 +312,19 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
     base, num = _split_base_num(target)
 
     # collect candidates
+    # filled out unnessary input when call fmt function
     candidates: List[Tuple[str, Dict[str, Any], str]] = []
     for kind in ("actuator", "sensor"):
         for item in room_block.get(kind, []):
-            line = _fmt_actuator_line(room_name, item) if kind == "actuator" else _fmt_sensor_line(room_name, item)
+            if kind == "actuator":
+                if any(key in device_name.lower() for key in ["pir", "tem", "mois"]) or device_name.lower() == item.get("id","").lower():
+                    continue
+                line = _fmt_actuator_line(room_name, item)
+            else:
+                
+                if any(key in device_name.lower() for key in ["led", "motor", "servo", "pump"]) or device_name.lower() == item.get("id","").lower():
+                    continue
+                line = _fmt_sensor_line(room_name, item)
             candidates.append((kind, item, line))
 
     # exact id match
@@ -389,7 +411,7 @@ def check_device_value(esp_id: int, device_name: str, value: Any) -> str:
 
 
 ###### SET APPLIANCE VALUE ######
-def set_appliance_value(esp_id: int, device_name: str, value) -> str:
+def set_appliance_value(esp_id: int, device_name: str, value, do_set=True) -> str:
     # Validate esp_id and device_name
     validation_error = check_espid_device(esp_id, device_name)
     if validation_error:
@@ -426,11 +448,11 @@ def set_appliance_value(esp_id: int, device_name: str, value) -> str:
         if _normalize(item.get("id", "")) == target:
             item["value"] = value
             break
-    
-    try:
-        _APPLIANCES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    except Exception as e:
-        return f'Failed to save "{_APPLIANCES_FILE}": {e}'
+    if do_set:
+        try:
+            _APPLIANCES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception as e:
+            return f'Failed to save "{_APPLIANCES_FILE}": {e}'
     
     return ""
 
@@ -586,6 +608,7 @@ def execute_appliance(json_str: str) -> str:
 
     log_check = ""
 
+    # check and filter data, not execute yet
     if isinstance(data, list):
         # new data is accecpted commands only (filter out invalid commands)
         new_data = []
@@ -619,7 +642,7 @@ def execute_appliance(json_str: str) -> str:
                     log_check += f'Device "{dev}" is sensor and dont have "set" action\n'
                     keep_item = False
                     continue
-                log_from_set = set_appliance_value(int(esp), dev, item.get("value"))
+                log_from_set = set_appliance_value(int(esp), dev, item.get("value"), do_set=False)
                 if any(n in log_from_set.lower() for n in ["invalid", "not found", "failed"]):
                     log_check += log_from_set + "\n"
                     keep_item = False
@@ -627,8 +650,6 @@ def execute_appliance(json_str: str) -> str:
             if keep_item:
                 new_data.append(item)
     
-    print(new_data)
-
 
     if isinstance(new_data, list):
         uniform, cols = is_uniform_obj_list(new_data)
@@ -639,22 +660,34 @@ def execute_appliance(json_str: str) -> str:
         out = to_str(new_data)
 
     status_lines = []
-    try:
-        if isinstance(data, list):
-            for idx, item in enumerate(data):
-                if not isinstance(item, dict):
-                    continue
-                esp = item.get("espID")
-                dev = item.get("device_name")
-                if esp is None or not isinstance(dev, str) or not dev.strip():
-                    continue
-                try:
-                    status = get_appliance_value(int(esp), dev)
-                except Exception as e:
-                    status = f"[{idx}] Error while reading appliance ({esp}, {dev}): {e}"
-                status_lines.append(f"- {status}")
-    except Exception as e:
-        status_lines.append(f"(Failed to append appliance statuses: {e})")
+
+
+    esp1_json, esp2_json, esp3_json = parse_json_data(new_data)
+    json_list = [esp1_json, esp2_json, esp3_json]
+    for idx, json_data in enumerate(json_list):
+        try:
+            if isinstance(json_data, list):
+                for item in json_data:
+                    if not isinstance(item, dict):
+                        continue
+                    esp = item.get("espID")
+                    dev = item.get("device_name")
+                    action = (item.get("action") or "").lower()
+                    if esp is None or not isinstance(dev, str) or not dev.strip():
+                        continue
+                    try:
+                        # send commands message to esp node, wait until receive response, then update appliance data on server database
+                        if action == "set":
+                            response_value = send_command(item, idx)
+                            set_status = set_appliance_value(int(esp), dev, response_value, do_set=True)
+                            if response_value != item.get("value"):
+                                log_check += f'Failed to set appliance ({esp}, {dev}): Response value "{response_value}" does not match requested value "{item.get("value")}" when setting\n'
+                        status = get_appliance_value(int(esp), dev)
+                    except Exception as e:
+                        status = f"Error while reading appliance ({esp}, {dev}): {e}"
+                    status_lines.append(f"- {status}")
+        except Exception as e:
+            status_lines.append(f"(Failed to append appliance statuses: {e})")
 
     if status_lines:
         out = f"{out}\n---\nCurrent appliance status:\n" + "\n".join(status_lines)
@@ -670,9 +703,13 @@ def execute_appliance(json_str: str) -> str:
 if __name__ == "__main__":
     # print(get_current_datetime_tool())
 
-    string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, \
-               {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": true}, \
-               {\"espID\": 2, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"set\", \"value\": 20}]"
+    # string = "[{\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, \
+    #            {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\": true}, \
+    #            {\"espID\": 2, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\", \"value\": 20}]"
+    
+    # string = '[{"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": false}, {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"}]'
+    string = '[{"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"}]'
+
     formated, log_to_save = execute_appliance(string)
     # esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))
     # print("#################")

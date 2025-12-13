@@ -7,7 +7,7 @@
           "id": "led1",
           "description": "Light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [

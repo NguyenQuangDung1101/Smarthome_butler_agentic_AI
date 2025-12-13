@@ -1,11 +1,15 @@
 import json
 import socket
 
-ESP_IP = "192.168.96.157"   # your ESP32 IP
-ESP_PORT = 5000
+# ESP_IP, ESP_PORT: adjust as needed
+esp_id_port_map = [
+    ("192.168.69.157",5000),  # ESP ID 1
+    # (),  # ESP ID 2
+    # (),  # ESP ID 3
+]
 
 
-def send_command(command):
+def send_command(command, idx):
     """
     Send exactly ONE command to the ESP32, wait for reply,
     and return the 'value' from the ESP32 response.
@@ -13,7 +17,7 @@ def send_command(command):
     payload = json.dumps(command) + "\n"  # send as single JSON object + newline
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((ESP_IP, ESP_PORT))
+        s.connect(esp_id_port_map[idx])
         s.sendall(payload.encode("utf-8"))
         # Read one line of response (ending with '\n')
         data = b""
@@ -41,15 +45,15 @@ if __name__ == "__main__":
         {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": False},
         {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"},
 
-        # set + get motor1
-        {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50},
-        {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"},
+        # # set + get motor1
+        # {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50},
+        # {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"},
 
-        # get sensors
-        {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"},
-        {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
+        # # get sensors
+        # {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"},
+        # {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
     ]
 
     for cmd in commands:
-        result = send_command(cmd)
+        result = send_command(cmd, 0)
         print(f"Command: {cmd['device_name']} ({cmd['action']}) -> Returned value: {result}")
