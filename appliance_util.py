@@ -317,12 +317,11 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
     for kind in ("actuator", "sensor"):
         for item in room_block.get(kind, []):
             if kind == "actuator":
-                if any(key in device_name.lower() for key in ["pir", "tem", "mois"]) or device_name.lower() == item.get("id","").lower():
+                if any(key in item.get("id","") for key in ["pir", "tem", "mois"]) or device_name.lower() != item.get("id","").lower():
                     continue
                 line = _fmt_actuator_line(room_name, item)
             else:
-                
-                if any(key in device_name.lower() for key in ["led", "motor", "servo", "pump"]) or device_name.lower() == item.get("id","").lower():
+                if any(key in item.get("id","") for key in ["led", "motor", "servo", "pump"]) or device_name.lower() != item.get("id","").lower():
                     continue
                 line = _fmt_sensor_line(room_name, item)
             candidates.append((kind, item, line))
@@ -708,7 +707,7 @@ if __name__ == "__main__":
     #            {\"espID\": 2, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\", \"value\": 20}]"
     
     # string = '[{"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": false}, {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"}]'
-    string = '[{"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"}]'
+    string = '[{"espID": 2, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true}, {"espID": 2, "device_type": "actuator", "device_name": "led2", "action": "set", "value": true}, {"espID": 2, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 100}, {"espID": 2, "device_type": "actuator", "device_name": "motor2", "action": "set", "value": 100}, {"espID": 2, "device_type": "sensor", "device_name": "pir", "action": "get"}, {"espID": 2, "device_type": "sensor", "device_name": "tem", "action": "get"}]'
 
     formated, log_to_save = execute_appliance(string)
     # esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))

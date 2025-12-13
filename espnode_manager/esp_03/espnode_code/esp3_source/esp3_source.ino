@@ -6,16 +6,23 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 1 appliances =====
-int espID = 1;
+// ===== Global state for espID = 3 appliances =====
+int espID = 3;
 
 // Actuators
-bool led1_value   = false;   // Light (boolean)
+bool led1_value   = false;   // Room light (boolean)
+bool led2_value   = false;   // Bed light (boolean)
+bool led3_value   = false;   // Balcony light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
+int  motor2_value = 0;      // Curtain slider 0–100 (%)
+bool servo_value  = false;   // Lock (boolean)
+bool pump_value   = false;   // Pump (boolean)
 
 // Sensors
 bool  pir_value   = false;  // PIR sensor (boolean)
 float tem_value   = 25.0;   // Temperature (°C)
+float tem_out_value = 25.0; // Outside temperature (°C)
+float mois_value    = 0.0;  // Moisture (float)
 
 // ===== Helper: send JSON response back to Python =====
 void send_response(WiFiClient &client,
@@ -84,6 +91,44 @@ void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField)
   send_response(client, "actuator", "led1", led1_value);
 }
 
+void handle_led2(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of led2: ");
+    Serial.println(led2_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? led2_value : valueField.as<bool>();
+    Serial.print("Old value of led2: ");
+    Serial.print(led2_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    led2_value = newValue;
+  } else {
+    Serial.println("Unknown action for led2.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "led2", led2_value);
+}
+
+void handle_led3(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of led3: ");
+    Serial.println(led3_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? led3_value : valueField.as<bool>();
+    Serial.print("Old value of led3: ");
+    Serial.print(led3_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    led3_value = newValue;
+  } else {
+    Serial.println("Unknown action for led3.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "led3", led3_value);
+}
+
 void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     Serial.print("current value of motor1: ");
@@ -101,6 +146,63 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
 
   // Send back the current value
   send_response(client, "actuator", "motor1", motor1_value);
+}
+
+void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of motor2: ");
+    Serial.println(motor2_value);
+  } else if (strcmp(action, "set") == 0) {
+    int newValue = valueField.isNull() ? motor2_value : valueField.as<int>();
+    Serial.print("Old value of motor2: ");
+    Serial.print(motor2_value);
+    Serial.print(", New value of: ");
+    Serial.println(newValue);
+    motor2_value = newValue;
+  } else {
+    Serial.println("Unknown action for motor2.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "motor2", motor2_value);
+}
+
+void handle_servo(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of servo: ");
+    Serial.println(servo_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? servo_value : valueField.as<bool>();
+    Serial.print("Old value of servo: ");
+    Serial.print(servo_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    servo_value = newValue;
+  } else {
+    Serial.println("Unknown action for servo.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "servo", servo_value);
+}
+
+void handle_pump(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of pump: ");
+    Serial.println(pump_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? pump_value : valueField.as<bool>();
+    Serial.print("Old value of pump: ");
+    Serial.print(pump_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    pump_value = newValue;
+  } else {
+    Serial.println("Unknown action for pump.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "pump", pump_value);
 }
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -125,6 +227,30 @@ void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) 
 
   // Send back the current value
   send_response(client, "sensor", "tem", tem_value);
+}
+
+void handle_tem_out(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of tem_out: ");
+    Serial.println(tem_out_value, 2);
+  } else {
+    Serial.println("Unknown action for tem_out.");
+  }
+
+  // Send back the current value
+  send_response(client, "sensor", "tem_out", tem_out_value);
+}
+
+void handle_mois(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of mois: ");
+    Serial.println(mois_value, 2);
+  } else {
+    Serial.println("Unknown action for mois.");
+  }
+
+  // Send back the current value
+  send_response(client, "sensor", "mois", mois_value);
 }
 // ========================================================================================================
 
@@ -157,8 +283,18 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
   if (strcmp(device_type, "actuator") == 0) {
     if (strcmp(device_name, "led1") == 0) {
       handle_led1(client, action, valueField);
+    } else if (strcmp(device_name, "led2") == 0) {
+      handle_led2(client, action, valueField);
+    } else if (strcmp(device_name, "led3") == 0) {
+      handle_led3(client, action, valueField);
     } else if (strcmp(device_name, "motor1") == 0) {
       handle_motor1(client, action, valueField);
+    } else if (strcmp(device_name, "motor2") == 0) {
+      handle_motor2(client, action, valueField);
+    } else if (strcmp(device_name, "servo") == 0) {
+      handle_servo(client, action, valueField);
+    } else if (strcmp(device_name, "pump") == 0) {
+      handle_pump(client, action, valueField);
     } else {
       Serial.println("Unknown actuator device_name.");
     }
@@ -167,6 +303,10 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
       handle_pir(client, action, valueField);
     } else if (strcmp(device_name, "tem") == 0) {
       handle_tem(client, action, valueField);
+    } else if (strcmp(device_name, "tem_out") == 0) {
+      handle_tem_out(client, action, valueField);
+    } else if (strcmp(device_name, "mois") == 0) {
+      handle_mois(client, action, valueField);
     } else {
       Serial.println("Unknown sensor device_name.");
     }

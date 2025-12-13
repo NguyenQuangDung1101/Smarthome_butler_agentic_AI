@@ -4,8 +4,8 @@ import socket
 # ESP_IP, ESP_PORT: adjust as needed
 esp_id_port_map = [
     ("192.168.69.157",5000),  # ESP ID 1
-    # (),  # ESP ID 2
-    # (),  # ESP ID 3
+    ("192.168.69.157",5000),  # ESP ID 2
+    ("192.168.69.157",5000),  # ESP ID 3
 ]
 
 
