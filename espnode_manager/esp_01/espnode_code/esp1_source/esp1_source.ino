@@ -1,5 +1,6 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
+#define LED_BUILTIN 2
 
 const char* ssid     = "Crack";
 const char* password = "20062004";
@@ -176,6 +177,7 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
 }
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
   delay(1000);
 
@@ -187,6 +189,14 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+  }
+
+  // signal connected
+  for(int i=0; i < 5; i++){
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(300);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(300);
   }
 
   Serial.println("\nWiFi connected.");

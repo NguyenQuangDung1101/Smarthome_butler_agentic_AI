@@ -325,6 +325,7 @@ if __name__ == "__main__":
 
     # #gpt-oss:20b-cloud
     # #qwen3:1.7b
+    # models/gemini-2.5-flash-lite
     # agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
     # # Interactive multi-turn terminal chat:
