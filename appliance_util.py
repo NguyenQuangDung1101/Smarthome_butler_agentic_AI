@@ -273,7 +273,8 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
         # get current value from esp node (hardware)
         response_value = send_command({"espID": esp_id, "device_type": "sensor", "device_name": device_name, "action": "get"}, esp_id - 1)
         if response_value != val:
-            set_status = set_appliance_value(esp_id, device_name, response_value, do_set=True)
+            set_status = set_appliance_value_sensor(esp_id, device_name, response_value)
+            print(set_status)
             val = response_value
 
         ok, why = _check_constraint(val, item.get("constraints", {}))
@@ -454,6 +455,52 @@ def set_appliance_value(esp_id: int, device_name: str, value, do_set=True) -> st
             return f'Failed to save "{_APPLIANCES_FILE}": {e}'
     
     return ""
+
+# set sensor value (for mismatched value from esp node)
+def set_appliance_value_sensor(esp_id: int, device_name: str, value) -> str:
+    # Validate esp_id and device_name
+    validation_error = check_espid_device(esp_id, device_name)
+    if validation_error:
+        return validation_error
+    
+    # # Validate value against device constraints
+    # value_error = check_device_value(esp_id, device_name, value)
+    # if value_error:
+    #     return value_error
+    
+    if not _APPLIANCES_FILE.exists():
+        return f'Data file "{_APPLIANCES_FILE}" not found.'
+    
+    try:
+        data = json.loads(_APPLIANCES_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        return f'Failed to load "{_APPLIANCES_FILE}": {e}'
+    
+    def _find_room_by_esp(d: Dict[str, Any], esp: int) -> Tuple[str, Dict[str, Any]]:
+        root = d.get("List_of house appliance (current values)", {})
+        for room_name, block in root.items():
+            if isinstance(block, dict) and block.get("espID") == esp:
+                return room_name, block
+        return "", {}
+    
+    def _normalize(s: str) -> str:
+        return "".join(ch for ch in s.lower().strip() if ch.isalnum())
+    
+    room_name, room_block = _find_room_by_esp(data, esp_id)
+    target = _normalize(device_name)
+    
+    # Find and update the device value in actuators
+    for item in room_block.get("sensor", []):
+        if _normalize(item.get("id", "")) == target:
+            item["value"] = value
+            break
+    try:
+        _APPLIANCES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        return f'Failed to save "{_APPLIANCES_FILE}": {e}'
+    
+    return ""
+
 
 
 ###### RESET ALL APPLIANCE VALUE ######

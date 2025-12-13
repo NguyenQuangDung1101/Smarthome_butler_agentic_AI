@@ -1,5 +1,12 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
+#include "DHT.h"
+
+#define DHTPIN 4      // Chân D4 trên mạch (GPIO 4)
+#define DHTTYPE DHT11 // Loại cảm biến DHT11
+
+DHT dht(DHTPIN, DHTTYPE);
+
 #define LED_BUILTIN 2
 
 const char* ssid     = "Crack";
@@ -118,6 +125,10 @@ void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) 
 
 void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
+    float t = dht.readTemperature();
+    if (!isnan(t)) {
+      tem_value = t;
+    }
     Serial.print("current value of tem: ");
     Serial.println(tem_value, 2);
   } else {
@@ -177,8 +188,9 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
 }
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  dht.begin();
   delay(1000);
 
   Serial.print("Connecting to ");

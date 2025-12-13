@@ -46,7 +46,7 @@ class Copilot:
         # print("Prompt to send:\n", prompt)
 
 
-        if "gemini" in model:
+        if "gemini" in self.model:
             model = genai.GenerativeModel(self.model)
             response = model.generate_content(prompt)
             return response.text

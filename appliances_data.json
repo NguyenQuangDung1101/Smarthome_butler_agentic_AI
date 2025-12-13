@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 25.0,
+          "value": 34.3,
           "constraints": {
             "type": "float",
             "min": -40.0,

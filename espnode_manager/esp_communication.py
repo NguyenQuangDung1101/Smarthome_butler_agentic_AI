@@ -42,8 +42,8 @@ def send_command(command, idx):
 if __name__ == "__main__":
     commands = [
         # set + get led1
-        {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": False},
-        {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"},
+        # {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": False},
+        # {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"},
 
         # # set + get motor1
         # {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50},
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
         # # get sensors
         # {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"},
-        # {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
+        {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
     ]
 
     for cmd in commands:
