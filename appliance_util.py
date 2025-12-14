@@ -44,13 +44,19 @@ def _check_constraint(val: Any, c: Dict[str, Any]) -> Tuple[bool, str]:
         return True, ""
     return True, ""  # unknown -> accept
 
-def _format_actuator(item: Dict[str, Any]) -> str:
+def _format_actuator(item: Dict[str, Any], esp_id: int) -> str:
+    device_name = item.get("id", "")
     desc = item.get("description", item.get("id", "appliance"))
     val_type = item.get("value_type")
     val = item.get("value")
+    #check mistmatch with esp node data
+    response_value = send_command({"espID": esp_id, "device_type": "actuator", "device_name": device_name, "action": "get"}, esp_id - 1)
+    if response_value != val:
+        set_status = set_appliance_value(esp_id, device_name, response_value, do_set=True)
+        val = response_value
+
     constraints = item.get("constraints", {})
     ok, why = _check_constraint(val, constraints)
-
     extra_invalid = f" [INVALID: {why}]" if not ok else ""
 
     # Special cases by type/description
@@ -86,10 +92,17 @@ def _format_actuator(item: Dict[str, Any]) -> str:
     # Fallback
     return f'{desc} value={val}{extra_invalid}'
 
-def _format_sensor(item: Dict[str, Any]) -> str:
+def _format_sensor(item: Dict[str, Any], esp_id: int) -> str:
+    device_name = item.get("id", "")
     desc = item.get("description", item.get("id", "sensor"))
     val_type = item.get("value_type")
     val = item.get("value")
+    #check mistmatch with esp node data
+    response_value = send_command({"espID": esp_id, "device_type": "sensor", "device_name": device_name, "action": "get"}, esp_id - 1)
+    if response_value != val:
+        set_status = set_appliance_value_sensor(esp_id, device_name, response_value)
+        val = response_value
+
     constraints = item.get("constraints", {})
     ok, why = _check_constraint(val, constraints)
     extra_invalid = f" [INVALID: {why}]" if not ok else ""
@@ -124,11 +137,13 @@ def format_all_statuses_from_dict(data: Dict[str, Any]) -> str:
         lines.append(f"{room}:")
         room = room.lower()
         for kind in ("actuator", "sensor"):
+            esp_id = block.get('espID', '')
             for item in block.get(kind, []):
+                print(item)
                 if kind == "actuator":
-                    lines.append(_format_actuator(item))
+                    lines.append(_format_actuator(item, esp_id))
                 else:
-                    lines.append(_format_sensor(item))
+                    lines.append(_format_sensor(item, esp_id))
         lines.append("")
     return "\n".join(lines)
 
@@ -448,6 +463,8 @@ def set_appliance_value(esp_id: int, device_name: str, value, do_set=True) -> st
         if _normalize(item.get("id", "")) == target:
             item["value"] = value
             break
+            
+    # set to false when dont want to modify local json file (just check value)
     if do_set:
         try:
             _APPLIANCES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -456,7 +473,7 @@ def set_appliance_value(esp_id: int, device_name: str, value, do_set=True) -> st
     
     return ""
 
-# set sensor value (for mismatched value from esp node)
+# set sensor value (for mismatched value from esp node) (just for modifying local json file)
 def set_appliance_value_sensor(esp_id: int, device_name: str, value) -> str:
     # Validate esp_id and device_name
     validation_error = check_espid_device(esp_id, device_name)
@@ -756,15 +773,8 @@ if __name__ == "__main__":
     # string = '[{"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": false}, {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "get"}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 50}, {"espID": 1, "device_type": "actuator", "device_name": "motor1", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"}, {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"}]'
     string = '[{"espID": 2, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true}, {"espID": 2, "device_type": "actuator", "device_name": "led2", "action": "set", "value": true}, {"espID": 2, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 100}, {"espID": 2, "device_type": "actuator", "device_name": "motor2", "action": "set", "value": 100}, {"espID": 2, "device_type": "sensor", "device_name": "pir", "action": "get"}, {"espID": 2, "device_type": "sensor", "device_name": "tem", "action": "get"}]'
 
-    formated, log_to_save = execute_appliance(string)
-    # esp1_json, esp2_json, esp3_json = parse_json_data(json.loads(string))
-    # print("#################")
-    # print(esp1_json)
-    # print("#################")
-    # print(esp2_json)
-    # print("#################")
-    # print(esp3_json)
-    print(log_to_save)
+    # formated, log_to_save = execute_appliance(string)
+    # print(log_to_save)
     # reset_all_appliances_value()
-    # print(get_all_appliances_status())
+    print(get_all_appliances_status())
     # print(get_current_datetime())

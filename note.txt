@@ -1,3 +1,10 @@
 powershell.exe -executionpolicy unrestricted
 
 .\smarthome\Scripts\Activate.ps1
+
+cls
+
+
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force; . .\smarthome\Scripts\Activate.ps1; Clear-Host
+
+powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NoExit -Command ". .\smarthome\Scripts\Activate.ps1; Clear-Host"
