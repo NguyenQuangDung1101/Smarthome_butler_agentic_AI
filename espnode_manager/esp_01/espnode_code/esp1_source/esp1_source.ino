@@ -2,12 +2,15 @@
 #include <ArduinoJson.h>
 #include "DHT.h"
 
-#define DHTPIN 4      // Chân D4 trên mạch (GPIO 4)
-#define DHTTYPE DHT11 // Loại cảm biến DHT11
+// tem
+#define DHTPIN 4      // D4 (GPIO 4)
+#define DHTTYPE DHT11 // sensor type DHT11
 
 DHT dht(DHTPIN, DHTTYPE);
 
 #define LED_BUILTIN 2
+
+
 
 const char* ssid     = "Crack";
 const char* password = "20062004";
@@ -71,7 +74,10 @@ void send_response(WiFiClient &client,
   client.print('\n');
 }
 
+
+// ========================================================================================================
 // ======================================== Per-appliance handlers ========================================
+// ========================================================================================================
 
 void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
@@ -138,6 +144,9 @@ void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) 
   // Send back the current value
   send_response(client, "sensor", "tem", tem_value);
 }
+
+// ========================================================================================================
+// ========================================================================================================
 // ========================================================================================================
 
 // ===== Handle ONE command object =====
@@ -189,8 +198,11 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
 
 void setup() {
   Serial.begin(115200);
+
+  // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
   dht.begin();
+
   delay(1000);
 
   Serial.print("Connecting to ");
