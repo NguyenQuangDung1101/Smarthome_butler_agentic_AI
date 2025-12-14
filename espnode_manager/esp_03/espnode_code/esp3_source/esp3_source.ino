@@ -33,7 +33,7 @@ bool pump_value   = false;   // Pump (boolean)
 bool  pir_value   = false;  // PIR sensor (boolean)
 float tem_value   = 25.0;   // Temperature (°C)
 float tem_out_value = 25.0; // Outside temperature (°C)
-float mois_value    = 0.0;  // Moisture (float)
+float mois_value    = 50.0;  // Moisture (float)
 
 // ===== Helper: send JSON response back to Python =====
 void send_response(WiFiClient &client,

@@ -44,7 +44,7 @@ You can call tools using this EXACT format (one per line):
 
 <appliance>...json_config...</appliance>
 
-- After one or more tool calls, when you are ready to answer the user, output:
+- After one or multiple tool calls and appliances execution, when you are ready to answer the user, output:
 
 <final_answer>...your final answer for the user...</final_answer>
 
@@ -56,7 +56,7 @@ Rules:
 - Do NOT include extra commentary outside those tags.
 - If a tool returns tabular data (CSV/text), read it and continue reasoning.
 - If house appliance execution return strange message, read it and continue reasoning.
-- If arguments are missing, request the needed info explicitly via <final_answer> asking the user.
+- If the prompt lacks necessary arguments or clarity, you can request the missing information explicitly by using <final_answer> to ask the user to clarify the missing details or provide the required arguments.
 """
     return f"{user_system_prompt}\n\n{control}".strip()
 
@@ -191,7 +191,7 @@ class ToolCallingAgent:
             system_prompt=(
                 "[SYSTEM]\nFollow the instructions precisely. Only output "
                 "<tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>.\n"
-                "<final_answer> must be a standalone response, mutually exclusive with <tool_call> and <appliance>.\n"
+                "<final_answer> must be a standalone response, mutually exclusive with <tool_call> and <appliance> and should not be call at the same time (in an inference response) with <tool_call> and <appliance>..\n"
                 f"{self.system_prompt}"
             )
         )

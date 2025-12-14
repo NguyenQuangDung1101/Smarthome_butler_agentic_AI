@@ -126,6 +126,8 @@ class SessionManager:
         return latest
 
     #################################################################################################
+    # gpt-oss:20b-cloud
+    # models/gemini-2.5-flash-lite
     def create_new_normal_session(self, model="gpt-oss:20b-cloud", context_text=None):
         print("Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
@@ -161,7 +163,9 @@ class SessionManager:
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     #################################################################################################
-    def create_new_schedule_session(self, model="models/gemini-2.5-flash-lite", context_text=None):
+    # gpt-oss:20b-cloud
+    # models/gemini-2.5-flash-lite
+    def create_new_schedule_session(self, model="gpt-oss:20b-cloud", context_text=None):
         print("Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
