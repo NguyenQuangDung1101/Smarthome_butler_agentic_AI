@@ -17,14 +17,14 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 1 appliances =====
+// ===== Global state for espID = 2 appliances (Hallway) =====
 int espID = 2;
 
 // Actuators
 bool led1_value   = false;   // Left light (boolean)
 bool led2_value   = false;   // Right light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
-int  motor2_value = 0;      // Slider 0–100 (%)
+int  motor2_value = 0;      // Main door 0–100 (%)
 
 // Sensors
 bool  pir_value   = false;  // PIR sensor (boolean)

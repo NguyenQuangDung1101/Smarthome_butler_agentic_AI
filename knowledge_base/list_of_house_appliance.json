@@ -33,7 +33,7 @@
         }
       ]
     },
-    "Lobby": {
+    "Hallway": {
       "espID": 2,
       "actuator": [
         {
@@ -59,7 +59,7 @@
         },
         {
           "id": "motor2",
-          "description": "Slider for main door",
+          "description": "Main door",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]
@@ -113,7 +113,7 @@
         },
         {
           "id": "motor2",
-          "description": "Slider for window curtain",
+          "description": "Window curtain",
           "value_type": "integer",
           "values": "0-100",
           "action": ["get", "set"]

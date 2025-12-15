@@ -62,7 +62,7 @@ def _format_actuator(item: Dict[str, Any], esp_id: int) -> str:
     # Special cases by type/description
     name_lower = desc.lower()
     def is_door_or_window() -> bool:
-        return ("door" in name_lower) or ("window" in name_lower) or ("slider" in name_lower)
+        return ("door" in name_lower) or ("window" in name_lower) or ("curtain" in name_lower)
 
     if val_type == "boolean":
         if "lock" in name_lower or "servo" in item.get("id","").lower():
@@ -267,11 +267,11 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
                 return f'{desc.title()} in "{room}" ' + ("has locked" if val else "has unlocked") + invalid
             return f'{desc.title()} in "{room}" ' + ("has turned on" if val else "has turned off") + invalid
 
-        # integer (%) — fans, sliders, pumps, etc.
+        # integer (%) — fans, curtains, pumps, etc.
         if vtype == "integer":
             pct = int(val)
             suffix = ""
-            if any(k in name_l for k in ("door", "window", "slider")):
+            if any(k in name_l for k in ("door", "window", "curtain")):
                 suffix = " (fully closed)" if pct == 0 else " (fully open)"
             return f'{desc.title()} in "{room}" set to {pct}%{suffix}{invalid}'
 
@@ -362,10 +362,10 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
             score += 2
         if num != -1 and _id_suffix(item.get("id", "")) == num:
             score += 2
-        # map fan->motor, door/window/slider->desc, lock->servo
+        # map fan->motor, door/window/curtain->desc, lock->servo
         if base in ("fan",) and idn.startswith("motor"):
             score += 1
-        if base in ("door", "window", "slider") and (("door" in descl) or ("window" in descl) or ("slider" in descl)):
+        if base in ("door", "window", "curtain") and (("door" in descl) or ("window" in descl) or ("curtain" in descl)):
             score += 1
         if base in ("lock", "servo") and (idn.startswith("servo") or "lock" in descl):
             score += 1

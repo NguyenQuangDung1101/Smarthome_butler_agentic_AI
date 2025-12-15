@@ -21,19 +21,19 @@
             "espID": 2,
             "actuator_id": "led1",
             "value": false,
-            "note": "Turn off lobby left light"
+            "note": "Turn off hallway left light"
           },
           {
             "espID": 2,
             "actuator_id": "led2",
             "value": false,
-            "note": "Turn off lobby right light"
+            "note": "Turn off hallway right light"
           },
           {
             "espID": 2,
             "actuator_id": "motor1",
             "value": 0,
-            "note": "Turn off lobby fan"
+            "note": "Turn off hallway fan"
           },
           {
             "espID": 2,
@@ -174,14 +174,14 @@
         },
         {
           "time": "06:45:00",
-          "description": "Prepare lobby for morning exit",
+          "description": "Prepare hallway for morning exit",
           "note": "Automatic execution",
           "appliances": [
             {
               "espID": 2,
               "actuator_id": "led1",
               "value": true,
-              "note": "Turn on lobby left light"
+              "note": "Turn on hallway left light"
             }
           ]
         },
@@ -250,13 +250,13 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": false,
-              "note": "Turn off lobby left light"
+              "note": "Turn off hallway left light"
             },
             {
               "espID": 2,
               "actuator_id": "led2",
               "value": false,
-              "note": "Turn off lobby right light"
+              "note": "Turn off hallway right light"
             },
             {
               "espID": 2,
@@ -317,7 +317,7 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": true,
-              "note": "Turn on lobby left light"
+              "note": "Turn on hallway left light"
             }
           ]
         },
@@ -336,7 +336,7 @@
               "espID": 2,
               "actuator_id": "led2",
               "value": true,
-              "note": "Turn on lobby right light"
+              "note": "Turn on hallway right light"
             },
             {
               "espID": 3,
@@ -424,7 +424,7 @@
               "espID": 2,
               "actuator_id": "motor2",
               "value": 0,
-              "note": "Close lobby door"
+              "note": "Close hallway door"
             }
           ]
         },
@@ -461,13 +461,13 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": false,
-              "note": "Turn off lobby left light"
+              "note": "Turn off hallway left light"
             },
             {
               "espID": 2,
               "actuator_id": "led2",
               "value": false,
-              "note": "Turn off lobby right light"
+              "note": "Turn off hallway right light"
             }
           ]
         }
@@ -494,19 +494,19 @@
             "espID": 2,
             "actuator_id": "led1",
             "value": false,
-            "note": "Turn off lobby left light"
+            "note": "Turn off hallway left light"
           },
           {
             "espID": 2,
             "actuator_id": "led2",
             "value": false,
-            "note": "Turn off lobby right light"
+            "note": "Turn off hallway right light"
           },
           {
             "espID": 2,
             "actuator_id": "motor1",
             "value": 0,
-            "note": "Turn off lobby fan"
+            "note": "Turn off hallway fan"
           },
           {
             "espID": 2,
@@ -679,7 +679,7 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": true,
-              "note": "Turn on lobby left light"
+              "note": "Turn on hallway left light"
             },
             {
               "espID": 3,
@@ -774,13 +774,13 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": true,
-              "note": "Turn on lobby left light"
+              "note": "Turn on hallway left light"
             },
             {
               "espID": 2,
               "actuator_id": "led2",
               "value": true,
-              "note": "Turn on lobby right light"
+              "note": "Turn on hallway right light"
             }
           ]
         },
@@ -887,7 +887,7 @@
               "espID": 2,
               "actuator_id": "motor2",
               "value": 0,
-              "note": "Close lobby door"
+              "note": "Close hallway door"
             }
           ]
         },
@@ -924,13 +924,13 @@
               "espID": 2,
               "actuator_id": "led1",
               "value": false,
-              "note": "Turn off lobby left light"
+              "note": "Turn off hallway left light"
             },
             {
               "espID": 2,
               "actuator_id": "led2",
               "value": false,
-              "note": "Turn off lobby right light"
+              "note": "Turn off hallway right light"
             }
           ]
         }

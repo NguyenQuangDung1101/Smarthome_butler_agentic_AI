@@ -17,7 +17,7 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 3 appliances =====
+// ===== Global state for espID = 3 appliances (Bedroom & Balcony) =====
 int espID = 3;
 
 // Actuators
@@ -25,7 +25,7 @@ bool led1_value   = false;   // Room light (boolean)
 bool led2_value   = false;   // Bed light (boolean)
 bool led3_value   = false;   // Balcony light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
-int  motor2_value = 0;      // Curtain slider 0–100 (%)
+int  motor2_value = 0;      // Curtain 0–100 (%)
 bool servo_value  = false;   // Lock (boolean)
 bool pump_value   = false;   // Pump (boolean)
 

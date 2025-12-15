@@ -17,7 +17,7 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 1 appliances =====
+// ===== Global state for espID = 1 appliances (Livingroom) =====
 int espID = 1;
 
 // Actuators
