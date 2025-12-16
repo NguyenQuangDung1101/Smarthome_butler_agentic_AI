@@ -12,15 +12,6 @@ from local_llm import Copilot
 # -------------- DATE, TIME, WEATHER TOOL ----------------
 # --------------------------------------------------------
 
-LOCATION_COORDS = {
-    "current": (10.7769, 106.7009), # hochiminh city
-    "ha noi": (21.0285, 105.8542),
-    "ho chi minh city": (10.7769, 106.7009),
-    "da nang": (16.0471, 108.2068),
-    "hai phong": (20.8449, 106.6881),
-    "hue": (16.4637, 107.5909),
-}
-
 def get_current_datetime():
     now = datetime.now()
     date_str = now.strftime('%Y-%m-%d')
@@ -61,15 +52,17 @@ WEATHER_CODES = {
     99: "Thunderstorm with hail (heavy)",
 }
 
-def get_hourly_forecast(place: str, date: str) -> str:
-    if place.lower() not in LOCATION_COORDS or place.lower() == "current":
+def get_hourly_forecast(current_location, latitude, longitude, date: str) -> str:
+    if not date:
+        return "Date parameter is required"
+    if current_location:
         latitude, longitude, city, country = get_current_location(True)
-        noti = ""
-        if place.lower() not in LOCATION_COORDS:
-            noti = f"Place '{place}' not found in LOCATION_COORDS mapping, return current location.\nCurrent location: {city}, {country}:\n"
+        noti = f"Get weather forecast for current location: {city}, {country}:\n"
+    elif latitude and longitude:
+        noti = f"Get weather forecast for specified coordinates: Latitude {latitude}, Longitude {longitude}:\n"
     else:
-        latitude, longitude = LOCATION_COORDS[place.lower()]
-        noti = ""
+        latitude, longitude, city, country = get_current_location(True)
+        noti = f"Longitude or latitude information are missing\nReturn current location: {city}, {country}:\n"
 
     forecast_url = (
         f"https://api.open-meteo.com/v1/forecast?"
@@ -184,7 +177,7 @@ def search_and_read_web_link(
 if __name__ == "__main__":
     # print(get_current_datetime())
     # print(get_current_location())
-    # print(get_hourly_forecast("ha noi", "2024-06-15"))
+    print(get_hourly_forecast(False, None, 108.2068, "2025-12-16"))
 
-    res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
-    print(res)
+    # res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
+    # print(res)

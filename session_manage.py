@@ -128,7 +128,7 @@ class SessionManager:
     #################################################################################################
     # gpt-oss:20b-cloud
     # models/gemini-2.5-flash-lite
-    def create_new_normal_session(self, model="gpt-oss:20b-cloud", context_text=None):
+    def create_new_normal_session(self, model="gpt-oss:120b-cloud", context_text=None):
         print("Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')

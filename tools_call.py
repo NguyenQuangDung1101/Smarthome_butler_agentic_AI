@@ -22,12 +22,14 @@ def tool_get_current_datetime(arguments: Dict[str, Any]) -> Dict[str, Any]:
         return {"content": [{"type": "text", "text": f"Error in get_current_datetime: {e}"}]}
 
 def tool_get_hourly_forecast(arguments: Dict[str, Any]) -> Dict[str, Any]:
-    place = arguments.get("place","")
+    current_location = arguments.get("current_location", False)
+    latitude = arguments.get("latitude", None)
+    longitude = arguments.get("longitude", None)
     date = arguments.get("date", "")
     if date == "":
         return "Can not get date from arguments"
     try:
-        text = get_hourly_forecast(place, date)
+        text = get_hourly_forecast(current_location, latitude, longitude, date)
         return {"content": [{"type": "text", "text": text}]}
     except Exception as e:
         return {"content": [{"type": "text", "text": f"Error in get_hourly_forecast: {e}"}]}

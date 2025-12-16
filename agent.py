@@ -236,7 +236,7 @@ class ToolCallingAgent:
 
         final = extract_final_answer(llm_out)
         if not any([appliance, calls, final]):
-            self._append_agent("Your previous output didn't include a valid <tool_call>, <appliance>, or <final_answer>. Please try again.")
+            self._append_agent("Your previous output didn't include a valid <tool_call>...</tool_call>, <appliance>...</appliance>, or <final_answer>...</final_answer>. Please try again.")
             return None
 
         if final is not None:
