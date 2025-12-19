@@ -2,14 +2,19 @@
 #include <ArduinoJson.h>
 #include "DHT.h"
 
+
+
+#define DHTTYPE DHT11 // sensor type DHT11
 // tem
 #define DHTPIN 4      // D4 (GPIO 4)
-#define DHTTYPE DHT11 // sensor type DHT11
-
 DHT dht(DHTPIN, DHTTYPE);
 
-#define LED_BUILTIN 2
+// PIR
+#define PIR_PIN 12
 
+
+
+#define LED_BUILTIN 2
 
 
 const char* ssid     = "Crack";
@@ -119,6 +124,8 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
+    int pir_state = digitalRead(PIR_PIN);
+    pir_value = (pir_state == HIGH);
     Serial.print("current value of pir: ");
     Serial.println(pir_value ? "true" : "false");
   } else {
@@ -201,6 +208,7 @@ void setup() {
 
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(PIR_PIN, INPUT);
   dht.begin();
 
   delay(1000);
@@ -218,9 +226,9 @@ void setup() {
   // signal connected
   for(int i=0; i < 5; i++){
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(300);
+    delay(200);
     digitalWrite(LED_BUILTIN, LOW);
-    delay(300);
+    delay(200);
   }
 
   Serial.println("\nWiFi connected.");

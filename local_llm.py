@@ -43,7 +43,7 @@ class Copilot:
               timeout=10000, retries=5, backoff=3):
 
         prompt = f"{system_prompt}\n\n{user_prompt}" if system_prompt else user_prompt
-        print("Prompt to send:\n", prompt)
+        # print("Prompt to send:\n", prompt)
 
 
         if "gemini" in self.model:

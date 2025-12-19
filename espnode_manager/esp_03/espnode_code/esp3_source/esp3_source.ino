@@ -2,14 +2,22 @@
 #include <ArduinoJson.h>
 #include "DHT.h"
 
+
+
+#define DHTTYPE DHT11 // sensor type DHT11
 // tem
 #define DHTPIN 4      // D4 (GPIO 4)
-#define DHTTYPE DHT11 // sensor type DHT11
-
 DHT dht(DHTPIN, DHTTYPE);
+// tem_out & mois
+#define DHTOUTPIN 14  // D14 (GPIO 14)
+DHT dht_out(DHTOUTPIN, DHTTYPE);
+
+// PIR
+#define PIR_PIN 12
+
+
 
 #define LED_BUILTIN 2
-
 
 
 const char* ssid     = "Crack";
@@ -220,6 +228,8 @@ void handle_pump(WiFiClient &client, const char* action, JsonVariant valueField)
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
+    int pir_state = digitalRead(PIR_PIN);
+    pir_value = (pir_state == HIGH);
     Serial.print("current value of pir: ");
     Serial.println(pir_value ? "true" : "false");
   } else {
@@ -248,6 +258,10 @@ void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) 
 
 void handle_tem_out(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
+    float t_out = dht_out.readTemperature();
+    if (!isnan(t_out)) {
+      tem_out_value = t_out;
+    }
     Serial.print("current value of tem_out: ");
     Serial.println(tem_out_value, 2);
   } else {
@@ -260,6 +274,10 @@ void handle_tem_out(WiFiClient &client, const char* action, JsonVariant valueFie
 
 void handle_mois(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
+    float h = dht_out.readHumidity();
+    if (!isnan(h)) {
+      mois_value = h;
+    }
     Serial.print("current value of mois: ");
     Serial.println(mois_value, 2);
   } else {
@@ -340,7 +358,9 @@ void setup() {
 
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(PIR_PIN, INPUT);
   dht.begin();
+  dht_out.begin();
 
   delay(1000);
 
@@ -357,9 +377,9 @@ void setup() {
   // signal connected
   for(int i=0; i < 5; i++){
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(300);
+    delay(200);
     digitalWrite(LED_BUILTIN, LOW);
-    delay(300);
+    delay(200);
   }
 
   Serial.println("\nWiFi connected.");
