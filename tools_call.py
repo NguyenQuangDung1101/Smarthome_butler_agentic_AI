@@ -5,7 +5,7 @@ import json
 import subprocess
 import platform
 from typing import Any, Dict
-from tools import get_current_datetime, get_hourly_forecast, get_current_location, search_and_read_web_link
+from tools import get_current_datetime, get_hourly_forecast, get_current_location, search_and_read_web_link, add_note, read_note, check_note, delete_note
 
 # ── LOAD TOOLS DEFINITION FROM JSON ──────────────────────────────────────
 TOOLS_JSON_PATH = os.path.join(os.path.dirname(__file__), "tool_list.json")
@@ -51,6 +51,40 @@ def tool_search_and_read_web_link(arguments: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {"content": [{"type": "text", "text": f"Error in search_and_read_web_link: {e}"}]}
 
+def tool_add_note(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    note_text = arguments.get("note_text", "")
+    dates = arguments.get("dates", [])
+    try:
+        text = add_note(note_text, dates)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in add_note: {e}"}]}
+
+def tool_read_note(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    date = arguments.get("date", None)
+    id = arguments.get("id", None)
+    try:
+        text = read_note(date, id)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in read_note: {e}"}]}
+
+def tool_check_note(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    date = arguments.get("date", "")
+    try:
+        text = check_note(date)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in check_note: {e}"}]}
+
+def tool_delete_note(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    id = arguments.get("id", "")
+    try:
+        text = delete_note(id)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in delete_note: {e}"}]}
+
 
 
 # ── TOOL DISPATCH MAP ────────────────────────────────────────────────────
@@ -59,6 +93,10 @@ TOOL_DISPATCH = {
     "get_hourly_forecast": tool_get_hourly_forecast,
     "get_current_location": tool_get_current_location,
     "search_and_read_web_link": tool_search_and_read_web_link,
+    "add_note": tool_add_note,
+    "read_note": tool_read_note,
+    "check_note": tool_check_note,
+    "delete_note": tool_delete_note,
 }
 
 # ── PUBLIC ENTRYPOINT (kept async signature) ─────────────────────────────

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, Optional
 from bs4 import BeautifulSoup
 import os
+import uuid
 from local_llm import Copilot
 
 # --------------------------------------------------------
@@ -179,15 +180,120 @@ def search_and_read_web_link(
 # -------------------- NOTING TOOL -----------------------
 # --------------------------------------------------------
 
+NOTE_STORAGE_PATH = Path(__file__).parent / "note_storage.json"
+
+def _load_notes() -> dict:
+    if not NOTE_STORAGE_PATH.exists() or NOTE_STORAGE_PATH.stat().st_size == 0:
+        return {}
+    with open(NOTE_STORAGE_PATH, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def check_today_note() -> str:
+    now = datetime.now().strftime('%Y-%m-%d')
+    notes = _load_notes()
+    if now not in notes or not notes[now]:
+        return None
+    return list(notes[now].values())
+
+def _save_notes(notes: dict) -> None:
+    with open(NOTE_STORAGE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(notes, f, indent=4, ensure_ascii=False)
 
 
+def add_note(note_text: str, dates: list) -> str:
+    notes = _load_notes()
+    note_id_list = []
+
+    
+    added_dates = []
+    for date in dates:
+        if date not in notes:
+            notes[date] = {}
+        note_id = uuid.uuid4().hex[:9]
+        note_id_list.append(note_id)
+        notes[date][note_id] = note_text
+        added_dates.append(date)
+    
+    _save_notes(notes)
+    return f"Note added successfully with ID: {note_id_list} to dates: {', '.join(added_dates)}"
+
+def read_note(date: str = None, id: str = None) -> str:
+    notes = _load_notes()
+    results = []
+    
+    if id:
+        found = False
+        for date_key, date_notes in notes.items():
+            if id in date_notes:
+                results.append(f"Note ID {id} (Date: {date_key}):\n{date_notes[id]}")
+                found = True
+                break
+        if not found:
+            results.append(f"Note with ID {id} not found.")
+    
+    if date:
+        if date not in notes:
+            results.append(f"No notes found for date {date}.")
+        else:
+            date_notes = notes[date]
+            if not date_notes:
+                results.append(f"No notes found for date {date}.")
+            else:
+                result = f"Notes for {date}:\n"
+                for note_id, note_text in date_notes.items():
+                    result += f"- ID {note_id}: {note_text}\n"
+                results.append(result)
+    
+    if not results:
+        return "Please provide either date or id parameter."
+    
+    return "\n\n".join(results)
+
+def check_note(date: str) -> str:
+    notes = _load_notes()
+    
+    if date not in notes:
+        return f"No notes for date {date}."
+    
+    count = len(notes[date])
+    if count == 0:
+        return f"No notes for date {date}."
+    
+    note_ids = list(notes[date].keys())
+    ids_list = "\n".join([f"- {note_id}" for note_id in note_ids])
+    
+    return f"{count} note(s) found for date {date}.\nNote IDs:\n{ids_list}"
+
+def delete_note(id: str) -> str:
+    notes = _load_notes()
+    
+    found = False
+    date_to_delete = None
+    
+    for date_key, date_notes in notes.items():
+        if id in date_notes:
+            del date_notes[id]
+            found = True
+            if len(date_notes) == 0:
+                date_to_delete = date_key
+            break
+    
+    if not found:
+        return f"Note with ID {id} not found."
+    
+    if date_to_delete:
+        del notes[date_to_delete]
+    
+    _save_notes(notes)
+    return f"Note with ID {id} deleted successfully."
 
 
 
 if __name__ == "__main__":
     # print(get_current_datetime())
     # print(get_current_location())
-    print(get_hourly_forecast(False, None, 108.2068, "2025-12-20"))
+    # print(get_hourly_forecast(False, None, 108.2068, "2025-12-20"))
+    print(check_today_note())
 
     # res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
     # print(res)

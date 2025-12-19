@@ -73,5 +73,79 @@
                 "read"
             ]
         }
+    },
+    {
+        "name": "add_note",
+        "description": "Add a note to one or multiple dates. The note will be stored with a unique UUID identifier and can be added to multiple dates at once.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "note_text": {
+                    "type": "string",
+                    "description": "The content of the note to be added."
+                },
+                "dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "List of dates in YYYY-MM-DD format to add this note to. The same note will be added to all specified dates. If add one date, provide a single-item list."
+                }
+            },
+            "required": [
+                "note_text",
+                "dates"
+            ]
+        }
+    },
+    {
+        "name": "read_note",
+        "description": "Read notes by date or by note ID. Can provide date to get all notes for that date, or provide ID to get a specific note, or provide both to get both results.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "Date in YYYY-MM-DD format to retrieve all notes for that date. Optional if id is provided."
+                },
+                "id": {
+                    "type": "string",
+                    "description": "Unique note ID (UUID) to retrieve a specific note. Optional if date is provided."
+                }
+            },
+            "required": []
+        }
+    },
+    {
+        "name": "check_note",
+        "description": "Check how many notes exist for a specific date and list their IDs.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "Date in YYYY-MM-DD format to check for notes."
+                }
+            },
+            "required": [
+                "date"
+            ]
+        }
+    },
+    {
+        "name": "delete_note",
+        "description": "Delete a note by its unique ID. If the date has no remaining notes after deletion, the date entry will also be removed from storage.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Unique note ID (UUID) to delete."
+                }
+            },
+            "required": [
+                "id"
+            ]
+        }
     }
 ]

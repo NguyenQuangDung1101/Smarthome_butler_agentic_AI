@@ -12,6 +12,7 @@ from local_llm import Copilot, load_system_prompt
 from appliance_util import execute_appliance
 from tools_call import call_tool as async_call_tool  # your async tool dispatcher
 from tools_call import TOOLS as TOOL_SPEC
+from tools import check_today_note
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Utilities
@@ -54,11 +55,19 @@ Available tools (schema):
 Rules:
 - Output ONLY either <tool_call>...</tool_call>, <appliance>...</appliance>  or <final_answer>...</final_answer> at each step.
 - Do NOT include extra commentary outside those tags.
+- You can call multiple tools in one response by outputting multiple <tool_call>...</tool_call>.
 - If a tool returns tabular data (CSV/text), read it and continue reasoning.
 - If house appliance execution return strange message, read it and continue reasoning.
 - If the prompt lacks necessary arguments or clarity, you can request the missing information explicitly by using <final_answer> to ask the user to clarify the missing details or provide the required arguments.
 """
     return f"{user_system_prompt}\n\n{control}".strip()
+
+def include_notes_to_prompt(base_prompt: str) -> str:
+    today_notes = check_today_note()
+    if not today_notes:
+        return base_prompt
+    note_section = "\n\n[TODAY NOTES] There are notes for today, please consider them when answering:\n"
+    return base_prompt + note_section + "\n".join(f"- {note}" for note in today_notes)
 
 async def call_tool_syncish(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
     return await async_call_tool(name, arguments)
@@ -313,6 +322,7 @@ class ToolCallingAgent:
 def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "http://localhost:11434") -> ToolCallingAgent:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
+    sp = include_notes_to_prompt(sp)
     return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=16)
 
 
