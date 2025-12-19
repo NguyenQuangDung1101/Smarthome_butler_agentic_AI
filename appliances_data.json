@@ -20,7 +20,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 50,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -90,7 +90,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 100,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -185,7 +185,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 100,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,

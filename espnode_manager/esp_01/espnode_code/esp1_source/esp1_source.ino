@@ -3,6 +3,14 @@
 #include "DHT.h"
 
 
+// motor1
+#define MOTOR_ENA_PIN 14
+#define MOTOR_IN1_PIN 27
+#define MOTOR_IN2_PIN 26
+const int MOTOR_LEDC_CHANNEL = 0;
+const int MOTOR_LEDC_FREQ = 20000; // 20 kHz
+const int MOTOR_LEDC_RESOLUTION = 8; // 8-bit (0-255)
+
 
 #define DHTTYPE DHT11 // sensor type DHT11
 // tem
@@ -113,13 +121,32 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
     Serial.print(motor1_value);
     Serial.print(", New value of: ");
     Serial.println(newValue);
+    // clamp 0-100
+    if (newValue < 0) newValue = 0;
+    if (newValue > 100) newValue = 100;
     motor1_value = newValue;
+    applyMotorSpeed(motor1_value);
   } else {
     Serial.println("Unknown action for motor1.");
   }
 
   // Send back the current value
   send_response(client, "actuator", "motor1", motor1_value);
+}
+
+// Apply speed in percent (0-100)
+void applyMotorSpeed(int percent) {
+  int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RESOLUTION) - 1);
+
+  if (percent == 0) {
+    ledcWrite(MOTOR_ENA_PIN, 0); // Use the PIN number here
+    digitalWrite(MOTOR_IN1_PIN, LOW);
+    digitalWrite(MOTOR_IN2_PIN, LOW);
+  } else {
+    digitalWrite(MOTOR_IN1_PIN, HIGH);
+    digitalWrite(MOTOR_IN2_PIN, LOW);
+    ledcWrite(MOTOR_ENA_PIN, duty); // Use the PIN number here
+  }
 }
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -206,6 +233,12 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
 void setup() {
   Serial.begin(115200);
 
+  // initialize motor1 pins and PWM (LEDC)
+  pinMode(MOTOR_IN1_PIN, OUTPUT);
+  pinMode(MOTOR_IN2_PIN, OUTPUT);
+  pinMode(MOTOR_ENA_PIN, OUTPUT);
+  ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RESOLUTION);  // configure LEDC PWM
+  applyMotorSpeed(motor1_value);  // ensure motor stopped initially
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIR_PIN, INPUT);
