@@ -68,7 +68,7 @@ def get_hourly_forecast(current_location, latitude, longitude, date: str) -> str
         f"https://api.open-meteo.com/v1/forecast?"
         f"latitude={latitude}&longitude={longitude}"
         f"&hourly=temperature_2m,relative_humidity_2m,windspeed_10m,weathercode,cloudcover"
-        f"&forecast_days=1&timezone=auto"
+        f"&forecast_days=7&timezone=auto"
     )
     forecast_response = requests.get(forecast_url)
     if forecast_response.status_code != 200:
@@ -174,10 +174,20 @@ def search_and_read_web_link(
     return f"{sum_append_link}Sumary:\n{summary_search_results}"
 
 
+
+# --------------------------------------------------------
+# -------------------- NOTING TOOL -----------------------
+# --------------------------------------------------------
+
+
+
+
+
+
 if __name__ == "__main__":
     # print(get_current_datetime())
     # print(get_current_location())
-    print(get_hourly_forecast(False, None, 108.2068, "2025-12-16"))
+    print(get_hourly_forecast(False, None, 108.2068, "2025-12-20"))
 
     # res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
     # print(res)
