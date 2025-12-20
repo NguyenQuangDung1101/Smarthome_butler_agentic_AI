@@ -30,14 +30,12 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 2 appliances (Hallway) =====
-int espID = 2;
+// ===== Global state for espID = 1 appliances (Livingroom) =====
+int espID = 1;
 
 // Actuators
-bool led1_value   = false;   // Left light (boolean)
-bool led2_value   = false;   // Right light (boolean)
+bool led1_value   = false;   // Light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
-int  motor2_value = 0;      // Main door 0–100 (%)
 
 // Sensors
 bool  pir_value   = false;  // PIR sensor (boolean)
@@ -89,6 +87,7 @@ void send_response(WiFiClient &client,
   client.print('\n');
 }
 
+
 // ========================================================================================================
 // ======================================== Per-appliance handlers ========================================
 // ========================================================================================================
@@ -110,25 +109,6 @@ void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField)
 
   // Send back the current value
   send_response(client, "actuator", "led1", led1_value);
-}
-
-void handle_led2(WiFiClient &client, const char* action, JsonVariant valueField) {
-  if (strcmp(action, "get") == 0) {
-    Serial.print("current value of led2: ");
-    Serial.println(led2_value ? "true" : "false");
-  } else if (strcmp(action, "set") == 0) {
-    bool newValue = valueField.isNull() ? led2_value : valueField.as<bool>();
-    Serial.print("Old value of led2: ");
-    Serial.print(led2_value ? "true" : "false");
-    Serial.print(", New value of: ");
-    Serial.println(newValue ? "true" : "false");
-    led2_value = newValue;
-  } else {
-    Serial.println("Unknown action for led2.");
-  }
-
-  // Send back the current value
-  send_response(client, "actuator", "led2", led2_value);
 }
 
 void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -169,25 +149,6 @@ void applyMotorSpeed(int percent) {
   }
 }
 
-void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueField) {
-  if (strcmp(action, "get") == 0) {
-    Serial.print("current value of motor2: ");
-    Serial.println(motor2_value);
-  } else if (strcmp(action, "set") == 0) {
-    int newValue = valueField.isNull() ? motor2_value : valueField.as<int>();
-    Serial.print("Old value of motor2: ");
-    Serial.print(motor2_value);
-    Serial.print(", New value of: ");
-    Serial.println(newValue);
-    motor2_value = newValue;
-  } else {
-    Serial.println("Unknown action for motor2.");
-  }
-
-  // Send back the current value
-  send_response(client, "actuator", "motor2", motor2_value);
-}
-
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     int pir_state = digitalRead(PIR_PIN);
@@ -225,7 +186,6 @@ void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) 
   send_response(client, "sensor", "tem", tem_value);
 }
 
-
 // ========================================================================================================
 // ========================================================================================================
 // ========================================================================================================
@@ -259,12 +219,8 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
   if (strcmp(device_type, "actuator") == 0) {
     if (strcmp(device_name, "led1") == 0) {
       handle_led1(client, action, valueField);
-    } else if (strcmp(device_name, "led2") == 0) {
-      handle_led2(client, action, valueField);
     } else if (strcmp(device_name, "motor1") == 0) {
       handle_motor1(client, action, valueField);
-    } else if (strcmp(device_name, "motor2") == 0) {
-      handle_motor2(client, action, valueField);
     } else {
       Serial.println("Unknown actuator device_name.");
     }
@@ -309,9 +265,9 @@ void setup() {
 
   // signal connected
   for(int i=0; i < 5; i++){
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(200);
     digitalWrite(LED_BUILTIN, LOW);
+    delay(200);
+    digitalWrite(LED_BUILTIN, HIGH);
     delay(200);
   }
 
