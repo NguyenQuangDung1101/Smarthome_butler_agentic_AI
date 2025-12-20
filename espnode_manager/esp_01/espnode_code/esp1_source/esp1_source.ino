@@ -166,6 +166,13 @@ void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) 
 void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     float t = dht.readTemperature();
+    c = 0
+    while (t <= 1.0 || t >= -1.0) {
+      delay(200);
+      t = dht.readTemperature();
+      c++;
+      if (c > 2) break;
+    }
     if (!isnan(t)) {
       tem_value = t;
     }
