@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include "DHT.h"
+#include <ESP32Servo.h>
 
 
 // motor1
@@ -11,11 +12,17 @@ const int MOTOR_LEDC_CHANNEL = 0;
 const int MOTOR_LEDC_FREQ = 20000; // 20 kHz
 const int MOTOR_LEDC_RESOLUTION = 8; // 8-bit (0-255)
 
+// Servo (Lock)
+#define SERVO_PIN 25 // Pin 25 as requested
+Servo lockServo;     // Servo object
 
 #define DHTTYPE DHT11 // sensor type DHT11
 // tem
 #define DHTPIN 4      // D4 (GPIO 4)
 DHT dht(DHTPIN, DHTTYPE);
+// tem_out & mois
+#define DHTOUTPIN 13  // D13 (GPIO 13)
+DHT dht_out(DHTOUTPIN, DHTTYPE);
 
 // PIR
 #define PIR_PIN 12
@@ -30,16 +37,23 @@ const char* password = "20062004";
 
 WiFiServer server(5000);
 
-// ===== Global state for espID = 1 appliances (Livingroom) =====
-int espID = 1;
+// ===== Global state for espID = 3 appliances (Bedroom & Balcony) =====
+int espID = 3;
 
 // Actuators
-bool led1_value   = false;   // Light (boolean)
+bool led1_value   = false;   // Room light (boolean)
+bool led2_value   = false;   // Bed light (boolean)
+bool led3_value   = false;   // Balcony light (boolean)
 int  motor1_value = 0;      // Fan 0–100 (%)
+int  motor2_value = 0;      // Curtain 0–100 (%)
+bool servo_value  = false;   // Lock (boolean)
+bool pump_value   = false;   // Pump (boolean)
 
 // Sensors
 bool  pir_value   = false;  // PIR sensor (boolean)
 float tem_value   = 25.0;   // Temperature (°C)
+float tem_out_value = 25.0; // Outside temperature (°C)
+float mois_value    = 50.0;  // Moisture (float)
 
 // ===== Helper: send JSON response back to Python =====
 void send_response(WiFiClient &client,
@@ -87,7 +101,6 @@ void send_response(WiFiClient &client,
   client.print('\n');
 }
 
-
 // ========================================================================================================
 // ======================================== Per-appliance handlers ========================================
 // ========================================================================================================
@@ -109,6 +122,44 @@ void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField)
 
   // Send back the current value
   send_response(client, "actuator", "led1", led1_value);
+}
+
+void handle_led2(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of led2: ");
+    Serial.println(led2_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? led2_value : valueField.as<bool>();
+    Serial.print("Old value of led2: ");
+    Serial.print(led2_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    led2_value = newValue;
+  } else {
+    Serial.println("Unknown action for led2.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "led2", led2_value);
+}
+
+void handle_led3(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of led3: ");
+    Serial.println(led3_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? led3_value : valueField.as<bool>();
+    Serial.print("Old value of led3: ");
+    Serial.print(led3_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    led3_value = newValue;
+  } else {
+    Serial.println("Unknown action for led3.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "led3", led3_value);
 }
 
 void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -136,6 +187,7 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
 
 // Apply speed in percent (0-100)
 void applyMotorSpeed(int percent) {
+  Serial.println(percent);
   int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RESOLUTION) - 1);
 
   if (percent == 0) {
@@ -147,6 +199,68 @@ void applyMotorSpeed(int percent) {
     digitalWrite(MOTOR_IN2_PIN, LOW);
     ledcWrite(MOTOR_ENA_PIN, duty); // Use the PIN number here
   }
+}
+
+void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of motor2: ");
+    Serial.println(motor2_value);
+  } else if (strcmp(action, "set") == 0) {
+    int newValue = valueField.isNull() ? motor2_value : valueField.as<int>();
+    Serial.print("Old value of motor2: ");
+    Serial.print(motor2_value);
+    Serial.print(", New value of: ");
+    Serial.println(newValue);
+    motor2_value = newValue;
+  } else {
+    Serial.println("Unknown action for motor2.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "motor2", motor2_value);
+}
+
+void handle_servo(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of servo: ");
+    Serial.println(servo_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? servo_value : valueField.as<bool>();
+    Serial.print("Old value of servo: ");
+    Serial.print(servo_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    servo_value = newValue;
+    if (servo_value) {
+      lockServo.write(90);
+    } else {
+      lockServo.write(0);
+    }
+  } else {
+    Serial.println("Unknown action for servo.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "servo", servo_value);
+}
+
+void handle_pump(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    Serial.print("current value of pump: ");
+    Serial.println(pump_value ? "true" : "false");
+  } else if (strcmp(action, "set") == 0) {
+    bool newValue = valueField.isNull() ? pump_value : valueField.as<bool>();
+    Serial.print("Old value of pump: ");
+    Serial.print(pump_value ? "true" : "false");
+    Serial.print(", New value of: ");
+    Serial.println(newValue ? "true" : "false");
+    pump_value = newValue;
+  } else {
+    Serial.println("Unknown action for pump.");
+  }
+
+  // Send back the current value
+  send_response(client, "actuator", "pump", pump_value);
 }
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -166,7 +280,7 @@ void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) 
 void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) {
   if (strcmp(action, "get") == 0) {
     float t = dht.readTemperature();
-    c = 0
+    int c = 0;
     while (t <= 1.0 || t >= -1.0) {
       delay(200);
       t = dht.readTemperature();
@@ -184,6 +298,45 @@ void handle_tem(WiFiClient &client, const char* action, JsonVariant valueField) 
 
   // Send back the current value
   send_response(client, "sensor", "tem", tem_value);
+}
+
+void handle_tem_out(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    float t_out = dht_out.readTemperature();
+    int c = 0;
+    while (t_out <= 1.0 || t_out >= -1.0) {
+      delay(200);
+      t_out = dht_out.readTemperature();
+      c++;
+      if (c > 2) break;
+    }
+    if (!isnan(t_out)) {
+      tem_out_value = t_out;
+    }
+    Serial.print("current value of tem_out: ");
+    Serial.println(tem_out_value, 2);
+  } else {
+    Serial.println("Unknown action for tem_out.");
+  }
+
+  // Send back the current value
+  send_response(client, "sensor", "tem_out", tem_out_value);
+}
+
+void handle_mois(WiFiClient &client, const char* action, JsonVariant valueField) {
+  if (strcmp(action, "get") == 0) {
+    float h = dht_out.readHumidity();
+    if (!isnan(h)) {
+      mois_value = h;
+    }
+    Serial.print("current value of mois: ");
+    Serial.println(mois_value, 2);
+  } else {
+    Serial.println("Unknown action for mois.");
+  }
+
+  // Send back the current value
+  send_response(client, "sensor", "mois", mois_value);
 }
 
 // ========================================================================================================
@@ -219,8 +372,18 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
   if (strcmp(device_type, "actuator") == 0) {
     if (strcmp(device_name, "led1") == 0) {
       handle_led1(client, action, valueField);
+    } else if (strcmp(device_name, "led2") == 0) {
+      handle_led2(client, action, valueField);
+    } else if (strcmp(device_name, "led3") == 0) {
+      handle_led3(client, action, valueField);
     } else if (strcmp(device_name, "motor1") == 0) {
       handle_motor1(client, action, valueField);
+    } else if (strcmp(device_name, "motor2") == 0) {
+      handle_motor2(client, action, valueField);
+    } else if (strcmp(device_name, "servo") == 0) {
+      handle_servo(client, action, valueField);
+    } else if (strcmp(device_name, "pump") == 0) {
+      handle_pump(client, action, valueField);
     } else {
       Serial.println("Unknown actuator device_name.");
     }
@@ -229,6 +392,10 @@ void handleCommand(WiFiClient &client, JsonObject obj) {
       handle_pir(client, action, valueField);
     } else if (strcmp(device_name, "tem") == 0) {
       handle_tem(client, action, valueField);
+    } else if (strcmp(device_name, "tem_out") == 0) {
+      handle_tem_out(client, action, valueField);
+    } else if (strcmp(device_name, "mois") == 0) {
+      handle_mois(client, action, valueField);
     } else {
       Serial.println("Unknown sensor device_name.");
     }
@@ -246,10 +413,14 @@ void setup() {
   pinMode(MOTOR_ENA_PIN, OUTPUT);
   ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RESOLUTION);  // configure LEDC PWM
   applyMotorSpeed(motor1_value);  // ensure motor stopped initially
+  // Initialize Servo
+  lockServo.attach(SERVO_PIN);
+  if (servo_value) lockServo.write(90); else lockServo.write(0);
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIR_PIN, INPUT);
   dht.begin();
+  dht_out.begin();
 
   delay(1000);
 

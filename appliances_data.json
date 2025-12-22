@@ -209,7 +209,7 @@
           "id": "servo",
           "description": "Lock",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
