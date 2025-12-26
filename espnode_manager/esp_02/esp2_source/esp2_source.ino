@@ -4,13 +4,24 @@
 
 
 // motor1
-#define MOTOR_ENA_PIN 14
-#define MOTOR_IN1_PIN 27
-#define MOTOR_IN2_PIN 26
-const int MOTOR_LEDC_CHANNEL = 0;
-const int MOTOR_LEDC_FREQ = 20000; // 20 kHz
-const int MOTOR_LEDC_RESOLUTION = 8; // 8-bit (0-255)
+#define MOTOR_ENA_PIN 13
+#define MOTOR_IN1_PIN 14
+#define MOTOR_IN2_PIN 17
+const int MOTOR_LEDC_FREQ = 20000;      // 20 kHz
+const int MOTOR_LEDC_RES  = 8;          // 8-bit (0-255)
 
+// motor2 stepper ULN2003
+const int STEPPER_IN4_PIN = 26; // step 4
+const int STEPPER_IN3_PIN = 25; // step 3
+const int STEPPER_IN2_PIN = 33; // step 2
+// NOTE: GPIO35 is input-only on many ESP32 boards and cannot be used to drive coils.
+const int STEPPER_IN1_PIN = 32; // step 1
+// Stepper configuration: typical 28BYJ-48 has 4096 half-steps per 1 rev with internal gearing.
+const int STEPPER_STEPS_PER_REV = 2048; // half-step count per one rotation for 28BYJ-48 (commonly 2048)
+const int MOTOR2_ROTATIONS = 4; // 4 rotations correspond to 0..100
+const long MOTOR2_TOTAL_STEPS = (long)STEPPER_STEPS_PER_REV * MOTOR2_ROTATIONS;
+// Track absolute step position (0..MOTOR2_TOTAL_STEPS-1)
+long motor2_steps = 0;
 
 #define DHTTYPE DHT11 // sensor type DHT11
 // tem
@@ -156,17 +167,62 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
 
 // Apply speed in percent (0-100)
 void applyMotorSpeed(int percent) {
-  int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RESOLUTION) - 1);
+  percent = constrain(percent, 0, 100);
+  int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RES) - 1);
 
   if (percent == 0) {
-    ledcWrite(MOTOR_ENA_PIN, 0); // Use the PIN number here
+    ledcWrite(MOTOR_ENA_PIN, 0);      // pin-based in core 3.x
     digitalWrite(MOTOR_IN1_PIN, LOW);
     digitalWrite(MOTOR_IN2_PIN, LOW);
   } else {
     digitalWrite(MOTOR_IN1_PIN, HIGH);
     digitalWrite(MOTOR_IN2_PIN, LOW);
-    ledcWrite(MOTOR_ENA_PIN, duty); // Use the PIN number here
+    ledcWrite(MOTOR_ENA_PIN, duty);   // pin-based in core 3.x
   }
+}
+
+// ------------------ Stepper helper functions ------------------
+// ULN2003 half-step sequence (4 coils): sequence of 8 half-steps
+const int HALFSTEP_SEQUENCE[8][4] = {
+  {1,0,0,0},
+  {1,1,0,0},
+  {0,1,0,0},
+  {0,1,1,0},
+  {0,0,1,0},
+  {0,0,1,1},
+  {0,0,0,1},
+  {1,0,0,1}
+};
+
+// Write coil outputs for a given half-step index (0..7)
+void stepperWriteCoils(int halfstep) {
+  int s = halfstep & 0x7;
+  digitalWrite(STEPPER_IN1_PIN, HALFSTEP_SEQUENCE[s][0]);
+  digitalWrite(STEPPER_IN2_PIN, HALFSTEP_SEQUENCE[s][1]);
+  digitalWrite(STEPPER_IN3_PIN, HALFSTEP_SEQUENCE[s][2]);
+  digitalWrite(STEPPER_IN4_PIN, HALFSTEP_SEQUENCE[s][3]);
+}
+
+// Move by `steps` half-steps; positive = clockwise, negative = anticlockwise
+void stepperMoveSteps(long steps) {
+  int direction = (steps > 0) ? 1 : -1;
+  long remaining = abs(steps);
+  // current half-step position derived from motor2_steps
+  long pos = motor2_steps % 8; // base on absolute position mod 8
+  if (pos < 0) pos += 8;
+
+  while (remaining > 0) {
+    pos = (pos + direction + 8) % 8;
+    stepperWriteCoils(pos);
+    delay(5); // small delay between half-steps (adjust for speed)
+    remaining--;
+  }
+
+  // turn off coils after movement
+  digitalWrite(STEPPER_IN1_PIN, LOW);
+  digitalWrite(STEPPER_IN2_PIN, LOW);
+  digitalWrite(STEPPER_IN3_PIN, LOW);
+  digitalWrite(STEPPER_IN4_PIN, LOW);
 }
 
 void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -175,10 +231,25 @@ void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueFiel
     Serial.println(motor2_value);
   } else if (strcmp(action, "set") == 0) {
     int newValue = valueField.isNull() ? motor2_value : valueField.as<int>();
+    if (newValue < 0) newValue = 0;
+    if (newValue > 100) newValue = 100;
+
     Serial.print("Old value of motor2: ");
     Serial.print(motor2_value);
     Serial.print(", New value of: ");
     Serial.println(newValue);
+
+    // Map 0..100 -> 0..MOTOR2_TOTAL_STEPS
+    long targetSteps = (long)newValue * MOTOR2_TOTAL_STEPS / 100;
+    long delta = targetSteps - motor2_steps;
+
+    // Choose shortest path? The user requested: 100 mean fully open (turn clockwise 4 round from the start),
+    // 0 is fully close (turn anticlockwise 4 round). We'll move directly by delta (can be positive or negative).
+    if (delta != 0) {
+      stepperMoveSteps(delta);
+      motor2_steps = targetSteps;
+    }
+
     motor2_value = newValue;
   } else {
     Serial.println("Unknown action for motor2.");
@@ -287,13 +358,22 @@ void setup() {
   // initialize motor1 pins and PWM (LEDC)
   pinMode(MOTOR_IN1_PIN, OUTPUT);
   pinMode(MOTOR_IN2_PIN, OUTPUT);
-  pinMode(MOTOR_ENA_PIN, OUTPUT);
-  ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RESOLUTION);  // configure LEDC PWM
+  ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RES);  // configure LEDC PWM
   applyMotorSpeed(motor1_value);  // ensure motor stopped initially
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIR_PIN, INPUT);
   dht.begin();
+
+  // init stepper pins for motor2 (ULN2003)
+  pinMode(STEPPER_IN1_PIN, OUTPUT);
+  pinMode(STEPPER_IN2_PIN, OUTPUT);
+  pinMode(STEPPER_IN3_PIN, OUTPUT);
+  pinMode(STEPPER_IN4_PIN, OUTPUT);
+  digitalWrite(STEPPER_IN1_PIN, LOW);
+  digitalWrite(STEPPER_IN2_PIN, LOW);
+  digitalWrite(STEPPER_IN3_PIN, LOW);
+  digitalWrite(STEPPER_IN4_PIN, LOW);
 
   delay(1000);
 

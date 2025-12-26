@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <ArduinoJson.h>
 #include "DHT.h"
+#include <Arduino.h>
 #include <ESP32Servo.h>
 
 
@@ -8,12 +9,11 @@
 #define MOTOR_ENA_PIN 14
 #define MOTOR_IN1_PIN 27
 #define MOTOR_IN2_PIN 26
-const int MOTOR_LEDC_CHANNEL = 0;
-const int MOTOR_LEDC_FREQ = 20000; // 20 kHz
-const int MOTOR_LEDC_RESOLUTION = 8; // 8-bit (0-255)
+const int MOTOR_LEDC_FREQ = 20000;      // 20 kHz
+const int MOTOR_LEDC_RES  = 8;          // 8-bit (0-255)
 
 // Servo (Lock)
-#define SERVO_PIN 25 // Pin 25 as requested
+#define SERVO_PIN 18 // Pin 18 as requested
 Servo lockServo;     // Servo object
 
 #define DHTTYPE DHT11 // sensor type DHT11
@@ -187,17 +187,17 @@ void handle_motor1(WiFiClient &client, const char* action, JsonVariant valueFiel
 
 // Apply speed in percent (0-100)
 void applyMotorSpeed(int percent) {
-  Serial.println(percent);
-  int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RESOLUTION) - 1);
+  percent = constrain(percent, 0, 100);
+  int duty = map(percent, 0, 100, 0, (1 << MOTOR_LEDC_RES) - 1);
 
   if (percent == 0) {
-    ledcWrite(MOTOR_ENA_PIN, 0); // Use the PIN number here
+    ledcWrite(MOTOR_ENA_PIN, 0);      // pin-based in core 3.x
     digitalWrite(MOTOR_IN1_PIN, LOW);
     digitalWrite(MOTOR_IN2_PIN, LOW);
   } else {
     digitalWrite(MOTOR_IN1_PIN, HIGH);
     digitalWrite(MOTOR_IN2_PIN, LOW);
-    ledcWrite(MOTOR_ENA_PIN, duty); // Use the PIN number here
+    ledcWrite(MOTOR_ENA_PIN, duty);   // pin-based in core 3.x
   }
 }
 
@@ -410,12 +410,17 @@ void setup() {
   // initialize motor1 pins and PWM (LEDC)
   pinMode(MOTOR_IN1_PIN, OUTPUT);
   pinMode(MOTOR_IN2_PIN, OUTPUT);
-  pinMode(MOTOR_ENA_PIN, OUTPUT);
-  ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RESOLUTION);  // configure LEDC PWM
+  ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RES);  // configure LEDC PWM
   applyMotorSpeed(motor1_value);  // ensure motor stopped initially
   // Initialize Servo
-  lockServo.attach(SERVO_PIN);
-  if (servo_value) lockServo.write(90); else lockServo.write(0);
+  ESP32PWM::allocateTimer(1);   // keep timer 1 for servo (0-3 available)
+  lockServo.setPeriodHertz(50);
+  lockServo.attach(SERVO_PIN, 500, 2400);
+  if (servo_value) {
+    lockServo.write(90);
+  }else {
+    lockServo.write(0);
+  }
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIR_PIN, INPUT);
