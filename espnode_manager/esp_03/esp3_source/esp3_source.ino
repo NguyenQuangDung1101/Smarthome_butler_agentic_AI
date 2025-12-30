@@ -12,8 +12,12 @@
 const int MOTOR_LEDC_FREQ = 20000;      // 20 kHz
 const int MOTOR_LEDC_RES  = 8;          // 8-bit (0-255)
 
+// motor2 (window)
+#define WIN_PIN 19 // Left
+Servo windowMotor;     // Servo object
+
 // Servo (Lock)
-#define SERVO_PIN 18 // Pin 18 as requested
+#define SERVO_PIN 18
 Servo lockServo;     // Servo object
 
 #define DHTTYPE DHT11 // sensor type DHT11
@@ -212,6 +216,14 @@ void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueFiel
     Serial.print(", New value of: ");
     Serial.println(newValue);
     motor2_value = newValue;
+    if (motor2_value <= 0) {
+      windowMotor.write(0);
+    } else if (motor2_value >= 100) {
+      windowMotor.write(180);
+    } else {
+      int angle = map(motor2_value, 0, 100, 0, 180);
+      windowMotor.write(angle);
+    }
   } else {
     Serial.println("Unknown action for motor2.");
   }
@@ -232,9 +244,9 @@ void handle_servo(WiFiClient &client, const char* action, JsonVariant valueField
     Serial.println(newValue ? "true" : "false");
     servo_value = newValue;
     if (servo_value) {
-      lockServo.write(90);
+      lockServo.write(180);
     } else {
-      lockServo.write(0);
+      lockServo.write(90);
     }
   } else {
     Serial.println("Unknown action for servo.");
@@ -417,9 +429,20 @@ void setup() {
   lockServo.setPeriodHertz(50);
   lockServo.attach(SERVO_PIN, 500, 2400);
   if (servo_value) {
-    lockServo.write(90);
+    lockServo.write(180);
   }else {
-    lockServo.write(0);
+    lockServo.write(90);
+  }
+  ESP32PWM::allocateTimer(2);
+  windowMotor.setPeriodHertz(50);
+  windowMotor.attach(WIN_PIN, 500, 2400);
+  if (motor2_value <= 0) {
+    windowMotor.write(0);
+  } else if (motor2_value >= 100) {
+    windowMotor.write(180);
+  } else {
+    int angle = map(motor2_value, 0, 100, 0, 180);
+    windowMotor.write(angle);
   }
   // init pins and sensors
   pinMode(LED_BUILTIN, OUTPUT);
