@@ -219,9 +219,9 @@ void handle_motor2(WiFiClient &client, const char* action, JsonVariant valueFiel
     if (motor2_value <= 0) {
       windowMotor.write(0);
     } else if (motor2_value >= 100) {
-      windowMotor.write(180);
+      windowMotor.write(90);
     } else {
-      int angle = map(motor2_value, 0, 100, 0, 180);
+      int angle = map(motor2_value, 0, 100, 0, 90);
       windowMotor.write(angle);
     }
   } else {
@@ -244,9 +244,9 @@ void handle_servo(WiFiClient &client, const char* action, JsonVariant valueField
     Serial.println(newValue ? "true" : "false");
     servo_value = newValue;
     if (servo_value) {
-      lockServo.write(180);
-    } else {
       lockServo.write(90);
+    } else {
+      lockServo.write(180);
     }
   } else {
     Serial.println("Unknown action for servo.");
@@ -429,9 +429,9 @@ void setup() {
   lockServo.setPeriodHertz(50);
   lockServo.attach(SERVO_PIN, 500, 2400);
   if (servo_value) {
-    lockServo.write(180);
-  }else {
     lockServo.write(90);
+  }else {
+    lockServo.write(180);
   }
   ESP32PWM::allocateTimer(2);
   windowMotor.setPeriodHertz(50);
@@ -439,9 +439,9 @@ void setup() {
   if (motor2_value <= 0) {
     windowMotor.write(0);
   } else if (motor2_value >= 100) {
-    windowMotor.write(180);
+    windowMotor.write(90);
   } else {
-    int angle = map(motor2_value, 0, 100, 0, 180);
+    int angle = map(motor2_value, 0, 100, 0, 90);
     windowMotor.write(angle);
   }
   // init pins and sensors

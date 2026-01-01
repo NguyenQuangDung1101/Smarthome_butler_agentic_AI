@@ -197,7 +197,7 @@
           "id": "motor2",
           "description": "Window curtain",
           "value_type": "integer",
-          "value": 0,
+          "value": 100,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -209,7 +209,7 @@
           "id": "servo",
           "description": "Lock",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
