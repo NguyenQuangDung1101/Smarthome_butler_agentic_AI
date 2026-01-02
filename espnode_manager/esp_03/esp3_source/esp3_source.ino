@@ -12,6 +12,11 @@
 const int MOTOR_LEDC_FREQ = 20000;      // 20 kHz
 const int MOTOR_LEDC_RES  = 8;          // 8-bit (0-255)
 
+// pump
+#define PUMP_IN3_PIN 25
+#define PUMP_IN4_PIN 33
+#define PUMP_ENB_PIN 32
+
 // motor2 (window)
 #define WIN_PIN 19 // Left
 Servo windowMotor;     // Servo object
@@ -267,12 +272,27 @@ void handle_pump(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     pump_value = newValue;
+    applyPump(pump_value);
   } else {
     Serial.println("Unknown action for pump.");
   }
 
   // Send back the current value
   send_response(client, "actuator", "pump", pump_value);
+}
+
+void applyPump(bool on) {
+  int duty_on = (1 << MOTOR_LEDC_RES) - 1; // 255 if 8-bit
+
+  if (!on) {
+    ledcWrite(PUMP_ENB_PIN, 0);      // pin-based in core 3.x
+    digitalWrite(PUMP_IN3_PIN, LOW);
+    digitalWrite(PUMP_IN4_PIN, LOW);
+  } else {
+    digitalWrite(PUMP_IN3_PIN, HIGH);
+    digitalWrite(PUMP_IN4_PIN, LOW);
+    ledcWrite(PUMP_ENB_PIN, duty_on);
+  }
 }
 
 void handle_pir(WiFiClient &client, const char* action, JsonVariant valueField) {
@@ -424,6 +444,11 @@ void setup() {
   pinMode(MOTOR_IN2_PIN, OUTPUT);
   ledcAttach(MOTOR_ENA_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RES);  // configure LEDC PWM
   applyMotorSpeed(motor1_value);  // ensure motor stopped initially
+  //pump
+  pinMode(PUMP_IN3_PIN, OUTPUT);
+  pinMode(PUMP_IN4_PIN, OUTPUT);
+  ledcAttach(PUMP_ENB_PIN, MOTOR_LEDC_FREQ, MOTOR_LEDC_RES);
+  applyPump(pump_value);
   // Initialize Servo
   ESP32PWM::allocateTimer(1);   // keep timer 1 for servo (0-3 available)
   lockServo.setPeriodHertz(50);
