@@ -18,7 +18,7 @@ const int STEPPER_IN2_PIN = 33; // step 2
 const int STEPPER_IN1_PIN = 32; // step 1
 // Stepper configuration: typical 28BYJ-48 has 4096 half-steps per 1 rev with internal gearing.
 const int STEPPER_STEPS_PER_REV = 2048; // half-step count per one rotation for 28BYJ-48 (commonly 2048)
-const int MOTOR2_ROTATIONS = 4; // 4 rotations correspond to 0..100
+const int MOTOR2_ROTATIONS = 2.5; // 4 rotations correspond to 0..100
 const long MOTOR2_TOTAL_STEPS = (long)STEPPER_STEPS_PER_REV * MOTOR2_ROTATIONS;
 // Track absolute step position (0..MOTOR2_TOTAL_STEPS-1)
 long motor2_steps = 0;
@@ -205,7 +205,7 @@ void stepperWriteCoils(int halfstep) {
 
 // Move by `steps` half-steps; positive = clockwise, negative = anticlockwise
 void stepperMoveSteps(long steps) {
-  int direction = (steps > 0) ? 1 : -1;
+  int direction = (steps > 0) ? -1 : 1;
   long remaining = abs(steps);
   // current half-step position derived from motor2_steps
   long pos = motor2_steps % 8; // base on absolute position mod 8
@@ -214,7 +214,7 @@ void stepperMoveSteps(long steps) {
   while (remaining > 0) {
     pos = (pos + direction + 8) % 8;
     stepperWriteCoils(pos);
-    delay(5); // small delay between half-steps (adjust for speed)
+    delay(4); // small delay between half-steps (adjust for speed)
     remaining--;
   }
 
