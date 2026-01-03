@@ -6,7 +6,7 @@
 // motor1
 #define MOTOR_ENA_PIN 13
 #define MOTOR_IN1_PIN 14
-#define MOTOR_IN2_PIN 17
+#define MOTOR_IN2_PIN 27
 const int MOTOR_LEDC_FREQ = 20000;      // 20 kHz
 const int MOTOR_LEDC_RES  = 8;          // 8-bit (0-255)
 
