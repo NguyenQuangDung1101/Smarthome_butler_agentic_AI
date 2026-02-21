@@ -2,12 +2,16 @@ import json
 import socket
 
 # ESP_IP, ESP_PORT: adjust as needed
+# esp_id_port_map = [
+#     ("192.168.69.230",5000),  # ESP ID 1
+#     ("192.168.69.165",5000),  # ESP ID 2
+#     ("192.168.69.157",5000),  # ESP ID 3
+# ]
 esp_id_port_map = [
-    ("192.168.69.230",5000),  # ESP ID 1
-    ("192.168.69.165",5000),  # ESP ID 2
-    ("192.168.69.157",5000),  # ESP ID 3
+    ("172.20.41.230",5000),  # ESP ID 1
+    ("172.20.41.165",5000),  # ESP ID 2
+    ("172.20.41.157",5000),  # ESP ID 3
 ]
-
 
 def send_command(command, idx):
     """
@@ -17,6 +21,7 @@ def send_command(command, idx):
     payload = json.dumps(command) + "\n"  # send as single JSON object + newline
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # print(esp_id_port_map[idx])
         s.connect(esp_id_port_map[idx])
         s.sendall(payload.encode("utf-8"))
         # Read one line of response (ending with '\n')
@@ -51,9 +56,9 @@ if __name__ == "__main__":
 
         # # get sensors
         # {"espID": 1, "device_type": "sensor", "device_name": "pir", "action": "get"},
-        {"espID": 1, "device_type": "sensor", "device_name": "tem", "action": "get"},
+        {"espID": 2, "device_type": "sensor", "device_name": "tem", "action": "get"},
     ]
 
     for cmd in commands:
-        result = send_command(cmd, 0)
+        result = send_command(cmd, 1)
         print(f"Command: {cmd['device_name']} ({cmd['action']}) -> Returned value: {result}")

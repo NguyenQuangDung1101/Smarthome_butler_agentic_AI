@@ -7,7 +7,7 @@
           "id": "led1",
           "description": "Light",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -34,7 +34,7 @@
           "id": "pir",
           "description": "PIR sensor",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -64,7 +64,7 @@
           "id": "led1",
           "description": "Left light",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -77,7 +77,7 @@
           "id": "led2",
           "description": "Right light",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -116,7 +116,7 @@
           "id": "pir",
           "description": "PIR sensor",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -146,7 +146,7 @@
           "id": "led1",
           "description": "Room light",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -159,7 +159,7 @@
           "id": "led2",
           "description": "Bed light",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -197,7 +197,7 @@
           "id": "motor2",
           "description": "Window curtain",
           "value_type": "integer",
-          "value": 50,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 32.7,
+          "value": 0.4,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 51,
+          "value": 0,
           "constraints": {
             "type": "float",
             "min": 0.0,

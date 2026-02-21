@@ -3,6 +3,10 @@
 #include "DHT.h"
 
 
+
+// LED
+#define LED1_PIN 23
+
 // motor1
 #define MOTOR_ENA_PIN 14
 #define MOTOR_IN1_PIN 27
@@ -102,6 +106,7 @@ void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     led1_value = newValue;
+    digitalWrite(LED1_PIN, led1_value ? HIGH : LOW);
   } else {
     Serial.println("Unknown action for led1.");
   }
@@ -249,6 +254,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIR_PIN, INPUT);
   dht.begin();
+  //init led
+  pinMode(LED1_PIN, OUTPUT);
+
+  digitalWrite(LED1_PIN, led1_value ? HIGH : LOW);
 
   delay(1000);
 

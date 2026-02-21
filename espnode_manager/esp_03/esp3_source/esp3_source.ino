@@ -5,6 +5,11 @@
 #include <ESP32Servo.h>
 
 
+// LED
+#define LED1_PIN 23
+#define LED2_PIN 22
+#define LED3_PIN 21
+
 // motor1
 #define MOTOR_ENA_PIN 14
 #define MOTOR_IN1_PIN 27
@@ -125,6 +130,7 @@ void handle_led1(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     led1_value = newValue;
+    digitalWrite(LED1_PIN, led1_value ? HIGH : LOW);
   } else {
     Serial.println("Unknown action for led1.");
   }
@@ -144,6 +150,7 @@ void handle_led2(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     led2_value = newValue;
+    digitalWrite(LED2_PIN, led2_value ? HIGH : LOW);
   } else {
     Serial.println("Unknown action for led2.");
   }
@@ -163,6 +170,7 @@ void handle_led3(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     led3_value = newValue;
+    digitalWrite(LED3_PIN, led3_value ? HIGH : LOW);
   } else {
     Serial.println("Unknown action for led3.");
   }
@@ -474,6 +482,14 @@ void setup() {
   pinMode(PIR_PIN, INPUT);
   dht.begin();
   dht_out.begin();
+  //init led
+  pinMode(LED1_PIN, OUTPUT);
+  pinMode(LED2_PIN, OUTPUT);
+  pinMode(LED3_PIN, OUTPUT);
+
+  digitalWrite(LED1_PIN, led1_value ? HIGH : LOW);
+  digitalWrite(LED2_PIN, led2_value ? HIGH : LOW);
+  digitalWrite(LED3_PIN, led3_value ? HIGH : LOW);
 
   delay(1000);
 

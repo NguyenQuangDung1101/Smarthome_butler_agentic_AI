@@ -204,7 +204,7 @@ class ToolCallingAgent:
                 f"{self.system_prompt}"
             )
         )
-        # print(f"[LLM OUTPUT]:\n{llm_out}\n")
+        print(f"[LLM OUTPUT]:\n{llm_out}\n")
         if not llm_out:
             self._append_agent("The LLM did not return a response.")
             return None
