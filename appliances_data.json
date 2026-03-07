@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 29,
+          "value": 23.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -116,7 +116,7 @@
           "id": "pir",
           "description": "PIR sensor",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 30.8,
+          "value": 24.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 31.8,
+          "value": 25.9,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 30.5,
+          "value": 26.9,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 0,
+          "value": 47,
           "constraints": {
             "type": "float",
             "min": 0.0,

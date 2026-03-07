@@ -49,7 +49,7 @@ Rules:
    - include value
 8. Use only valid devices from the house definition below.
 9. Do not invent unavailable devices or locations.
-10. If location is ambiguous, infer only when highly obvious. Otherwise return error.
+10. If location or time is ambiguous, infer only when highly obvious. Otherwise return error.
 11. If value is omitted but can be clearly inferred, infer it:
    - "turn on light" -> true
    - "turn off light" -> false
@@ -57,7 +57,7 @@ Rules:
    - "close curtain" -> 0
    - "open door" -> motor2 = 100
    - "close door" -> motor2 = 0
-   - "turn on fan" without speed -> 50
+   - "turn on fan" without speed -> 75
    - "turn off fan" -> 0
    - "lock" -> servo = true
    - "unlock" -> servo = false
@@ -70,48 +70,40 @@ There are 3 areas in the house:
 
 House appliances:
 
-Livingroom (espID: 1)
-Actuators:
-- led1 = light (boolean)
-- motor1 = fan (integer 0-100)
-Sensors:
-- pir
-- tem
-
-Hallway (espID: 2)
-Actuators:
-- led1 = left light (boolean)
-- led2 = right light (boolean)
-- motor1 = fan (integer 0-100)
-- motor2 = main door motor (integer 0-100)
-Sensors:
-- pir
-- tem
-
-Bedroom + balcony (espID: 3)
-Actuators:
-- led1 = room light (boolean)
-- led2 = bed light (boolean)
-- led3 = balcony light (boolean)
-- motor1 = fan (integer 0-100)
-- motor2 = curtain (integer 0-100)
-- servo = lock (boolean)
-- pump = bonsai watering pump (boolean)
-Sensors:
-- pir
-- tem
-- tem_out
-- mois
+Livingroom (espID: 1):
+    actuator:
+    - "led1" (light) (value: True/False) (boolean)
+    - "motor1" (fan) (value: 0-100) (integer)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem"(Temperature sensor)
+Hallway(espID: 2):
+    actuator:
+    - "led1" (left light) (value: True/False) (boolean)
+    - "led2" (right light) (value: True/False) (boolean)
+    - "motor1" (fan) (value: 0-100) (integer)
+    - "motor2" (for door(main door to get in/out of the house)) (value: 0-100) (integer)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem"(Temperature sensor)
+Bedroom + balcony(ouside the house)(espID: 3):
+    actuator:
+    - "led1" (room light) (value: True/False) (boolean)
+    - "led2" (bed light) (value: True/False) (boolean)
+    - "led3" (balcony light outside) (value: True/False) (boolean)
+    - "motor1" (fan) (value: 0-100) (integer)
+    - "motor2" (window cover (curtain)) (value: 0-100) (integer)
+    - "servo" (lock) (value: True/False) (boolean)
+    - "pump" (to watering bonsai outside)(value: True/False) (boolean)
+    sensor:
+    - "pir" (PIR sensor)
+    - "tem" (Temperature sensor)
+    - "tem_out" (Temperature sensor outside)
+    - "mois" (Moisture sensor)
 
 Device mapping examples:
 - living room light -> {"espID": 1, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true/false}
 - hallway left light -> {"espID": 2, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true/false}
-- hallway right light -> {"espID": 2, "device_type": "actuator", "device_name": "led2", "action": "set", "value": true/false}
 - hallway door -> {"espID": 2, "device_type": "actuator", "device_name": "motor2", "action": "set", "value": 0-100}
-- bedroom room light -> {"espID": 3, "device_type": "actuator", "device_name": "led1", "action": "set", "value": true/false}
 - bed light -> {"espID": 3, "device_type": "actuator", "device_name": "led2", "action": "set", "value": true/false}
-- balcony light -> {"espID": 3, "device_type": "actuator", "device_name": "led3", "action": "set", "value": true/false}
 - bedroom fan -> {"espID": 3, "device_type": "actuator", "device_name": "motor1", "action": "set", "value": 0-100}
-- curtain -> {"espID": 3, "device_type": "actuator", "device_name": "motor2", "action": "set", "value": 0-100}
-- lock -> {"espID": 3, "device_type": "actuator", "device_name": "servo", "action": "set", "value": true/false}
-- watering bonsai -> {"espID": 3, "device_type": "actuator", "device_name": "pump", "action": "set", "value": true/false}

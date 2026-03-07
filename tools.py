@@ -545,7 +545,7 @@ if __name__ == "__main__":
     # print(get_current_location())
     # print(get_hourly_forecast(False, None, 108.2068, "2025-12-20"))
     # print(check_today_note())
-    trigger_schedule_agent("I am going to sleep in the bedroom for about 10 minute, please turn on the fan and turn off the light (just when i sleep only, do reverse after that)")
+    trigger_schedule_agent("I am going to sleep in the bedroom for about 1 minute, please turn on the fan and turn off the light (just when i sleep only, do reverse after that)")
 
     # res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
     # print(res)

@@ -1,17 +1,17 @@
 [
   {
-    "datetime": "2026-03-08 00:24:38",
+    "datetime": "2026-03-08 01:24:58",
     "appliance_control": {
       "espID": 3,
       "device_type": "actuator",
       "device_name": "motor1",
       "action": "set",
-      "value": 50
+      "value": 75
     },
-    "executed": false
+    "executed": true
   },
   {
-    "datetime": "2026-03-08 00:24:38",
+    "datetime": "2026-03-08 01:24:58",
     "appliance_control": {
       "espID": 3,
       "device_type": "actuator",
@@ -19,10 +19,10 @@
       "action": "set",
       "value": false
     },
-    "executed": false
+    "executed": true
   },
   {
-    "datetime": "2026-03-08 00:34:38",
+    "datetime": "2026-03-08 01:25:58",
     "appliance_control": {
       "espID": 3,
       "device_type": "actuator",
@@ -30,10 +30,10 @@
       "action": "set",
       "value": 0
     },
-    "executed": false
+    "executed": true
   },
   {
-    "datetime": "2026-03-08 00:34:38",
+    "datetime": "2026-03-08 01:25:58",
     "appliance_control": {
       "espID": 3,
       "device_type": "actuator",
@@ -41,6 +41,6 @@
       "action": "set",
       "value": true
     },
-    "executed": false
+    "executed": true
   }
 ]
