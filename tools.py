@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Tuple, Union, Optional
 from bs4 import BeautifulSoup
 import os
 import uuid
+from local_llm import load_system_prompt
 from local_llm import Copilot
 
 # --------------------------------------------------------
@@ -289,11 +290,262 @@ def delete_note(id: str) -> str:
 
 
 
+# --------------------------------------------------------
+# ------------- SCHEDULE TRIGGER AGENT TOOL --------------
+# --------------------------------------------------------
+def trigger_schedule_agent(request_info: str) -> str:
+    import json
+    import os
+    import re
+    from datetime import datetime
+
+    role_sys_prompt = load_system_prompt('./system_prompt_doc/tool_schedule_trigger_role.txt')
+    instruction_sys_prompt = load_system_prompt('./system_prompt_doc/tool_schedule_trigger_instruction.txt')
+
+    parts = [f"Current date and time: {get_current_datetime()}", role_sys_prompt, instruction_sys_prompt]
+    sys_prompt = "\n\n".join([p for p in parts if p])
+
+    llm = Copilot(host="http://localhost:11434", model="gpt-oss:20b-cloud")
+
+    def _extract_json(text: str):
+        text = text.strip()
+
+        try:
+            return json.loads(text)
+        except Exception:
+            pass
+
+        code_match = re.search(r"```(?:json)?\s*(\{.*?\}|\[.*?\])\s*```", text, re.DOTALL)
+        if code_match:
+            return json.loads(code_match.group(1))
+
+        obj_match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL)
+        if obj_match:
+            return json.loads(obj_match.group(1))
+
+        raise ValueError("LLM output does not contain valid JSON")
+
+    def _normalize_datetime(dt_str: str):
+        if not isinstance(dt_str, str):
+            return dt_str
+
+        dt_str = dt_str.strip()
+
+        # correct: YYYY-MM-DD HH:MM:SS
+        try:
+            datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+            return dt_str
+        except Exception:
+            pass
+
+        # fix: YYYY-MM-DDHH:MM:SS -> YYYY-MM-DD HH:MM:SS
+        m = re.match(r"^(\d{4}-\d{2}-\d{2})(\d{2}:\d{2}:\d{2})$", dt_str)
+        if m:
+            fixed = f"{m.group(1)} {m.group(2)}"
+            try:
+                datetime.strptime(fixed, "%Y-%m-%d %H:%M:%S")
+                return fixed
+            except Exception:
+                pass
+
+        # fix: YYYY/MM/DD HH:MM:SS -> YYYY-MM-DD HH:MM:SS
+        m = re.match(r"^(\d{4})/(\d{2})/(\d{2}) (\d{2}:\d{2}:\d{2})$", dt_str)
+        if m:
+            fixed = f"{m.group(1)}-{m.group(2)}-{m.group(3)} {m.group(4)}"
+            try:
+                datetime.strptime(fixed, "%Y-%m-%d %H:%M:%S")
+                return fixed
+            except Exception:
+                pass
+
+        # fix ISO: YYYY-MM-DDTHH:MM:SS -> YYYY-MM-DD HH:MM:SS
+        m = re.match(r"^(\d{4}-\d{2}-\d{2})[T](\d{2}:\d{2}:\d{2})$", dt_str)
+        if m:
+            fixed = f"{m.group(1)} {m.group(2)}"
+            try:
+                datetime.strptime(fixed, "%Y-%m-%d %H:%M:%S")
+                return fixed
+            except Exception:
+                pass
+
+        return dt_str
+
+    def _validate_output(data):
+        valid_devices = {
+            (1, "actuator", "led1"): "bool",
+            (1, "actuator", "motor1"): "int",
+            (2, "actuator", "led1"): "bool",
+            (2, "actuator", "led2"): "bool",
+            (2, "actuator", "motor1"): "int",
+            (2, "actuator", "motor2"): "int",
+            (3, "actuator", "led1"): "bool",
+            (3, "actuator", "led2"): "bool",
+            (3, "actuator", "led3"): "bool",
+            (3, "actuator", "motor1"): "int",
+            (3, "actuator", "motor2"): "int",
+            (3, "actuator", "servo"): "bool",
+            (3, "actuator", "pump"): "bool",
+        }
+
+        def _validate_control(ctrl):
+            required = ["espID", "device_type", "device_name", "action"]
+            for k in required:
+                if k not in ctrl:
+                    return False, f"Missing field in appliance_control: {k}"
+
+            key = (ctrl["espID"], ctrl["device_type"], ctrl["device_name"])
+            if key not in valid_devices:
+                return False, f"Invalid device mapping: {key}"
+
+            if ctrl["device_type"] != "actuator":
+                return False, "Only actuator schedule is supported"
+
+            if ctrl["action"] != "set":
+                return False, "Scheduled appliance action must be 'set'"
+
+            if "value" not in ctrl:
+                return False, "Missing value for actuator set action"
+
+            expected_type = valid_devices[key]
+            value = ctrl["value"]
+
+            if expected_type == "bool":
+                if not isinstance(value, bool):
+                    return False, f"Value for {key} must be boolean"
+            elif expected_type == "int":
+                if not isinstance(value, int):
+                    return False, f"Value for {key} must be integer"
+                if not (0 <= value <= 100):
+                    return False, f"Value for {key} must be in range 0-100"
+
+            return True, None
+
+        def _validate_schedule_item(item):
+            if not isinstance(item, dict):
+                return False, "Each schedule item must be an object"
+
+            if "datetime" not in item:
+                return False, "Missing datetime"
+
+            if "appliance_control" not in item:
+                return False, "Missing appliance_control"
+
+            item["datetime"] = _normalize_datetime(item["datetime"])
+
+            try:
+                datetime.strptime(item["datetime"], "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                return False, "datetime must be in format YYYY-MM-DD HH:MM:SS"
+
+            return _validate_control(item["appliance_control"])
+
+        schedules = None
+
+        if isinstance(data, list):
+            schedules = data
+        elif isinstance(data, dict):
+            if "schedules" in data and isinstance(data["schedules"], list):
+                schedules = data["schedules"]
+            elif "datetime" in data and "appliance_control" in data:
+                schedules = [data]
+            else:
+                return False, "JSON format is invalid for schedule tool", None
+        else:
+            return False, "Output must be a JSON object or array", None
+
+        if len(schedules) == 0:
+            return False, "Schedule list is empty", None
+
+        for idx, item in enumerate(schedules):
+            ok, err = _validate_schedule_item(item)
+            if not ok:
+                return False, f"Schedule item #{idx + 1} invalid: {err}", None
+
+        return True, None, schedules
+
+    def _save_schedules(schedules):
+        file_path = "schedule_trigger.json"
+
+        # ensure each schedule has executed flag
+        for s in schedules:
+            s["executed"] = False
+
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    existing = json.load(f)
+                if not isinstance(existing, list):
+                    existing = []
+            except Exception:
+                existing = []
+        else:
+            existing = []
+
+        existing.extend(schedules)
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(existing, f, ensure_ascii=False, indent=2)
+
+    last_error = None
+    last_raw_output = None
+
+    for attempt in range(3):
+        if attempt == 0:
+            user_prompt = request_info
+        else:
+            user_prompt = (
+                f"{request_info}\n\n"
+                f"Previous output was invalid: {last_error}\n"
+                f"Please regenerate strictly valid JSON only.\n"
+                f"Datetime format must be exactly YYYY-MM-DD HH:MM:SS.\n"
+                f"Validation passed: false"
+            )
+
+        schedule_strigger = llm.infer(
+            user_prompt=user_prompt,
+            system_prompt=sys_prompt,
+        )
+        print(schedule_strigger)
+
+        last_raw_output = schedule_strigger
+
+        try:
+            parsed = _extract_json(schedule_strigger)
+            ok, err, schedules = _validate_output(parsed)
+
+            if ok:
+                _save_schedules(schedules)
+                return json.dumps(
+                    {
+                        "status": "success",
+                        "message": "Schedule saved successfully",
+                        "data": schedules
+                    },
+                    ensure_ascii=False
+                )
+
+            last_error = err
+
+        except Exception as e:
+            last_error = str(e)
+
+    return json.dumps(
+        {
+            "status": "error",
+            "message": f"Failed to generate valid schedule after retries: {last_error}",
+            "raw_output": last_raw_output
+        },
+        ensure_ascii=False
+    )
+
+
+
 if __name__ == "__main__":
     # print(get_current_datetime())
     # print(get_current_location())
     # print(get_hourly_forecast(False, None, 108.2068, "2025-12-20"))
-    print(check_today_note())
+    # print(check_today_note())
+    trigger_schedule_agent("I am going to sleep in the bedroom for about 10 minute, please turn on the fan and turn off the light (just when i sleep only, do reverse after that)")
 
     # res = serp_search_and_read("today news in viet nam", num_results=3, read=True)
     # print(res)

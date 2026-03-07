@@ -6,6 +6,12 @@ from appliance_util import get_all_appliances_status
 import json
 import time
 
+# gpt-oss:20b-cloud
+# gpt-oss:120b-cloud
+# models/gemini-2.5-flash-lite
+# gemini-3-flash-preview:cloud
+# qwen3.5:397b-cloud
+# qwen3-vl:235b-cloud
 
 class SessionManager:
     def __init__(self):
@@ -126,9 +132,7 @@ class SessionManager:
         return latest
 
     #################################################################################################
-    # gpt-oss:20b-cloud
-    # models/gemini-2.5-flash-lite
-    def create_new_normal_session(self, model="gpt-oss:20b-cloud", context_text=None):
+    def create_new_normal_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
         print("Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -162,10 +166,7 @@ class SessionManager:
         user_prompt = self.append_context_question(context_text=context_text)
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
-    #################################################################################################
-    # gpt-oss:20b-cloud
-    # models/gemini-2.5-flash-lite
-    # gemini-3-flash-preview:cloud
+    ###############################################################################################
     def create_new_schedule_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
         print("Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
@@ -235,7 +236,7 @@ class SessionManager:
     def schedule_session_loop(self):
         while True:
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            schedule_infer_id = "2025-11-17 07:31:06"
+            # schedule_infer_id = "2025-11-17 07:31:06"
             current_moment = self.get_moment(schedule_infer_id)
             if not current_moment:
                 user_prompt = f"It is {schedule_infer_id}, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary."
@@ -422,6 +423,10 @@ class SessionManager:
         
         return None
     #################################################################################################
+
+
+
+
 
 if __name__ == "__main__":
     # role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')

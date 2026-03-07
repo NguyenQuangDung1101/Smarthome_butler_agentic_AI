@@ -319,7 +319,14 @@ class ToolCallingAgent:
 # Example CLI usage
 # ──────────────────────────────────────────────────────────────────────────────
 
-def build_agent(system_prompt_text: str, model: str = "gemma3:4b", host: str = "http://localhost:11434") -> ToolCallingAgent:
+# gpt-oss:20b-cloud
+# gpt-oss:120b-cloud
+# models/gemini-2.5-flash-lite
+# gemini-3-flash-preview:cloud
+# qwen3.5:397b-cloud
+# qwen3-vl:235b-cloud
+
+def build_agent(system_prompt_text: str, model: str = "gpt-oss:20b-cloud", host: str = "http://localhost:11434") -> ToolCallingAgent:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
     sp = include_notes_to_prompt(sp)

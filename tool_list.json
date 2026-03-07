@@ -147,5 +147,21 @@
                 "id"
             ]
         }
+    },
+    {
+        "name": "trigger_schedule_agent",
+        "description": "Trigger the schedule agent with a natural language request. The agent will parse the request, extract scheduling information, and add it to the schedule trigger list. The schedule agent will then execute the scheduled actions at the specified times.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "request_info": {
+                    "type": "string",
+                    "description": "Natural language request containing scheduling information and desired actions. For example: 'I am going to sleep in the bedroom for about 10 minute, please turn on the fan and turn off the light (just when i sleep only, do reverse after that)' or 'I will arrive home in 10 minute, please open the door when i arrive'."
+                }
+            },
+            "required": [
+                "request_info"
+            ]
+        }
     }
 ]

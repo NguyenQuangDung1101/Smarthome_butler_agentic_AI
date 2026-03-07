@@ -5,7 +5,7 @@ import json
 import subprocess
 import platform
 from typing import Any, Dict
-from tools import get_current_datetime, get_hourly_forecast, get_current_location, search_and_read_web_link, add_note, read_note, check_note, delete_note
+from tools import get_current_datetime, get_hourly_forecast, get_current_location, search_and_read_web_link, add_note, read_note, check_note, delete_note, trigger_schedule_agent
 
 # ── LOAD TOOLS DEFINITION FROM JSON ──────────────────────────────────────
 TOOLS_JSON_PATH = os.path.join(os.path.dirname(__file__), "tool_list.json")
@@ -85,6 +85,13 @@ def tool_delete_note(arguments: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         return {"content": [{"type": "text", "text": f"Error in delete_note: {e}"}]}
 
+def tool_trigger_schedule_agent(arguments: Dict[str, Any]) -> Dict[str, Any]:
+    request_info = arguments.get("request_info", "")
+    try:
+        text = trigger_schedule_agent(request_info)
+        return {"content": [{"type": "text", "text": text}]}
+    except Exception as e:
+        return {"content": [{"type": "text", "text": f"Error in trigger_schedule_agent: {e}"}]}
 
 
 # ── TOOL DISPATCH MAP ────────────────────────────────────────────────────
@@ -97,6 +104,7 @@ TOOL_DISPATCH = {
     "read_note": tool_read_note,
     "check_note": tool_check_note,
     "delete_note": tool_delete_note,
+    "trigger_schedule_agent": tool_trigger_schedule_agent,
 }
 
 # ── PUBLIC ENTRYPOINT (kept async signature) ─────────────────────────────

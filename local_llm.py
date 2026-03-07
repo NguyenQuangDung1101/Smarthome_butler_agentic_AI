@@ -7,7 +7,7 @@ import faiss
 import numpy as np
 import json
 import time as _time
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
 
 # Set up logging
@@ -46,12 +46,13 @@ class Copilot:
         # print("Prompt to send:\n", prompt)
 
 
-        if "gemini" in self.model:
-            model = genai.GenerativeModel(self.model)
-            response = model.generate_content(prompt)
-            return response.text
-        else:
+        # if "gemini" in self.model:
+        #     model = genai.GenerativeModel(self.model)
+        #     response = model.generate_content(prompt)
+        #     return response.text
+        # else:
             # Base kwargs for Ollama client
+        if True:
             kwargs = {
                 "model": self.model,
                 "prompt": prompt,
@@ -61,7 +62,8 @@ class Copilot:
             }
 
             # Only add image if model supports it (your original rule)
-            if "gemma3:4b" in self.model and image_path:
+            image_support_md = ["qwen3.5:397b-cloud", "gemini-3-flash-preview:cloud", "qwen3-vl:235b-cloud"]
+            if any(m in self.model for m in image_support_md) and image_path:
                 try:
                     with open(image_path, "rb") as f:
                         image_bytes = f.read()
@@ -188,217 +190,182 @@ class Copilot:
             logger.error(f"Inference failed: {last_err}")
             return None
 
-    def infer_client(self, user_prompt, system_prompt="You are a helpful assistant.", image_path=None, timeout=30, retries=2, backoff=1.5):
-        image_b64 = None
-        if image_path:
-            try:
-                with open(image_path, "rb") as f:
-                    image_b64 = base64.b64encode(f.read()).decode("utf-8")
-            except Exception as e:
-                logger.error(f"{e}")
-        payload = {
-            "model": self.model,
-            "prompt": user_prompt or "",
-            "system_prompt": system_prompt or "",
-            "image_b64": image_b64
-        }
-        url = f"{self.server_host}/infer"
-        last_err = None
-        for attempt in range(retries + 1):
-            try:
-                res = requests.post(url, json=payload, timeout=timeout)
-                if res.ok:
-                    data = res.json()
-                    if data.get("status") == "ok":
-                        return data.get("llm_out", "")
-                    logger.error(f"{data}")
-                    return None
-                else:
-                    last_err = RuntimeError(f"HTTP {res.status_code} {res.text}")
-            except Exception as e:
-                last_err = e
-            if attempt < retries:
-                import time
-                time.sleep(backoff ** attempt)
-        logger.error(f"{last_err}")
-        return None
+# class KnowledgeBase:
+#     def __init__(self,
+#                  model_name: str = "all-MiniLM-L6-v2",
+#                  chunk_size: int = 800,
+#                  chunk_overlap: int = 100,
+#                  chunk_by: str = "words"):
+#         self.model_name = model_name
+#         self.embedder = SentenceTransformer(model_name)
+#         self.chunk_size = int(chunk_size)
+#         self.chunk_overlap = int(chunk_overlap)
+#         self.chunk_by = chunk_by
+#         self.raw_documents = []
+#         self.texts = []
+#         self.sources = []
+#         self.index = None
 
-class KnowledgeBase:
-    def __init__(self,
-                 model_name: str = "all-MiniLM-L6-v2",
-                 chunk_size: int = 800,
-                 chunk_overlap: int = 100,
-                 chunk_by: str = "words"):
-        self.model_name = model_name
-        self.embedder = SentenceTransformer(model_name)
-        self.chunk_size = int(chunk_size)
-        self.chunk_overlap = int(chunk_overlap)
-        self.chunk_by = chunk_by
-        self.raw_documents = []
-        self.texts = []
-        self.sources = []
-        self.index = None
+#     def _chunk_document(self, text: str):
+#         if not text:
+#             return []
+#         if self.chunk_by == "chars":
+#             n = len(text)
+#             step = max(1, self.chunk_size - self.chunk_overlap)
+#             return [c for c in (text[i:i + self.chunk_size] for i in range(0, n, step)) if c.strip()]
+#         else:
+#             tokens = text.split()
+#             n = len(tokens)
+#             step = max(1, self.chunk_size - self.chunk_overlap)
+#             chunks = []
+#             for i in range(0, n, step):
+#                 chunk_tokens = tokens[i:i + self.chunk_size]
+#                 if chunk_tokens:
+#                     chunks.append(" ".join(chunk_tokens))
+#             return [c for c in chunks if c.strip()]
 
-    def _chunk_document(self, text: str):
-        if not text:
-            return []
-        if self.chunk_by == "chars":
-            n = len(text)
-            step = max(1, self.chunk_size - self.chunk_overlap)
-            return [c for c in (text[i:i + self.chunk_size] for i in range(0, n, step)) if c.strip()]
-        else:
-            tokens = text.split()
-            n = len(tokens)
-            step = max(1, self.chunk_size - self.chunk_overlap)
-            chunks = []
-            for i in range(0, n, step):
-                chunk_tokens = tokens[i:i + self.chunk_size]
-                if chunk_tokens:
-                    chunks.append(" ".join(chunk_tokens))
-            return [c for c in chunks if c.strip()]
+#     def build(self, documents):
+#         """Build FAISS index from list of text documents (with chunking)."""
+#         self.raw_documents = list(documents)
 
-    def build(self, documents):
-        """Build FAISS index from list of text documents (with chunking)."""
-        self.raw_documents = list(documents)
+#         # chunk
+#         all_chunks = []
+#         sources = []
+#         for doc_id, doc in enumerate(self.raw_documents):
+#             chunks = self._chunk_document(doc)
+#             for c_idx, c in enumerate(chunks):
+#                 all_chunks.append(c)
+#                 sources.append((doc_id, c_idx))
 
-        # chunk
-        all_chunks = []
-        sources = []
-        for doc_id, doc in enumerate(self.raw_documents):
-            chunks = self._chunk_document(doc)
-            for c_idx, c in enumerate(chunks):
-                all_chunks.append(c)
-                sources.append((doc_id, c_idx))
+#         # stats
+#         total_docs = len(self.raw_documents)
+#         total_chunks = len(all_chunks)
+#         lengths = [len(c.split()) if self.chunk_by == "words" else len(c) for c in all_chunks]
+#         avg_len = (sum(lengths) / total_chunks) if total_chunks else 0
+#         min_len = min(lengths) if lengths else 0
+#         max_len = max(lengths) if lengths else 0
 
-        # stats
-        total_docs = len(self.raw_documents)
-        total_chunks = len(all_chunks)
-        lengths = [len(c.split()) if self.chunk_by == "words" else len(c) for c in all_chunks]
-        avg_len = (sum(lengths) / total_chunks) if total_chunks else 0
-        min_len = min(lengths) if lengths else 0
-        max_len = max(lengths) if lengths else 0
+#         logger.info(
+#             "KB build: chunking_config = {"
+#             f"'chunk_size': {self.chunk_size}, "
+#             f"'chunk_overlap': {self.chunk_overlap}, "
+#             f"'chunk_by': '{self.chunk_by}'"
+#             "}"
+#         )
+#         logger.info(
+#             "KB build: stats = {"
+#             f"'num_input_docs': {total_docs}, "
+#             f"'num_chunks': {total_chunks}, "
+#             f"'avg_chunk_len_{'words' if self.chunk_by=='words' else 'chars'}': {avg_len:.2f}, "
+#             f"'min_len': {min_len}, "
+#             f"'max_len': {max_len}"
+#             "}"
+#         )
 
-        logger.info(
-            "KB build: chunking_config = {"
-            f"'chunk_size': {self.chunk_size}, "
-            f"'chunk_overlap': {self.chunk_overlap}, "
-            f"'chunk_by': '{self.chunk_by}'"
-            "}"
-        )
-        logger.info(
-            "KB build: stats = {"
-            f"'num_input_docs': {total_docs}, "
-            f"'num_chunks': {total_chunks}, "
-            f"'avg_chunk_len_{'words' if self.chunk_by=='words' else 'chars'}': {avg_len:.2f}, "
-            f"'min_len': {min_len}, "
-            f"'max_len': {max_len}"
-            "}"
-        )
+#         if total_chunks == 0:
+#             logger.warning("Knowledge base is empty after chunking. Nothing to index.")
+#             self.texts, self.sources, self.index = [], [], None
+#             return
 
-        if total_chunks == 0:
-            logger.warning("Knowledge base is empty after chunking. Nothing to index.")
-            self.texts, self.sources, self.index = [], [], None
-            return
+#         self.texts = all_chunks
+#         self.sources = sources
 
-        self.texts = all_chunks
-        self.sources = sources
+#         # embeddings + FAISS (inner product over normalized vectors)
+#         embeddings = self.embedder.encode(
+#             self.texts,
+#             convert_to_numpy=True,
+#             normalize_embeddings=True
+#         )
+#         self.index = faiss.IndexFlatIP(embeddings.shape[1])
+#         self.index.add(embeddings)
+#         logger.info(f"Knowledge base built with {total_chunks} chunks.")
 
-        # embeddings + FAISS (inner product over normalized vectors)
-        embeddings = self.embedder.encode(
-            self.texts,
-            convert_to_numpy=True,
-            normalize_embeddings=True
-        )
-        self.index = faiss.IndexFlatIP(embeddings.shape[1])
-        self.index.add(embeddings)
-        logger.info(f"Knowledge base built with {total_chunks} chunks.")
+#     def retrieve(self, query, k=3):
+#         """Retrieve top-k most relevant chunks."""
+#         if not self.index:
+#             logger.warning("Knowledge base is empty. Run build() or load() first.")
+#             return []
+#         q_emb = self.embedder.encode([query], convert_to_numpy=True, normalize_embeddings=True)
+#         D, I = self.index.search(q_emb, k)
+#         return [self.texts[i] for i in I[0] if 0 <= i < len(self.texts)]
 
-    def retrieve(self, query, k=3):
-        """Retrieve top-k most relevant chunks."""
-        if not self.index:
-            logger.warning("Knowledge base is empty. Run build() or load() first.")
-            return []
-        q_emb = self.embedder.encode([query], convert_to_numpy=True, normalize_embeddings=True)
-        D, I = self.index.search(q_emb, k)
-        return [self.texts[i] for i in I[0] if 0 <= i < len(self.texts)]
+#     def save(self, folder_path: str):
+#         p = Path(folder_path)
+#         p.mkdir(parents=True, exist_ok=True)
 
-    def save(self, folder_path: str):
-        p = Path(folder_path)
-        p.mkdir(parents=True, exist_ok=True)
+#         if self.index is None or not self.texts:
+#             raise RuntimeError("Nothing to save: build() first.")
 
-        if self.index is None or not self.texts:
-            raise RuntimeError("Nothing to save: build() first.")
+#         # save faiss index
+#         faiss.write_index(self.index, str(p / "index.faiss"))
 
-        # save faiss index
-        faiss.write_index(self.index, str(p / "index.faiss"))
+#         # save chunks
+#         with open(p / "texts.jsonl", "w", encoding="utf-8") as f:
+#             for t in self.texts:
+#                 f.write(json.dumps({"text": t}, ensure_ascii=False) + "\n")
 
-        # save chunks
-        with open(p / "texts.jsonl", "w", encoding="utf-8") as f:
-            for t in self.texts:
-                f.write(json.dumps({"text": t}, ensure_ascii=False) + "\n")
+#         # save sources
+#         with open(p / "sources.jsonl", "w", encoding="utf-8") as f:
+#             for doc_id, chunk_idx in self.sources:
+#                 f.write(json.dumps({"doc_id": doc_id, "chunk_idx": chunk_idx}) + "\n")
 
-        # save sources
-        with open(p / "sources.jsonl", "w", encoding="utf-8") as f:
-            for doc_id, chunk_idx in self.sources:
-                f.write(json.dumps({"doc_id": doc_id, "chunk_idx": chunk_idx}) + "\n")
+#         # save metadata/config
+#         meta = {
+#             "model_name": self.model_name,
+#             "chunk_size": self.chunk_size,
+#             "chunk_overlap": self.chunk_overlap,
+#             "chunk_by": self.chunk_by
+#         }
+#         with open(p / "meta.json", "w", encoding="utf-8") as f:
+#             json.dump(meta, f, ensure_ascii=False, indent=2)
 
-        # save metadata/config
-        meta = {
-            "model_name": self.model_name,
-            "chunk_size": self.chunk_size,
-            "chunk_overlap": self.chunk_overlap,
-            "chunk_by": self.chunk_by
-        }
-        with open(p / "meta.json", "w", encoding="utf-8") as f:
-            json.dump(meta, f, ensure_ascii=False, indent=2)
+#         logger.info(f"KB saved to: {p.resolve()}")
 
-        logger.info(f"KB saved to: {p.resolve()}")
+#     def load(self, folder_path: str):
+#         """Load FAISS index + chunks + metadata from folder."""
+#         p = Path(folder_path)
+#         idx_path = p / "index.faiss"
+#         texts_path = p / "texts.jsonl"
+#         sources_path = p / "sources.jsonl"
+#         meta_path = p / "meta.json"
 
-    def load(self, folder_path: str):
-        """Load FAISS index + chunks + metadata from folder."""
-        p = Path(folder_path)
-        idx_path = p / "index.faiss"
-        texts_path = p / "texts.jsonl"
-        sources_path = p / "sources.jsonl"
-        meta_path = p / "meta.json"
+#         if not (idx_path.exists() and texts_path.exists() and sources_path.exists() and meta_path.exists()):
+#             raise FileNotFoundError("KB folder is missing required files (index.faiss, texts.jsonl, sources.jsonl, meta.json).")
 
-        if not (idx_path.exists() and texts_path.exists() and sources_path.exists() and meta_path.exists()):
-            raise FileNotFoundError("KB folder is missing required files (index.faiss, texts.jsonl, sources.jsonl, meta.json).")
+#         # load meta and (re)create embedder with same model
+#         with open(meta_path, "r", encoding="utf-8") as f:
+#             meta = json.load(f)
 
-        # load meta and (re)create embedder with same model
-        with open(meta_path, "r", encoding="utf-8") as f:
-            meta = json.load(f)
+#         stored_model = meta.get("model_name", self.model_name)
+#         if stored_model != self.model_name:
+#             logger.warning(f"KB stored model '{stored_model}' differs from current '{self.model_name}'. Reinitializing embedder to '{stored_model}'.")
+#             self.model_name = stored_model
+#             self.embedder = SentenceTransformer(self.model_name)
 
-        stored_model = meta.get("model_name", self.model_name)
-        if stored_model != self.model_name:
-            logger.warning(f"KB stored model '{stored_model}' differs from current '{self.model_name}'. Reinitializing embedder to '{stored_model}'.")
-            self.model_name = stored_model
-            self.embedder = SentenceTransformer(self.model_name)
+#         self.chunk_size = meta.get("chunk_size", self.chunk_size)
+#         self.chunk_overlap = meta.get("chunk_overlap", self.chunk_overlap)
+#         self.chunk_by = meta.get("chunk_by", self.chunk_by)
 
-        self.chunk_size = meta.get("chunk_size", self.chunk_size)
-        self.chunk_overlap = meta.get("chunk_overlap", self.chunk_overlap)
-        self.chunk_by = meta.get("chunk_by", self.chunk_by)
+#         # load faiss
+#         self.index = faiss.read_index(str(idx_path))
 
-        # load faiss
-        self.index = faiss.read_index(str(idx_path))
+#         # load texts
+#         texts = []
+#         with open(texts_path, "r", encoding="utf-8") as f:
+#             for line in f:
+#                 obj = json.loads(line)
+#                 texts.append(obj["text"])
+#         self.texts = texts
 
-        # load texts
-        texts = []
-        with open(texts_path, "r", encoding="utf-8") as f:
-            for line in f:
-                obj = json.loads(line)
-                texts.append(obj["text"])
-        self.texts = texts
+#         # load sources
+#         sources = []
+#         with open(sources_path, "r", encoding="utf-8") as f:
+#             for line in f:
+#                 obj = json.loads(line)
+#                 sources.append((obj["doc_id"], obj["chunk_idx"]))
+#         self.sources = sources
 
-        # load sources
-        sources = []
-        with open(sources_path, "r", encoding="utf-8") as f:
-            for line in f:
-                obj = json.loads(line)
-                sources.append((obj["doc_id"], obj["chunk_idx"]))
-        self.sources = sources
-
-        logger.info(f"KB loaded from: {p.resolve()} (chunks={len(self.texts)})")
+#         logger.info(f"KB loaded from: {p.resolve()} (chunks={len(self.texts)})")
 
 
 
@@ -428,13 +395,18 @@ def load_system_prompt(filename):
 
 
 if __name__ == "__main__":
-    # *gpt-oss:20b-cloud
     # qwen3:1.7b
     # qwen3:4b
     # qwen3:8b
+    # gpt-oss:20b-cloud
+    # gpt-oss:120b-cloud
+    # models/gemini-2.5-flash-lite
+    # gemini-3-flash-preview:cloud
+    # qwen3.5:397b-cloud
+    # qwen3-vl:235b-cloud
     copilot = Copilot(
         host="http://localhost:11434",
-        model="models/gemini-2.5-flash-lite"
+        model="gemini-3-flash-preview:cloud"
     )
     print(copilot.list_models())
 
