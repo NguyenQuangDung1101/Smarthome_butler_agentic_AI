@@ -2,6 +2,7 @@ import json
 import time
 import os
 from datetime import datetime
+from appliance_util import execute_appliance
 from session_manage import SessionManager
 
 DELAY_TRIGGER_RANGE = 30  # seconds
@@ -39,12 +40,16 @@ def run_schedule_executor():
                 schedule_time = datetime.strptime(item["datetime"], "%Y-%m-%d %H:%M:%S")
                 diff = (now - schedule_time).total_seconds()
 
-                # trigger window: 0 → 30 seconds after scheduled time
+                # trigger window: gap between now and schedule_time is between 0 and DELAY_TRIGGER_RANGE seconds
                 if 0 <= diff <= DELAY_TRIGGER_RANGE:
-                    print(item["appliance_control"])
+                    try:
+                        formated,_ = execute_appliance(f"[{json.dumps(item["appliance_control"])}]")    # must be a list
+                        print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")
 
-                    item["executed"] = True
-                    updated = True
+                        item["executed"] = True
+                        updated = True
+                    except Exception as e:
+                        print(f"Appliance execution failed: {e}")
 
             except Exception:
                 continue

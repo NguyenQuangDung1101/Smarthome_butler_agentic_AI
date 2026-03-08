@@ -41,6 +41,7 @@ Rules:
    - "tomorrow morning" -> 08:00:00
    - "tomorrow evening" -> 19:00:00
    - "in 30 minutes" -> current time + 30 minutes
+   - "set it for about 10 minutes only" -> set at current & reset at current 10 minutes (e.g. on -> off)
 4. If user gives a time without a date, choose the next future occurrence.
 5. If the request refers to multiple appliance actions, return multiple schedule items.
 6. Only schedule actuator control actions. Do not schedule sensor get requests unless the system explicitly supports scheduled sensor polling.

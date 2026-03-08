@@ -713,7 +713,7 @@ def execute_appliance(json_str: str) -> str:
             if keep_item:
                 new_data.append(item)
     
-
+    
     if isinstance(new_data, list):
         uniform, cols = is_uniform_obj_list(new_data)
         out = table_from_obj_list(new_data, cols) if uniform else "\n".join(kv_format(new_data))

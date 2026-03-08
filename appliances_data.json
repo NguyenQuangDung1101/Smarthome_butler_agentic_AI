@@ -146,7 +146,7 @@
           "id": "led1",
           "description": "Room light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
