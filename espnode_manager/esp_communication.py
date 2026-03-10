@@ -13,7 +13,7 @@ esp_id_port_map = [
     ("172.20.41.157",5000),  # ESP ID 3
 ]
 
-def send_command(command, idx):
+def send_command(command, idx, timeout=10):
     """
     Send exactly ONE command to the ESP32, wait for reply,
     and return the 'value' from the ESP32 response.
@@ -24,13 +24,18 @@ def send_command(command, idx):
         # print(esp_id_port_map[idx])
         s.connect(esp_id_port_map[idx])
         s.sendall(payload.encode("utf-8"))
+        s.settimeout(timeout)
         # Read one line of response (ending with '\n')
         data = b""
+        start_time = time.time()
         while not data.endswith(b"\n"):
             chunk = s.recv(1024)
             if not chunk:
                 break
             data += chunk
+            
+            if time.time() - start_time > timeout:
+                raise RuntimeError(f"Timeout reached while waiting for response from ESP32")
 
     if not data:
         raise RuntimeError("No response from ESP32")
