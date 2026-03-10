@@ -435,8 +435,6 @@ if __name__ == "__main__":
     # parts = [role_sys_prompt, instruction_sys_prompt]
     # sys_prompt = "\n\n".join([p for p in parts if p])
 
-    # #gpt-oss:20b-cloud
-    # #qwen3:1.7b
     # agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
     # # Interactive multi-turn terminal chat:

@@ -64,7 +64,21 @@ def run_schedule_executor():
 
 if __name__ == "__main__":
 
+    # while True:
+    #     get_all_appliances_status()
+    #     # reset tab
+
+
+
     run_schedule_executor()
+
+    # session_manager = SessionManager()
+    # session_manager.schedule_session_loop()
+
+    # # chat tab
+    # if new_chat:
+    #     new_chat1 = SessionManager()
+    #     new_chat1.infer_normal_session()
 
     # # Start the schedule executor in a separate thread or process
     # import threading

@@ -7,6 +7,7 @@
 
 // LED
 #define LED1_PIN 23
+#define LED2_PIN 22
 
 // motor1
 #define MOTOR_ENA_PIN 13
@@ -140,6 +141,7 @@ void handle_led2(WiFiClient &client, const char* action, JsonVariant valueField)
     Serial.print(", New value of: ");
     Serial.println(newValue ? "true" : "false");
     led2_value = newValue;
+    digitalWrite(LED2_PIN, led2_value ? HIGH : LOW);
   } else {
     Serial.println("Unknown action for led2.");
   }
@@ -382,8 +384,9 @@ void setup() {
   digitalWrite(STEPPER_IN4_PIN, LOW);
   //init led
   pinMode(LED1_PIN, OUTPUT);
-
   digitalWrite(LED1_PIN, led1_value ? HIGH : LOW);
+  pinMode(LED2_PIN, OUTPUT);
+  digitalWrite(LED2_PIN, led2_value ? HIGH : LOW);
 
   delay(1000);
 

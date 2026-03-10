@@ -77,7 +77,7 @@
           "id": "led2",
           "description": "Right light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
