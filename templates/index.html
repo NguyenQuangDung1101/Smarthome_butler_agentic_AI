@@ -17,32 +17,19 @@
         </div>
 
         <div id="tab1" class="tab-content active">
-            <h2>Current Appliances</h2>
-            <button onclick="loadAppliances()">Refresh Data</button>
-            <pre id="appliance-data-display">Loading...</pre>
+            <div class="header-action">
+                <h2>Current Appliances Info</h2>
+                <button class="refresh-btn" onclick="fetchAndRenderData()">Refresh Data</button>
+            </div>
+            <div id="tab1-nodes">Loading devices...</div>
         </div>
 
         <div id="tab2" class="tab-content">
-            <h2>Control Actuators</h2>
-            <div class="control-form">
-                <label for="espID">espID (Room):</label>
-                <select id="espID" onchange="updateDeviceDropdown()">
-                    <option value="">Select Room...</option>
-                </select>
-
-                <label for="device_name">Device Name:</label>
-                <select id="device_name" onchange="updateValueInput()">
-                    <option value="">Select Device...</option>
-                </select>
-
-                <label for="device_value">Value:</label>
-                <div id="value-input-container">
-                    <input type="text" id="device_value" placeholder="Select a device first" disabled>
-                </div>
-
-                <button onclick="sendControlCommand()">Send Command</button>
+            <div class="header-action">
+                <h2>Control Actuators</h2>
+                <button class="refresh-btn" onclick="fetchAndRenderData()">Refresh Devices</button>
             </div>
-            <div id="control-result"></div>
+            <div id="tab2-nodes">Loading actuators...</div>
         </div>
 
         <div id="tab3" class="tab-content">
@@ -51,8 +38,10 @@
                 <div class="chat-history">
                     <p><em>AI: Hello! How can I manage your home today?</em></p>
                 </div>
-                <input type="text" placeholder="Type a message..." disabled>
-                <button disabled>Send</button>
+                <div class="chat-input-area">
+                    <input type="text" placeholder="Type a message..." disabled>
+                    <button disabled>Send</button>
+                </div>
             </div>
         </div>
     </div>
