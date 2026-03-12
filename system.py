@@ -15,6 +15,7 @@ def run_schedule_executor():
     schedule_file = "schedule_trigger.json"
 
     while True:
+        print("@@@@@@@@@@@@@@@@@@@")
         now = datetime.now()
 
         if not os.path.exists(schedule_file):

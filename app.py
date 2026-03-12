@@ -14,7 +14,7 @@ app = Flask(__name__)
 def loop_schedule_executor():
     """Loop 1: Runs the schedule executor"""
     print("Starting Schedule Executor Loop...")
-    # run_schedule_executor()
+    run_schedule_executor()
 
 def loop_appliance_status():
     """Loop 2: Continuously gets appliance status"""
@@ -23,9 +23,7 @@ def loop_appliance_status():
         try:
             # status = get_all_appliances_status()
 
-            # You can log this to a file or just print it. 
-            # We print a short indicator to avoid flooding the console too much.
-            print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
+            # print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
             time.sleep(10) # Check every 10 seconds
         except Exception as e:
             print(f"Error in status loop: {e}")
@@ -74,6 +72,7 @@ def control():
 
     # 1. Use manual_control.py to generate the command payload
     command_payload = control_appliance(int(espID), device_name, value)
+    print(command_payload)
     
     if "error" in command_payload:
         return jsonify({"success": False, "error": command_payload["error"]})
