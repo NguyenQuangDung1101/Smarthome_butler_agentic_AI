@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Home Agentic AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Home Dashboard</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'tab1')">Device Information</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab2')">Manual Control</button>
+            <button class="tab-btn" onclick="openTab(event, 'tab3')">AI Chat</button>
+        </div>
+
+        <div id="tab1" class="tab-content active">
+            <h2>Current Appliances</h2>
+            <button onclick="loadAppliances()">Refresh Data</button>
+            <pre id="appliance-data-display">Loading...</pre>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <h2>Control Actuators</h2>
+            <div class="control-form">
+                <label for="espID">espID (Room):</label>
+                <select id="espID" onchange="updateDeviceDropdown()">
+                    <option value="">Select Room...</option>
+                </select>
+
+                <label for="device_name">Device Name:</label>
+                <select id="device_name" onchange="updateValueInput()">
+                    <option value="">Select Device...</option>
+                </select>
+
+                <label for="device_value">Value:</label>
+                <div id="value-input-container">
+                    <input type="text" id="device_value" placeholder="Select a device first" disabled>
+                </div>
+
+                <button onclick="sendControlCommand()">Send Command</button>
+            </div>
+            <div id="control-result"></div>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <h2>Agentic AI Chat</h2>
+            <div class="chat-box">
+                <div class="chat-history">
+                    <p><em>AI: Hello! How can I manage your home today?</em></p>
+                </div>
+                <input type="text" placeholder="Type a message..." disabled>
+                <button disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
