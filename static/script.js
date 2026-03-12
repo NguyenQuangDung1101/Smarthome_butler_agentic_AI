@@ -1,142 +1,190 @@
-let deviceMapping = {};
-
 // --- Tab Switching Logic ---
 function openTab(evt, tabName) {
-    let i, tabcontent, tablinks;
-    
-    tabcontent = document.getElementsByClassName("tab-content");
-    for (i = 0; i < tabcontent.length; i++) {
+    let tabcontent = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < tabcontent.length; i++) {
         tabcontent[i].classList.remove("active");
     }
     
-    tablinks = document.getElementsByClassName("tab-btn");
-    for (i = 0; i < tablinks.length; i++) {
+    let tablinks = document.getElementsByClassName("tab-btn");
+    for (let i = 0; i < tablinks.length; i++) {
         tablinks[i].classList.remove("active");
     }
     
     document.getElementById(tabName).classList.add("active");
     evt.currentTarget.classList.add("active");
-
-    if (tabName === 'tab1') loadAppliances();
 }
 
-// --- Tab 1: Load JSON Data ---
-async function loadAppliances() {
-    const display = document.getElementById("appliance-data-display");
+// --- Fetch Data and Render Nodes ---
+async function fetchAndRenderData() {
     try {
         const response = await fetch('/api/appliances');
         const result = await response.json();
-        if (result.success) {
-            display.textContent = JSON.stringify(result.data, null, 2);
-        } else {
-            display.textContent = "Error loading data.";
-        }
-    } catch (error) {
-        display.textContent = "Fetch error: " + error;
-    }
-}
-
-// --- Tab 2: Manual Control Logic ---
-async function loadDeviceMapping() {
-    try {
-        const response = await fetch('/api/device_mapping');
-        deviceMapping = await response.json();
         
-        const espSelect = document.getElementById("espID");
-        for (const esp in deviceMapping) {
-            let opt = document.createElement("option");
-            opt.value = esp;
-            opt.textContent = "ESP ID: " + esp;
-            espSelect.appendChild(opt);
+        if (result.success) {
+            const data = result.data["List_of house appliance (current values)"];
+            renderTab1Info(data);
+            renderTab2Controls(data);
+        } else {
+            document.getElementById('tab1-nodes').innerText = "Error loading data.";
+            document.getElementById('tab2-nodes').innerText = "Error loading data.";
         }
     } catch (error) {
-        console.error("Failed to load mapping", error);
+        console.error("Fetch error:", error);
     }
 }
 
-function updateDeviceDropdown() {
-    const espID = document.getElementById("espID").value;
-    const deviceSelect = document.getElementById("device_name");
-    deviceSelect.innerHTML = '<option value="">Select Device...</option>';
-    document.getElementById("value-input-container").innerHTML = '<input type="text" disabled placeholder="Select a device first">';
+// --- Render Tab 1: Info Nodes ---
+function renderTab1Info(data) {
+    const container = document.getElementById('tab1-nodes');
+    container.innerHTML = ''; // Clear old data
 
-    if (!espID) return;
+    for (const [roomName, roomData] of Object.entries(data)) {
+        const espID = roomData.espID;
+        
+        const roomSection = document.createElement('div');
+        roomSection.className = 'room-section';
+        roomSection.innerHTML = `<h3 class="room-title">${roomName} (espID: ${espID})</h3>`;
+        
+        const grid = document.createElement('div');
+        grid.className = 'nodes-grid';
 
-    const devices = deviceMapping[espID];
-    for (const dev in devices) {
-        let opt = document.createElement("option");
-        opt.value = dev;
-        opt.textContent = dev + " (" + devices[dev] + ")";
-        deviceSelect.appendChild(opt);
+        // Combine Actuators and Sensors for display
+        const allDevices = [...(roomData.actuator || []), ...(roomData.sensor || [])];
+
+        allDevices.forEach(device => {
+            let displayValue = device.value;
+            // Add unit if present in constraints
+            if (device.constraints && device.constraints.unit) {
+                displayValue += ` ${device.constraints.unit}`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'node-card';
+            card.innerHTML = `
+                <div>
+                    <div class="node-header">${device.description}</div>
+                    <div class="node-id">ID: ${device.id} | Type: ${device.value_type}</div>
+                </div>
+                <div class="node-value">${displayValue}</div>
+            `;
+            grid.appendChild(card);
+        });
+
+        roomSection.appendChild(grid);
+        container.appendChild(roomSection);
     }
 }
 
-function updateValueInput() {
-    const espID = document.getElementById("espID").value;
-    const deviceName = document.getElementById("device_name").value;
-    const container = document.getElementById("value-input-container");
+// --- Render Tab 2: Control Nodes ---
+function renderTab2Controls(data) {
+    const container = document.getElementById('tab2-nodes');
+    container.innerHTML = ''; // Clear old data
 
-    if (!espID || !deviceName) {
-        container.innerHTML = '<input type="text" disabled placeholder="Select a device first">';
-        return;
-    }
+    for (const [roomName, roomData] of Object.entries(data)) {
+        const espID = roomData.espID;
+        
+        // Only Actuators can be controlled
+        if (!roomData.actuator || roomData.actuator.length === 0) continue;
 
-    const type = deviceMapping[espID][deviceName];
-    if (type === "boolean") {
-        container.innerHTML = `
-            <select id="device_value">
-                <option value="true">True (On)</option>
-                <option value="false">False (Off)</option>
-            </select>
-        `;
-    } else if (type === "integer") {
-        container.innerHTML = `<input type="number" id="device_value" placeholder="Enter number 0-100" min="0" max="100">`;
+        const roomSection = document.createElement('div');
+        roomSection.className = 'room-section';
+        roomSection.innerHTML = `<h3 class="room-title">${roomName} (espID: ${espID})</h3>`;
+        
+        const grid = document.createElement('div');
+        grid.className = 'nodes-grid';
+
+        roomData.actuator.forEach(device => {
+            const card = document.createElement('div');
+            card.className = 'node-card';
+            
+            // Build input field based on value_type
+            let inputHtml = '';
+            let inputId = `input-${espID}-${device.id}`;
+            
+            if (device.value_type === 'boolean') {
+                inputHtml = `
+                    <select id="${inputId}">
+                        <option value="true" ${device.value === true ? 'selected' : ''}>True (On)</option>
+                        <option value="false" ${device.value === false ? 'selected' : ''}>False (Off)</option>
+                    </select>
+                `;
+            } else if (device.value_type === 'integer') {
+                let min = device.constraints.min !== undefined ? device.constraints.min : 0;
+                let max = device.constraints.max !== undefined ? device.constraints.max : 100;
+                inputHtml = `<input type="number" id="${inputId}" value="${device.value}" min="${min}" max="${max}">`;
+            }
+
+            card.innerHTML = `
+                <div>
+                    <div class="node-header">${device.description}</div>
+                    <div class="node-id">ID: ${device.id} | Current: ${device.value}</div>
+                </div>
+                <div class="control-input">
+                    ${inputHtml}
+                </div>
+                <button class="update-btn" onclick="updateDevice(${espID}, '${device.id}', '${device.value_type}', '${inputId}')">Update</button>
+                <div id="status-${espID}-${device.id}" class="status-msg"></div>
+            `;
+            grid.appendChild(card);
+        });
+
+        roomSection.appendChild(grid);
+        container.appendChild(roomSection);
     }
 }
 
-async function sendControlCommand() {
-    const espID = document.getElementById("espID").value;
-    const device_name = document.getElementById("device_name").value;
-    const valueInput = document.getElementById("device_value");
-    const resultDiv = document.getElementById("control-result");
-
-    if (!espID || !device_name || !valueInput) {
-        resultDiv.innerHTML = "<span style='color:red'>Please fill all fields.</span>";
-        return;
-    }
-
-    let val = valueInput.value;
-    const type = deviceMapping[espID][device_name];
+// --- Handle Update Action ---
+async function updateDevice(espID, deviceID, valueType, inputId) {
+    const statusDiv = document.getElementById(`status-${espID}-${deviceID}`);
+    const rawValue = document.getElementById(inputId).value;
     
-    // Parse value correctly
-    if (type === "boolean") {
-        val = (val === "true");
-    } else if (type === "integer") {
-        val = parseInt(val, 10);
+    // CAREFUL WITH DATATYPE: Parse value correctly before sending
+    let parsedValue;
+    if (valueType === 'boolean') {
+        parsedValue = (rawValue === 'true');
+    } else if (valueType === 'integer') {
+        parsedValue = parseInt(rawValue, 10);
+    } else {
+        parsedValue = rawValue;
     }
 
-    resultDiv.innerHTML = "Sending...";
+    statusDiv.style.color = '#007bff';
+    statusDiv.innerText = 'Sending...';
 
     try {
         const response = await fetch('/api/control', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ espID: espID, device_name: device_name, value: val })
+            body: JSON.stringify({
+                espID: espID,
+                device_name: deviceID,
+                value: parsedValue
+            })
         });
         
         const result = await response.json();
+        
         if (result.success) {
-            resultDiv.innerHTML = `<span style='color:green'>Success!</span><pre>${JSON.stringify(result.payload, null, 2)}</pre>`;
+            statusDiv.style.color = 'green';
+            statusDiv.innerText = 'Success!';
+            // Tùy chọn: Tự động refresh lại dữ liệu sau khi update thành công
+            // setTimeout(() => fetchAndRenderData(), 1000); 
         } else {
-            resultDiv.innerHTML = `<span style='color:red'>Error: ${result.error}</span>`;
+            statusDiv.style.color = 'red';
+            statusDiv.innerText = result.error || 'Error occurred';
         }
     } catch (error) {
-        resultDiv.innerHTML = `<span style='color:red'>Network Error: ${error}</span>`;
+        statusDiv.style.color = 'red';
+        statusDiv.innerText = 'Network Error';
     }
+    
+    // Clear message after 3 seconds
+    setTimeout(() => {
+        if(statusDiv.innerText === 'Success!') statusDiv.innerText = '';
+    }, 3000);
 }
 
-// Init
+// Initialize data when page loads
 window.onload = () => {
-    loadAppliances();
-    loadDeviceMapping();
+    fetchAndRenderData();
 };

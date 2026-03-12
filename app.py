@@ -22,7 +22,6 @@ def loop_appliance_status():
     while True:
         try:
             # status = get_all_appliances_status()
-
             # print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
             time.sleep(10) # Check every 10 seconds
         except Exception as e:
@@ -72,11 +71,13 @@ def control():
 
     # 1. Use manual_control.py to generate the command payload
     command_payload = control_appliance(int(espID), device_name, value)
-    print(command_payload)
+    print("Command generated:", command_payload)
     
     if "error" in command_payload:
         return jsonify({"success": False, "error": command_payload["error"]})
-
+        
+    # Return success payload so the frontend knows it worked
+    return jsonify({"success": True, "payload": command_payload})
 
 if __name__ == '__main__':
     # Run the Flask app on port 5000
