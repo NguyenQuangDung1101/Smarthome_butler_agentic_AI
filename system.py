@@ -8,6 +8,8 @@ from session_manage import SessionManager
 DELAY_TRIGGER_RANGE = 30  # seconds
 FREQUENCY_CHECK_SCHEDULE = 15  # seconds
 
+
+# Frequency of checking the schedule_trigger (by agent) file and executing appliances is set to 15 seconds.
 def run_schedule_executor():
 
     schedule_file = "schedule_trigger.json"

@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify
 # Import from your existing files
 from system import run_schedule_executor
 from manual_control import control_appliance, device_mapping
-from appliance_util import get_all_appliances_status, execute_appliance
+from appliance_util import get_all_appliances_status
 
 app = Flask(__name__)
 
@@ -14,14 +14,15 @@ app = Flask(__name__)
 def loop_schedule_executor():
     """Loop 1: Runs the schedule executor"""
     print("Starting Schedule Executor Loop...")
-    run_schedule_executor()
+    # run_schedule_executor()
 
 def loop_appliance_status():
     """Loop 2: Continuously gets appliance status"""
     print("Starting Appliance Status Loop...")
     while True:
         try:
-            status = get_all_appliances_status()
+            # status = get_all_appliances_status()
+
             # You can log this to a file or just print it. 
             # We print a short indicator to avoid flooding the console too much.
             print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
@@ -77,14 +78,6 @@ def control():
     if "error" in command_payload:
         return jsonify({"success": False, "error": command_payload["error"]})
 
-    # 2. To actually execute it and update the system, pass it to execute_appliance
-    try:
-        # execute_appliance expects a JSON string of a list
-        json_str = json.dumps([command_payload])
-        formatted, log = execute_appliance(json_str)
-        return jsonify({"success": True, "payload": command_payload, "log": log})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
 
 if __name__ == '__main__':
     # Run the Flask app on port 5000
