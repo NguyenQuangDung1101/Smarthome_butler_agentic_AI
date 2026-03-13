@@ -11,15 +11,14 @@ FREQUENCY_CHECK_SCHEDULE = 15  # seconds
 
 # Frequency of checking the schedule_trigger (by agent) file and executing appliances is set to 15 seconds.
 def run_schedule_executor():
-
     schedule_file = "schedule_trigger.json"
+    print("[SCHEDULE EXECUTOR] Starting schedule executor loop...")
 
     while True:
-        print("@@@@@@@@@@@@@@@@@@@")
         now = datetime.now()
 
         if not os.path.exists(schedule_file):
-            time.sleep(15)
+            time.sleep(FREQUENCY_CHECK_SCHEDULE)
             continue
 
         try:
@@ -30,7 +29,7 @@ def run_schedule_executor():
                 schedules = []
 
         except Exception:
-            time.sleep(15)
+            time.sleep(FREQUENCY_CHECK_SCHEDULE)
             continue
 
         updated = False
@@ -62,6 +61,17 @@ def run_schedule_executor():
                 json.dump(schedules, f, ensure_ascii=False, indent=2)
 
         time.sleep(FREQUENCY_CHECK_SCHEDULE)
+
+def run_update_appliance_status():
+    while True:
+        print(["[STATUS LOOP] Checking appliance status..."])
+        try:
+            # status = get_all_appliances_status()
+            # print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
+            time.sleep(FREQUENCY_CHECK_SCHEDULE)
+        except Exception as e:
+            print(f"Error in status loop: {e}")
+            time.sleep(FREQUENCY_CHECK_SCHEDULE)
 
 
 

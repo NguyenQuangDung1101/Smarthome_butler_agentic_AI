@@ -1,5 +1,6 @@
 import json
 import socket
+import time
 
 # ESP_IP, ESP_PORT: adjust as needed
 # esp_id_port_map = [
@@ -13,7 +14,7 @@ esp_id_port_map = [
     ("172.20.41.157",5000),  # ESP ID 3
 ]
 
-def send_command(command, idx, timeout=10):
+def send_command(command, idx, timeout=13):
     """
     Send exactly ONE command to the ESP32, wait for reply,
     and return the 'value' from the ESP32 response.

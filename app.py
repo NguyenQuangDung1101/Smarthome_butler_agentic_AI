@@ -4,29 +4,24 @@ import threading
 from flask import Flask, render_template, request, jsonify
 
 # Import from your existing files
-from system import run_schedule_executor
+from system import run_schedule_executor, run_update_appliance_status
 from manual_control import control_appliance, device_mapping
 from appliance_util import get_all_appliances_status
+from espnode_manager.esp_communication import send_command
 
 app = Flask(__name__)
 
 # --- BACKGROUND LOOPS ---
 def loop_schedule_executor():
     """Loop 1: Runs the schedule executor"""
-    print("Starting Schedule Executor Loop...")
+    print("[SCHEDULE EXECUTOR]Starting Schedule Executor Loop...")
     run_schedule_executor()
 
 def loop_appliance_status():
     """Loop 2: Continuously gets appliance status"""
-    print("Starting Appliance Status Loop...")
-    while True:
-        try:
-            # status = get_all_appliances_status()
-            # print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
-            time.sleep(10) # Check every 10 seconds
-        except Exception as e:
-            print(f"Error in status loop: {e}")
-            time.sleep(10)
+    print("[STATUS LOOP] Appliance Status Loop...")
+    run_update_appliance_status()
+
 
 # Start threads before the first request
 @app.before_request
@@ -71,10 +66,12 @@ def control():
 
     # 1. Use manual_control.py to generate the command payload
     command_payload = control_appliance(int(espID), device_name, value)
-    print("Command generated:", command_payload)
-    
     if "error" in command_payload:
         return jsonify({"success": False, "error": command_payload["error"]})
+
+    result_message = send_command(command_payload, int(espID)-1)  # espID starts from 1, but our list is 0-indexed
+    print("Command execution:", result_message)
+    
         
     # Return success payload so the frontend knows it worked
     return jsonify({"success": True, "payload": command_payload})
