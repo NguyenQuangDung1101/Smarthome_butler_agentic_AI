@@ -10,3 +10,14 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force; . .\sma
 powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NoExit -Command ". .\smarthome\Scripts\Activate.ps1; Clear-Host"
 
 
+help me to make and config tab 3 (AI chat), in this tab i want it to look like a chat session (like in chat gpt browser), there will be chat tab (session) on the left side, click on it to access a specific chat session, else user will just choose new chat and it will create a new user session and user will then chat like normal
+this tab is manipulating the user session only (session_manage.py), in the chatting space, show the user message, the agent final message, agent tool use (print(f"[TOOL:{name}:RESULT]\n{safe}\n")) and appliance execution (print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")) because currently im just print it on the terminal (in agent.py)
+help me to modify the code to build the web app, think carefully, do change my current code
+
+
+
+make me a tab to control the schedule session (session_manage.py), the will be a space to modify data in weekday_weekend.json, also and space to monitor the schedule_session_loop (session_manage.py) status.
+there is also a button to turn on/off the schedule session
+
+
+For development: Run "npm run dev" in frontend (starts on port 5173 with API proxy)

@@ -233,11 +233,12 @@ class SessionManager:
         }
         # print(self.schedule_infer_history[schedule_infer_id])
 
-    def schedule_session_loop(self):
+    def schedule_session_loop(self, scheduler_file="./scheduler/weekday_weekend.json"):
         while True:
+            print("[SCHEDULE SESSION LOOP] Checking schedule moments...")
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # schedule_infer_id = "2025-11-17 07:31:06"
-            current_moment = self.get_moment(schedule_infer_id)
+            current_moment = self.get_moment(schedule_infer_id, scheduler_file)
             if not current_moment:
                 user_prompt = f"It is {schedule_infer_id}, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary."
                 self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
@@ -270,14 +271,14 @@ class SessionManager:
                     self.infer_schedule_session(user_prompt=user_prompt, context_text=context_text, schedule_infer_id=schedule_infer_id)
                     self.schedule_infer_history[schedule_infer_id].update({"moment": f"Moment:\n{json.dumps(current_moment['moment'], indent=2)}"})
 
-            print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n")
-            break
-            time.sleep(3)
+            # print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n")
+            # break
+            time.sleep(30)
             # break # For testing
 
             
 
-    def get_moment(self, datetime_str = None):
+    def get_moment(self, datetime_str = None, schedule_file="./scheduler/weekday_weekend.json"):
         if datetime_str is None:
             datetime_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
@@ -287,7 +288,7 @@ class SessionManager:
         current_time = current_dt.strftime('%H:%M:%S')
         current_day = current_dt.strftime('%A')
         
-        with open('./scheduler/weekday_weekend.json', 'r') as f:
+        with open(schedule_file, 'r') as f:
             schedule_data = json.load(f)
         
         # weekday/weekend

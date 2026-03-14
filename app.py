@@ -1,7 +1,8 @@
 import json
 import time
 import threading
-from flask import Flask, render_template, request, jsonify
+import os
+from flask import Flask, send_from_directory, jsonify, request
 
 # Import from your existing files
 from system import run_schedule_executor, run_update_appliance_status
@@ -9,7 +10,7 @@ from manual_control import control_appliance, device_mapping
 from appliance_util import get_all_appliances_status
 from espnode_manager.esp_communication import send_command
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='frontend/dist', static_url_path='')
 
 # --- BACKGROUND LOOPS ---
 def loop_schedule_executor():
@@ -34,9 +35,13 @@ def start_background_threads():
         app.threads_started = True
 
 # --- WEB ROUTES ---
-@app.route('/')
-def index():
-    return render_template('index.html')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/appliances', methods=['GET'])
 def get_appliances():

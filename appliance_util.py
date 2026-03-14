@@ -139,7 +139,6 @@ def format_all_statuses_from_dict(data: Dict[str, Any]) -> str:
         for kind in ("actuator", "sensor"):
             esp_id = block.get('espID', '')
             for item in block.get(kind, []):
-                print(item)
                 if kind == "actuator":
                     lines.append(_format_actuator(item, esp_id))
                 else:
@@ -289,7 +288,6 @@ def get_appliance_value(esp_id: int, device_name: str) -> str:
         response_value = send_command({"espID": esp_id, "device_type": "sensor", "device_name": device_name, "action": "get"}, esp_id - 1)
         if response_value != val:
             set_status = set_appliance_value_sensor(esp_id, device_name, response_value)
-            print(set_status)
             val = response_value
 
         ok, why = _check_constraint(val, item.get("constraints", {}))

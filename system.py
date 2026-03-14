@@ -2,7 +2,7 @@ import json
 import time
 import os
 from datetime import datetime
-from appliance_util import execute_appliance
+from appliance_util import execute_appliance, get_all_appliances_status
 from session_manage import SessionManager
 
 DELAY_TRIGGER_RANGE = 30  # seconds
@@ -66,8 +66,8 @@ def run_update_appliance_status():
     while True:
         print(["[STATUS LOOP] Checking appliance status..."])
         try:
-            # status = get_all_appliances_status()
-            # print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
+            status = get_all_appliances_status()
+            print(f"[Status Loop] Checked status. Length of status string: {len(status)}")
             time.sleep(FREQUENCY_CHECK_SCHEDULE)
         except Exception as e:
             print(f"Error in status loop: {e}")
