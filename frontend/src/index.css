@@ -149,6 +149,339 @@ body {
     min-height: 16px;
 }
 
+/* ═══════════════════════════════════════════════
+   Tab 4 – Notes
+   ═══════════════════════════════════════════════ */
+
+.note-add-form {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.note-add-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.note-date-input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 140px;
+}
+
+.note-text-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.note-add-btn {
+    width: auto !important;
+    padding: 8px 18px !important;
+    white-space: nowrap;
+}
+
+.note-status {
+    margin-top: 8px;
+    font-size: 0.875em;
+    font-weight: 600;
+}
+.note-status.status-ok  { color: #28a745; }
+.note-status.status-err { color: #dc3545; }
+
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.note-item {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.note-item-id {
+    font-size: 0.78em;
+    color: #aaa;
+    margin-bottom: 6px;
+    font-family: monospace;
+}
+
+.note-text {
+    font-size: 0.97em;
+    color: #333;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    word-break: break-word;
+}
+
+.note-edit-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.note-edit-input {
+    flex: 1;
+    min-width: 180px;
+    padding: 6px 10px;
+    border: 1px solid #80bdff;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+}
+
+.note-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.note-edit-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+.note-edit-btn:hover { background: #138496; }
+
+.note-delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+.note-delete-btn:hover { background: #c82333; }
+
+.no-data {
+    color: #888;
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+}
+
+
+/* ═══════════════════════════════════════════════
+   Tab 5 – Schedule Triggers
+   ═══════════════════════════════════════════════ */
+
+.schedule-form-box {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.schedule-form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: flex-end;
+}
+
+.sched-label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #555;
+    gap: 4px;
+    min-width: 160px;
+}
+
+.sched-hint {
+    font-weight: 400;
+    color: #999;
+}
+
+.sched-input {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 140px;
+    box-sizing: border-box;
+}
+
+.sched-check-label {
+    flex-direction: row;
+    align-items: center;
+    font-size: 0.9em;
+}
+
+.sched-form-btns {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.sched-submit-btn {
+    width: auto !important;
+    padding: 8px 20px !important;
+}
+
+.sched-cancel-btn {
+    padding: 8px 16px;
+}
+
+.schedule-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.sched-stats {
+    font-size: 0.9em;
+    color: #555;
+    margin-right: 12px;
+}
+
+.filter-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.filter-btn {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: 0.2s;
+}
+.filter-btn:hover  { background: #dee2e6; }
+.filter-btn.active { background: #007bff; color: white; border-color: #007bff; font-weight: bold; }
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-item {
+    border-radius: 7px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.sched-pending  { border-left: 4px solid #e67e22; }
+.sched-executed { border-left: 4px solid #27ae60; }
+
+.schedule-item-inner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #fff;
+}
+
+.sched-row-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.sched-row-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.sched-badge {
+    font-size: 0.75em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.badge-pending { background: #fef3e2; color: #e67e22; border: 1px solid #f0a04b; }
+.badge-done    { background: #e9f7ef; color: #27ae60; border: 1px solid #52be80; }
+
+.sched-index-label {
+    font-size: 0.78em;
+    color: #aaa;
+    font-family: monospace;
+}
+
+.sched-datetime {
+    font-size: 0.9em;
+    color: #555;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.sched-room {
+    font-size: 0.85em;
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.sched-arrow {
+    color: #999;
+    font-size: 0.9em;
+}
+
+.sched-device {
+    font-size: 0.88em;
+    color: #333;
+    font-weight: 600;
+}
+
+.sched-value {
+    font-weight: 700;
+    font-size: 0.9em;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.val-on  { background: #d4edda; color: #155724; }
+.val-off { background: #f8d7da; color: #721c24; }
+.val-num { background: #d1ecf1; color: #0c5460; }
+
+.sched-item-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+
 /* Chat Tab */
 .chat-box {
     border: 1px solid #ccc;

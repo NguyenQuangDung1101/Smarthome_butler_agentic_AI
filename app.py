@@ -182,6 +182,152 @@ def send_chat_message(session_id):
     )
 
 
+# --- NOTES API ---
+
+@app.route('/api/notes', methods=['GET'])
+def get_notes():
+    try:
+        from tools import _load_notes
+        return jsonify({"success": True, "data": _load_notes()})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/notes', methods=['POST'])
+def create_note():
+    try:
+        import uuid
+        from tools import _load_notes, _save_notes
+        data = request.json or {}
+        text = data.get('text', '').strip()
+        dates = data.get('dates', [])
+        if not text or not dates:
+            return jsonify({"success": False, "error": "text and dates are required"})
+        notes = _load_notes()
+        added = {}
+        for date in dates:
+            if date not in notes:
+                notes[date] = {}
+            note_id = uuid.uuid4().hex[:9]
+            notes[date][note_id] = text
+            added[date] = note_id
+        _save_notes(notes)
+        return jsonify({"success": True, "added": added})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/notes/<note_id>', methods=['PUT'])
+def update_note(note_id):
+    try:
+        from tools import _load_notes, _save_notes
+        data = request.json or {}
+        new_text = data.get('text', '').strip()
+        if not new_text:
+            return jsonify({"success": False, "error": "text is required"})
+        notes = _load_notes()
+        for date_notes in notes.values():
+            if note_id in date_notes:
+                date_notes[note_id] = new_text
+                _save_notes(notes)
+                return jsonify({"success": True})
+        return jsonify({"success": False, "error": "Note not found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/notes/<note_id>', methods=['DELETE'])
+def delete_note_api(note_id):
+    try:
+        from tools import _load_notes, _save_notes
+        notes = _load_notes()
+        for date_key, date_notes in list(notes.items()):
+            if note_id in date_notes:
+                del date_notes[note_id]
+                if not date_notes:
+                    del notes[date_key]
+                _save_notes(notes)
+                return jsonify({"success": True})
+        return jsonify({"success": False, "error": "Note not found"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
+# --- SCHEDULES API ---
+
+@app.route('/api/schedules', methods=['GET'])
+def get_schedules():
+    try:
+        with open('schedule_trigger.json', 'r', encoding='utf-8') as f:
+            schedules = json.load(f)
+        return jsonify({"success": True, "data": schedules})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/schedules', methods=['POST'])
+def create_schedule():
+    try:
+        data = request.json or {}
+        if 'datetime' not in data or 'appliance_control' not in data:
+            return jsonify({"success": False, "error": "datetime and appliance_control are required"})
+        ctrl = data['appliance_control']
+        for field in ['espID', 'device_type', 'device_name', 'action', 'value']:
+            if field not in ctrl:
+                return jsonify({"success": False, "error": f"Missing appliance_control field: {field}"})
+        try:
+            datetime.strptime(data['datetime'], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return jsonify({"success": False, "error": "datetime must be in format YYYY-MM-DD HH:MM:SS"})
+        new_entry = {
+            "datetime": data['datetime'],
+            "appliance_control": ctrl,
+            "executed": bool(data.get('executed', False))
+        }
+        with open('schedule_trigger.json', 'r', encoding='utf-8') as f:
+            schedules = json.load(f)
+        schedules.append(new_entry)
+        with open('schedule_trigger.json', 'w', encoding='utf-8') as f:
+            json.dump(schedules, f, ensure_ascii=False, indent=2)
+        return jsonify({"success": True, "index": len(schedules) - 1})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/schedules/<int:index>', methods=['PUT'])
+def update_schedule(index):
+    try:
+        with open('schedule_trigger.json', 'r', encoding='utf-8') as f:
+            schedules = json.load(f)
+        if index < 0 or index >= len(schedules):
+            return jsonify({"success": False, "error": "Index out of range"})
+        data = request.json or {}
+        if 'datetime' in data:
+            try:
+                datetime.strptime(data['datetime'], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return jsonify({"success": False, "error": "datetime must be in format YYYY-MM-DD HH:MM:SS"})
+            schedules[index]['datetime'] = data['datetime']
+        if 'appliance_control' in data:
+            schedules[index]['appliance_control'] = data['appliance_control']
+        if 'executed' in data:
+            schedules[index]['executed'] = bool(data['executed'])
+        with open('schedule_trigger.json', 'w', encoding='utf-8') as f:
+            json.dump(schedules, f, ensure_ascii=False, indent=2)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/schedules/<int:index>', methods=['DELETE'])
+def delete_schedule(index):
+    try:
+        with open('schedule_trigger.json', 'r', encoding='utf-8') as f:
+            schedules = json.load(f)
+        if index < 0 or index >= len(schedules):
+            return jsonify({"success": False, "error": "Index out of range"})
+        schedules.pop(index)
+        with open('schedule_trigger.json', 'w', encoding='utf-8') as f:
+            json.dump(schedules, f, ensure_ascii=False, indent=2)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 if __name__ == '__main__':
     # Run the Flask app on port 5000
     app.run(debug=True, use_reloader=False) 

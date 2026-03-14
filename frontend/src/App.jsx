@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ChatTab from './ChatTab.jsx';
+import NotesTab from './NotesTab.jsx';
+import ScheduleTab from './ScheduleTab.jsx';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('tab1');
@@ -182,6 +184,8 @@ const App = () => {
         <button className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`} onClick={() => openTab('tab1')}>Device Information</button>
         <button className={`tab-btn ${activeTab === 'tab2' ? 'active' : ''}`} onClick={() => openTab('tab2')}>Manual Control</button>
         <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>BEON AI Chat</button>
+        <button className={`tab-btn ${activeTab === 'tab4' ? 'active' : ''}`} onClick={() => openTab('tab4')}>Notes</button>
+        <button className={`tab-btn ${activeTab === 'tab5' ? 'active' : ''}`} onClick={() => openTab('tab5')}>Schedules</button>
       </div>
 
       {activeTab === 'tab1' && (
@@ -205,6 +209,10 @@ const App = () => {
       )}
 
       {activeTab === 'tab3' && <ChatTab />}
+
+      {activeTab === 'tab4' && <NotesTab />}
+
+      {activeTab === 'tab5' && <ScheduleTab />}
     </div>
   );
 };
