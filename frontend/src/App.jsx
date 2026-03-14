@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ChatTab from './ChatTab.jsx';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('tab1');
@@ -180,7 +181,7 @@ const App = () => {
       <div className="tabs">
         <button className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`} onClick={() => openTab('tab1')}>Device Information</button>
         <button className={`tab-btn ${activeTab === 'tab2' ? 'active' : ''}`} onClick={() => openTab('tab2')}>Manual Control</button>
-        <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>AI Chat</button>
+        <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>BEON AI Chat</button>
       </div>
 
       {activeTab === 'tab1' && (
@@ -203,20 +204,7 @@ const App = () => {
         </div>
       )}
 
-      {activeTab === 'tab3' && (
-        <div className="tab-content">
-          <h2>Agentic AI Chat</h2>
-          <div className="chat-box">
-            <div className="chat-history">
-              <p><em>AI: Hello! How can I manage your home today?</em></p>
-            </div>
-            <div className="chat-input-area">
-              <input type="text" placeholder="Type a message..." disabled />
-              <button disabled>Send</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {activeTab === 'tab3' && <ChatTab />}
     </div>
   );
 };

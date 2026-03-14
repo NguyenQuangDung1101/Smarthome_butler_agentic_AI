@@ -110,10 +110,27 @@ class ToolCallingAgent:
         self.latest_final = {}
         self.conversation_sunmmary = None
         self.conversation_sunmmary_updated = False
+        # Web chat support
+        self.event_log: List[Dict] = []
+        self.stream_queue = None  # set to a queue.Queue() for SSE streaming
+        self.is_running = False
 
     # ──────────────────────────────────────────────────────────────────────────────
     # Helper functions
     # ──────────────────────────────────────────────────────────────────────────────
+
+    def _log_event(self, event_type: str, content: str, extra: Optional[Dict] = None):
+        """Record an event in event_log and optionally stream it via stream_queue."""
+        event = {
+            "type": event_type,
+            "content": content,
+            "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        if extra:
+            event.update(extra)
+        self.event_log.append(event)
+        if self.stream_queue is not None:
+            self.stream_queue.put(event)
 
     def _compose_prompt(self) -> str:
         return "\n".join(self.conversation)
@@ -140,6 +157,7 @@ class ToolCallingAgent:
         payload = "\n".join(pieces).strip()
         safe = payload if payload else "<empty result>"
         print(f"[TOOL:{name}:RESULT]\n{safe}\n")
+        self._log_event("tool_result", safe, {"tool_name": name})
         self.conversation.append(f"[TOOL:{name}:RESULT]\n{safe}")
         self._trim_history_multi()
 
@@ -220,6 +238,7 @@ class ToolCallingAgent:
                 print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")
                 result = f"Appliance executed successfully{log_to_save}"
                 check_appliance = False
+                self._log_event("appliance", formated, {"appliance_config": appliance})
                 self.latest_appliance_execution = {
                     "execution": appliance,
                     "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -254,12 +273,14 @@ class ToolCallingAgent:
                 "final": final,
                 "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             }
+            self._log_event("final", final)
             return final
 
         return None
 
     async def run(self, user_prompt: str, use_kb=False, kb_path="./kb_store/test1") -> str:
         self.first_comunicate = False
+        self._log_event("user", user_prompt)
         self._append_user(user_prompt)
         for _ in range(1, self.max_steps + 1):
             final = await self.step_once()
