@@ -14,7 +14,7 @@ esp_id_port_map = [
     ("172.20.41.157",5000),  # ESP ID 3
 ]
 
-def send_command(command, idx, timeout=13):
+def send_command(command, idx, timeout=20):
     """
     Send exactly ONE command to the ESP32, wait for reply,
     and return the 'value' from the ESP32 response.
