@@ -263,8 +263,8 @@ class SessionManager:
                     
                     if context_text:
                         context_text = "Some appliance settings require user permission before execution. Please confirm the following appliances to be set:" + context_text
-                        # user_text = input(f"{context_text}\nYou: ").strip()
-                        # context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
+                        user_text = input(f"{context_text}\nYou: ").strip()
+                        context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
 
                     user_prompt = f"It is {schedule_infer_id}, here is some of the moment may have reached:\n{json.dumps(current_moment['moment'], indent=2)}\nPlease have a check on the house appliances system and take action to set up the appliances accordingly."
                     # print(user_prompt)
@@ -276,7 +276,6 @@ class SessionManager:
             time.sleep(30)
             # break # For testing
 
-            
 
     def get_moment(self, datetime_str = None, schedule_file="./scheduler/weekday_weekend.json"):
         if datetime_str is None:

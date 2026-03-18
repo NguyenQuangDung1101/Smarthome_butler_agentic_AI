@@ -21,3 +21,22 @@ there is also a button to turn on/off the schedule session
 
 
 For development: Run "npm run dev" in frontend (starts on port 5173 with API proxy)
+
+
+
+
+make me a tab to control the schedule session (session_manage.py), in this tab there will be a space to modify data in weekday_weekend.json, also and space to monitor the schedule_session_loop (session_manage.py) execution status (each loop execution will create an agent and automatically inference (except session that require user permission), so store the inference response for each execution (each schedule session)).
+there is also a button to turn on/off the schedule session (turn on or turn off (pausing the loop))
+
+for item in current_moment['moment']:
+    if item['type'] == 'appliance_setting' and 'Ask for user permission before execute' in item['data'].get('note', ''):
+        context_text = f"{context_text}\n{item['data'].get('appliances', '')}"
+
+if context_text:
+    context_text = "Some appliance settings require user permission before execution. Please confirm the following appliances to be set:" + context_text
+    user_text = input(f"{context_text}\nYou: ").strip()
+    context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
+
+in the case above (require user permission before execution), pop up a notification (add a notification bell button on the top left) to remind user to reply
+
+think carefully, just do what i told and dont change the current code
