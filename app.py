@@ -328,6 +328,94 @@ def delete_schedule(index):
         return jsonify({"success": False, "error": str(e)})
 
 
+# --- SCHEDULE SESSION LOOP API ---
+
+@app.route('/api/schedule-loop/status', methods=['GET'])
+def schedule_loop_status():
+    thread_alive = sm._schedule_loop_thread.is_alive() if sm._schedule_loop_thread else False
+    return jsonify({
+        "running": sm.schedule_loop_running and thread_alive,
+        "paused": sm.schedule_loop_paused,
+        "thread_alive": thread_alive,
+    })
+
+@app.route('/api/schedule-loop/start', methods=['POST'])
+def schedule_loop_start():
+    started = sm.start_schedule_loop()
+    return jsonify({"success": True, "started": started})
+
+@app.route('/api/schedule-loop/stop', methods=['POST'])
+def schedule_loop_stop():
+    sm.stop_schedule_loop()
+    return jsonify({"success": True})
+
+@app.route('/api/schedule-loop/pause', methods=['POST'])
+def schedule_loop_pause_toggle():
+    sm.pause_schedule_loop()
+    return jsonify({"success": True, "paused": sm.schedule_loop_paused})
+
+@app.route('/api/schedule-loop/history', methods=['GET'])
+def schedule_loop_history():
+    history = []
+    for infer_id, entry in sm.schedule_infer_history.items():
+        history.append({
+            "id": infer_id,
+            "date_time": entry.get("date_time"),
+            "session_id": entry.get("session_id"),
+            "result": entry.get("result"),
+            "user_context": entry.get("user_context"),
+            "appliance_execute": entry.get("appliance_execute"),
+            "moment": entry.get("moment"),
+        })
+    history.sort(key=lambda x: x.get("date_time", ""), reverse=True)
+    return jsonify(history)
+
+@app.route('/api/schedule-loop/permissions', methods=['GET'])
+def schedule_loop_permissions():
+    reqs = []
+    for req_id, req in sm.permission_requests.items():
+        reqs.append({
+            "id": req["id"],
+            "context": req["context"],
+            "status": req["status"],
+            "time": req["time"],
+        })
+    reqs.sort(key=lambda x: x.get("time", ""), reverse=True)
+    return jsonify(reqs)
+
+@app.route('/api/schedule-loop/permissions/<req_id>/respond', methods=['POST'])
+def respond_permission(req_id):
+    data = request.json or {}
+    user_text = data.get("response", "").strip()
+    ok = sm.respond_permission_request(req_id, user_text)
+    if ok:
+        return jsonify({"success": True})
+    return jsonify({"success": False, "error": "Request not found"}), 404
+
+@app.route('/api/weekday-weekend', methods=['GET'])
+def get_weekday_weekend():
+    try:
+        with open('./scheduler/weekday_weekend.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return jsonify({"success": True, "data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+@app.route('/api/weekday-weekend', methods=['PUT'])
+def save_weekday_weekend():
+    try:
+        data = request.json
+        if data is None:
+            return jsonify({"success": False, "error": "No data provided"})
+        # validate it's valid JSON structure
+        json.dumps(data)
+        with open('./scheduler/weekday_weekend.json', 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
+
 if __name__ == '__main__':
     # Run the Flask app on port 5000
     app.run(debug=True, use_reloader=False) 

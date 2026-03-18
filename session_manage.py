@@ -1,4 +1,6 @@
 import asyncio
+import threading
+import uuid
 from datetime import datetime
 from local_llm import load_system_prompt
 from agent import build_agent
@@ -19,6 +21,14 @@ class SessionManager:
         self.schedule_session = {}
         self.schedule_infer_history = {}
         self.moment_cache = [] # moment checking history
+        # Schedule loop control
+        self.schedule_loop_running = False
+        self.schedule_loop_paused = False
+        self._schedule_loop_thread = None
+        self._pause_event = threading.Event()
+        self._pause_event.set()  # not paused initially
+        # Permission requests: req_id -> {id, context, response, status, time, _event}
+        self.permission_requests = {}
 
     def get_list_of_normal_session(self):
         return list(self.normal_session.keys())
@@ -175,7 +185,10 @@ class SessionManager:
         parts = [role_sys_prompt, instruction_sys_prompt]
         sys_prompt = "\n\n".join([p for p in parts if p])
 
-        sys_prompt += f"\n\n[CURRENT APPLIANCES STATUS]:\n{get_all_appliances_status()}"
+        try:
+            sys_prompt += f"\n\n[CURRENT APPLIANCES STATUS]:\n{get_all_appliances_status()}"
+        except:
+            sys_prompt += f"\n\n[CURRENT APPLIANCES STATUS]:\nFailed to get appliances status."
 
         if self.get_latest_appliance_execution_by_agent():
             sys_prompt += f"\n\n[LATEST APPLIANCE EXECUTION BY AGENT]: {self.get_latest_appliance_execution_by_agent()['time']}\n{self.get_latest_appliance_execution_by_agent()['execution']}"
@@ -201,6 +214,7 @@ class SessionManager:
         return session_id
         
     def infer_schedule_session(self, session_id=None, context_text=None, user_prompt="None", schedule_infer_id=datetime.now().strftime('%Y-%m-%d %H:%M:%S')):
+        input_context = context_text  # save before session overwrite
         if not session_id:
             print(f"Did not receive session ID.")
             session_id = self.create_new_schedule_session(context_text=context_text)
@@ -217,24 +231,92 @@ class SessionManager:
         user_prompt = self.append_context_question(user_prompt, context_text) if context_text else user_prompt
         
         print(f"Running agent session ID (schedule): {session_id}")
+        print(user_prompt)
         if context_text:
             asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
             final = getattr(agent, "latest_final", None)["final"] if getattr(agent, "latest_final", None) else None
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@")
         else:
             final = asyncio.run(agent.run(user_prompt))
             print("\n=== Final Answer ===\n")
             print(final)
+            print("############################")
             
         self.schedule_infer_history[schedule_infer_id] = {
             "date_time": schedule_infer_id,
             "session_id": session_id,
             "result": final,
+            "user_context": input_context,
             "appliance_execute": getattr(agent, "latest_appliance_execution", None),
         }
         # print(self.schedule_infer_history[schedule_infer_id])
 
+    # ── Schedule loop control ──────────────────────────────────────────────────
+
+    def start_schedule_loop(self, scheduler_file="./scheduler/weekday_weekend.json"):
+        if self._schedule_loop_thread and self._schedule_loop_thread.is_alive():
+            return False  # already running
+        self.schedule_loop_running = True
+        self.schedule_loop_paused = False
+        self._pause_event.set()
+        self._schedule_loop_thread = threading.Thread(
+            target=self.schedule_session_loop,
+            args=(scheduler_file,),
+            daemon=True
+        )
+        self._schedule_loop_thread.start()
+        return True
+
+    def stop_schedule_loop(self):
+        self.schedule_loop_running = False
+        self._pause_event.set()  # unblock if paused so thread can exit
+
+    def pause_schedule_loop(self):
+        if not self.schedule_loop_paused:
+            self.schedule_loop_paused = True
+            self._pause_event.clear()
+        else:
+            self.schedule_loop_paused = False
+            self._pause_event.set()
+
+    def _request_permission(self, context_text):
+        """Block the schedule loop thread until the user responds via the web UI."""
+        req_id = uuid.uuid4().hex[:8]
+        evt = threading.Event()
+        self.permission_requests[req_id] = {
+            "id": req_id,
+            "context": context_text,
+            "response": None,
+            "status": "pending",
+            "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "_event": evt
+        }
+        print(f"[PERMISSION REQUEST] {req_id}: waiting for user response...")
+        evt.wait(timeout=300)  # wait up to 5 minutes
+        req = self.permission_requests[req_id]
+        if req.get("status") != "responded":
+            req["status"] = "timeout"
+        return req.get("response") or ""
+
+    def respond_permission_request(self, req_id, user_text):
+        if req_id not in self.permission_requests:
+            return False
+        req = self.permission_requests[req_id]
+        req["response"] = user_text
+        req["status"] = "responded"
+        evt = req.get("_event")
+        if evt:
+            evt.set()
+        return True
+
+    #################################################################################################
+
     def schedule_session_loop(self, scheduler_file="./scheduler/weekday_weekend.json"):
-        while True:
+        self.schedule_loop_running = True
+        while self.schedule_loop_running:
+            self._pause_event.wait()  # blocks while paused
+            if not self.schedule_loop_running:
+                break
             print("[SCHEDULE SESSION LOOP] Checking schedule moments...")
             schedule_infer_id = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # schedule_infer_id = "2025-11-17 07:31:06"
@@ -263,7 +345,7 @@ class SessionManager:
                     
                     if context_text:
                         context_text = "Some appliance settings require user permission before execution. Please confirm the following appliances to be set:" + context_text
-                        user_text = input(f"{context_text}\nYou: ").strip()
+                        user_text = self._request_permission(context_text)
                         context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
 
                     user_prompt = f"It is {schedule_infer_id}, here is some of the moment may have reached:\n{json.dumps(current_moment['moment'], indent=2)}\nPlease have a check on the house appliances system and take action to set up the appliances accordingly."
@@ -271,10 +353,12 @@ class SessionManager:
                     self.infer_schedule_session(user_prompt=user_prompt, context_text=context_text, schedule_infer_id=schedule_infer_id)
                     self.schedule_infer_history[schedule_infer_id].update({"moment": f"Moment:\n{json.dumps(current_moment['moment'], indent=2)}"})
 
-            # print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n")
-            # break
-            time.sleep(30)
-            # break # For testing
+            # interruptible sleep so stop_schedule_loop takes effect quickly
+            deadline = time.time() + 30
+            while time.time() < deadline and self.schedule_loop_running:
+                self._pause_event.wait()
+                time.sleep(1)
+        self.schedule_loop_running = False
 
 
     def get_moment(self, datetime_str = None, schedule_file="./scheduler/weekday_weekend.json"):

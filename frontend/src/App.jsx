@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChatTab from './ChatTab.jsx';
 import NotesTab from './NotesTab.jsx';
 import ScheduleTab from './ScheduleTab.jsx';
+import ScheduleSessionTab from './ScheduleSessionTab.jsx';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('tab1');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pendingPermissions, setPendingPermissions] = useState(0);
+  const [showBellPopup, setShowBellPopup] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -179,6 +182,23 @@ const App = () => {
 
   return (
     <div className="container">
+      {/* ── Notification Bell ── */}
+      <div className="notif-bell-wrapper">
+        <button
+          className={`notif-bell-btn${pendingPermissions > 0 ? ' has-notif' : ''}`}
+          onClick={() => { setShowBellPopup(p => !p); if (pendingPermissions > 0) setActiveTab('tab6'); }}
+          title="Pending permission requests"
+        >
+          🔔
+          {pendingPermissions > 0 && (
+            <span className="notif-bell-count">{pendingPermissions}</span>
+          )}
+        </button>
+        {showBellPopup && pendingPermissions === 0 && (
+          <div className="notif-popup">No pending notifications</div>
+        )}
+      </div>
+
       <h1>Smart Home Dashboard</h1>
       <div className="tabs">
         <button className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`} onClick={() => openTab('tab1')}>Device Information</button>
@@ -186,6 +206,10 @@ const App = () => {
         <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>BEON AI Chat</button>
         <button className={`tab-btn ${activeTab === 'tab4' ? 'active' : ''}`} onClick={() => openTab('tab4')}>Notes</button>
         <button className={`tab-btn ${activeTab === 'tab5' ? 'active' : ''}`} onClick={() => openTab('tab5')}>Schedules</button>
+        <button className={`tab-btn ${activeTab === 'tab6' ? 'active' : ''}`} onClick={() => openTab('tab6')}>
+          Schedule Session
+          {pendingPermissions > 0 && <span className="tab-notif-dot">{pendingPermissions}</span>}
+        </button>
       </div>
 
       {activeTab === 'tab1' && (
@@ -213,6 +237,10 @@ const App = () => {
       {activeTab === 'tab4' && <NotesTab />}
 
       {activeTab === 'tab5' && <ScheduleTab />}
+
+      {activeTab === 'tab6' && (
+        <ScheduleSessionTab onPendingPermissionsChange={setPendingPermissions} />
+      )}
     </div>
   );
 };
