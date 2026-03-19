@@ -120,7 +120,7 @@ class ToolCallingAgent:
     # ──────────────────────────────────────────────────────────────────────────────
 
     def _log_event(self, event_type: str, content: str, extra: Optional[Dict] = None):
-        """Record an event in event_log and optionally stream it via stream_queue."""
+        """Record an event in event_log and optionally stream it via stream_queue - chat history in frontend"""
         event = {
             "type": event_type,
             "content": content,
@@ -317,7 +317,6 @@ class ToolCallingAgent:
                 if final is not None:
                     print("\n=== Final Answer ===\n")
                     print(final)
-                    print()
                     break
                 try:
                     if i >= self.max_steps:
@@ -340,13 +339,6 @@ class ToolCallingAgent:
 # Example CLI usage
 # ──────────────────────────────────────────────────────────────────────────────
 
-# gpt-oss:20b-cloud
-# gpt-oss:120b-cloud
-# models/gemini-2.5-flash-lite
-# gemini-3-flash-preview:cloud
-# qwen3.5:397b-cloud
-# qwen3-vl:235b-cloud
-
 def build_agent(system_prompt_text: str, model: str = "gpt-oss:20b-cloud", host: str = "http://localhost:11434") -> ToolCallingAgent:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
@@ -360,10 +352,6 @@ if __name__ == "__main__":
 
     # parts = [role_sys_prompt, instruction_sys_prompt]
     # sys_prompt = "\n\n".join([p for p in parts if p])
-
-    # #gpt-oss:20b-cloud
-    # #qwen3:1.7b
-    # models/gemini-2.5-flash-lite
     # agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
 
     # # Interactive multi-turn terminal chat:

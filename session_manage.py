@@ -143,7 +143,7 @@ class SessionManager:
 
     #################################################################################################
     def create_new_normal_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
-        print("Creating new normal session...")
+        print("[NORMAL INFER] Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
 
@@ -160,25 +160,25 @@ class SessionManager:
     
     def infer_normal_session(self, session_id=None, context_text=None):
         if not session_id:
-            print(f"Did not receive session ID.")
+            print(f"[NORMAL INFER] Did not receive session ID.")
             session_id = self.create_new_normal_session(context_text=context_text)
         else:
             session = self.normal_session.get(session_id)
             if not session:
-                print(f"Session ID {session_id} not found.")
+                print(f"[NORMAL INFER] Session ID {session_id} not found.")
                 session_id = self.create_new_normal_session(context_text=context_text)
 
         session = self.normal_session.get(session_id)
         agent = session["agent"]
         context_text = session["context_text"]
         
-        print(f"Running agent session ID (normal): {session_id}")
+        print(f"[NORMAL INFER] Running agent session ID: {session_id}")
         user_prompt = self.append_context_question(context_text=context_text)
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     ###############################################################################################
     def create_new_schedule_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
-        print("Creating new schedule session...")
+        print("[SCHEDULE INFER] Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
 
@@ -200,7 +200,7 @@ class SessionManager:
         #     sys_prompt += f"\n\n[LATEST FINAL RESPONSE BY AGENT IN NORMAL SESSION]: {self.get_latest_final_by_agent_normal()['time']}\n{self.get_latest_final_by_agent_normal()['final']}"
 
         latest_summary = self.get_latest_convesation_summary_by_agent_normal()
-        print(f"Latest summary: {latest_summary}")
+        # print(f"Latest summary: {latest_summary}")
         if latest_summary:
             sys_prompt += f"\n\n[LATEST CONVERSATION SUMMARY BY AGENT IN NORMAL SESSION]:\n{latest_summary}"
 
@@ -216,12 +216,12 @@ class SessionManager:
     def infer_schedule_session(self, session_id=None, context_text=None, user_prompt="None", schedule_infer_id=datetime.now().strftime('%Y-%m-%d %H:%M:%S')):
         input_context = context_text  # save before session overwrite
         if not session_id:
-            print(f"Did not receive session ID.")
+            print(f"[SCHEDULE INFER] Did not receive session ID.")
             session_id = self.create_new_schedule_session(context_text=context_text)
         else:
             session = self.schedule_session.get(session_id)
             if not session:
-                print(f"Session ID {session_id} not found.")
+                print(f"[SCHEDULE INFER] Session ID {session_id} not found.")
                 session_id = self.create_new_schedule_session(context_text=context_text)
 
         session = self.schedule_session.get(session_id)
@@ -230,17 +230,15 @@ class SessionManager:
 
         user_prompt = self.append_context_question(user_prompt, context_text) if context_text else user_prompt
         
-        print(f"Running agent session ID (schedule): {session_id}")
-        print(user_prompt)
+        print(f"[SCHEDULE INFER] Running agent session ID: {session_id} with schedule_infer_id: {schedule_infer_id}")
+        # print(user_prompt)
         if context_text:
             asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
             final = getattr(agent, "latest_final", None)["final"] if getattr(agent, "latest_final", None) else None
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@")
         else:
             final = asyncio.run(agent.run(user_prompt))
             print("\n=== Final Answer ===\n")
             print(final)
-            print("############################")
             
         self.schedule_infer_history[schedule_infer_id] = {
             "date_time": schedule_infer_id,
@@ -291,7 +289,7 @@ class SessionManager:
             "time": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "_event": evt
         }
-        print(f"[PERMISSION REQUEST] {req_id}: waiting for user response...")
+        print(f"[SCHEDULE INFER - PERMISSION REQUEST] {req_id}: waiting for user response...")
         evt.wait(timeout=300)  # wait up to 5 minutes
         req = self.permission_requests[req_id]
         if req.get("status") != "responded":
@@ -334,7 +332,6 @@ class SessionManager:
                 # Not init
                 if "appliance_setting" not in f"{current_moment.get('moment', None)}":
                     user_prompt = f"It is {schedule_infer_id}, here is owner's activity period:\n{json.dumps(current_moment['moment'], indent=2)}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary."
-                    # print(user_prompt)
                     self.infer_schedule_session(user_prompt=user_prompt, schedule_infer_id=schedule_infer_id)
                     self.schedule_infer_history[schedule_infer_id].update({"moment": f"Moment:\n{json.dumps(current_moment['moment'], indent=2)}"})
                 else:
@@ -513,16 +510,6 @@ class SessionManager:
 
 
 if __name__ == "__main__":
-    # role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
-    # instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
-
-    # parts = [role_sys_prompt, instruction_sys_prompt]
-    # sys_prompt = "\n\n".join([p for p in parts if p])
-
-    # agent = build_agent(sys_prompt, model="gpt-oss:20b-cloud")
-
-    # # Interactive multi-turn terminal chat:
-    # asyncio.run(agent.chat_cli())
 
     test = SessionManager()
     # print(json.dumps(test.get_moment("2025-10-31 01:30:01")['moment']['data'], indent=2))

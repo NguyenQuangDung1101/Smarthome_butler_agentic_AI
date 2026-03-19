@@ -8,7 +8,7 @@ from datetime import datetime
 from flask import Flask, send_from_directory, jsonify, request, Response
 
 # Import from your existing files
-from system import run_schedule_executor, run_update_appliance_status
+from loop_trigger import run_schedule_executor, run_update_appliance_status
 from manual_control import control_appliance, device_mapping
 from appliance_util import get_all_appliances_status
 from espnode_manager.esp_communication import send_command
