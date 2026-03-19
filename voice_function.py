@@ -138,7 +138,9 @@ def listen_for_speech(
                     speech_count += 1
                 else:
                     speech_count = 0
-                print(speech_count)
+
+                # print(speech_count)
+                
                 if speech_count >= START_TRIGGER_FRAMES:
                     triggered = True
                     print("Speech detected. Recording...")
