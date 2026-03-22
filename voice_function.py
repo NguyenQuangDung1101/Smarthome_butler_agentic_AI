@@ -50,7 +50,8 @@ vad = webrtcvad.Vad(VAD_AGGRESSIVENESS)
 
 stt_model = WhisperModel(
     WHISPER_MODEL_SIZE,
-    compute_type="int8"
+    device="cpu", 
+    compute_type="float32"
 )
 
 
