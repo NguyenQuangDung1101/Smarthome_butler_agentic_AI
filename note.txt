@@ -17,7 +17,3 @@ For development: Run "npm run dev" in frontend (starts on port 5173 with API pro
 git config --global user.email "quangdungnguyen2004@gmail.com"
 git config --global user.name "Nguyen Quang Dung
 
-
-help me to integrate the voice function to chat tab (user session)
-click to turn on the voice function, agent will listen to user to send message, then speak out the agent response (final only)
-after agent response, agent then keep listening to user (until user click button to turn off the voice function)
