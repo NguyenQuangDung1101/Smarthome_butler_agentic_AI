@@ -1,12 +1,13 @@
 import collections
+import io
 import numpy as np
 import sounddevice as sd
 import webrtcvad
+import av
 from faster_whisper import WhisperModel
 import warnings
 import asyncio
 import edge_tts
-from playsound import playsound
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -58,16 +59,44 @@ stt_model = WhisperModel(
 # =========================
 # TTS
 # =========================
-async def _tts_async(text: str, output_file: str = "tts_output.mp3") -> None:
+async def _tts_collect(text: str) -> bytes:
+    """Stream audio bytes from edge_tts into memory."""
     communicate = edge_tts.Communicate(text, TTS_VOICE)
-    await communicate.save(output_file)
+    chunks = []
+    async for chunk in communicate.stream():
+        if chunk["type"] == "audio":
+            chunks.append(chunk["data"])
+    return b"".join(chunks)
+
+def _play_audio_bytes(mp3_bytes: bytes) -> None:
+    """Decode mp3 bytes with av and play directly via sounddevice."""
+    buf = io.BytesIO(mp3_bytes)
+    container = av.open(buf)
+    audio_stream = container.streams.audio[0]
+    sample_rate = audio_stream.codec_context.sample_rate or 44100
+
+    resampler = av.AudioResampler(format="fltp", layout="stereo", rate=sample_rate)
+    out_frames = []
+
+    for frame in container.decode(audio_stream):
+        for rf in resampler.resample(frame):
+            out_frames.append(rf.to_ndarray().T)   # (samples, 2) float32
+    for rf in resampler.resample(None):            # flush resampler
+        out_frames.append(rf.to_ndarray().T)
+
+    container.close()
+
+    if out_frames:
+        audio = np.concatenate(out_frames, axis=0)
+        sd.play(audio, samplerate=sample_rate)
+        sd.wait()
 
 def text_to_speech(text: str) -> None:
     if not text.strip():
         return
-    output_file = "tts_output.mp3"
-    asyncio.run(_tts_async(text, output_file))
-    playsound(output_file)
+    mp3_data = asyncio.run(_tts_collect(text))
+    if mp3_data:
+        _play_audio_bytes(mp3_data)
 
 
 # =========================
@@ -101,6 +130,7 @@ def listen_for_speech(
     sample_rate: int = SAMPLE_RATE,
     frame_duration_ms: int = FRAME_DURATION_MS,
     max_record_seconds: int = MAX_RECORD_SECONDS,
+    stop_event=None,        # optional threading.Event – set it to abort early
 ) -> np.ndarray:
     frame_size = int(sample_rate * frame_duration_ms / 1000)
     bytes_per_frame = frame_size * 2  # int16 = 2 bytes
@@ -123,6 +153,8 @@ def listen_for_speech(
         blocksize=frame_size
     ) as stream:
         while True:
+            if stop_event is not None and stop_event.is_set():
+                break
             audio_chunk, _ = stream.read(frame_size)   # shape: (frame_size, 1)
             frame = audio_chunk[:, 0].copy()          # shape: (frame_size,)
             frame_bytes = frame.tobytes()

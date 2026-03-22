@@ -416,6 +416,123 @@ def save_weekday_weekend():
         return jsonify({"success": False, "error": str(e)})
 
 
+# --- VOICE API ---
+# Keyed by session_id: {"active": bool, "state": str, "stop_event": Event}
+_voice_sessions: dict = {}
+
+
+def _voice_loop(session_id: str, agent, stop_event):
+    """Background thread: listen → STT → run agent → TTS → repeat."""
+    from voice_function import listen_for_speech, speech_to_text, text_to_speech
+
+    print(f"[VOICE] Loop started for session: {session_id}")
+    while not stop_event.is_set():
+        _voice_sessions[session_id]["state"] = "listening"
+        try:
+            audio = listen_for_speech(stop_event=stop_event)
+        except Exception as e:
+            print(f"[VOICE] listen_for_speech error: {e}")
+            if stop_event.is_set():
+                break
+            time.sleep(1)
+            continue
+
+        if stop_event.is_set():
+            break
+
+        import numpy as np
+        if not hasattr(audio, 'size') or audio.size == 0:
+            continue
+
+        _voice_sessions[session_id]["state"] = "transcribing"
+        try:
+            text = speech_to_text(audio)
+        except Exception as e:
+            print(f"[VOICE] STT error: {e}")
+            continue
+
+        if not text or stop_event.is_set():
+            continue
+
+        print(f"[VOICE] Heard: {text}")
+
+        # Wait for agent to finish any ongoing inference
+        _voice_sessions[session_id]["state"] = "waiting"
+        while agent.is_running and not stop_event.is_set():
+            time.sleep(0.5)
+
+        if stop_event.is_set():
+            break
+
+        # Run agent
+        _voice_sessions[session_id]["state"] = "processing"
+        final = None
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            final = loop.run_until_complete(agent.run(text))
+            loop.close()
+        except Exception as e:
+            print(f"[VOICE] Agent error: {e}")
+
+        if stop_event.is_set():
+            break
+
+        if final:
+            _voice_sessions[session_id]["state"] = "speaking"
+            try:
+                text_to_speech(final)
+            except Exception as e:
+                print(f"[VOICE] TTS error: {e}")
+
+    _voice_sessions[session_id]["active"] = False
+    _voice_sessions[session_id]["state"] = "idle"
+    print(f"[VOICE] Loop stopped for session: {session_id}")
+
+
+@app.route('/api/voice/start', methods=['POST'])
+def voice_start():
+    data = request.json or {}
+    session_id = data.get('session_id', '').strip()
+    if not session_id:
+        return jsonify({"success": False, "error": "session_id required"}), 400
+    session = sm.normal_session.get(session_id)
+    if not session:
+        return jsonify({"success": False, "error": "Session not found"}), 404
+    vs = _voice_sessions.get(session_id)
+    if vs and vs.get("active"):
+        return jsonify({"success": True, "already_active": True})
+    agent = session["agent"]
+    stop_event = threading.Event()
+    _voice_sessions[session_id] = {"active": True, "state": "starting", "stop_event": stop_event}
+    t = threading.Thread(target=_voice_loop, args=(session_id, agent, stop_event), daemon=True)
+    t.start()
+    return jsonify({"success": True})
+
+
+@app.route('/api/voice/stop', methods=['POST'])
+def voice_stop():
+    data = request.json or {}
+    session_id = data.get('session_id', '').strip()
+    if not session_id:
+        return jsonify({"success": False, "error": "session_id required"}), 400
+    vs = _voice_sessions.get(session_id)
+    if not vs:
+        return jsonify({"success": True, "was_active": False})
+    vs.get("stop_event").set()
+    _voice_sessions[session_id]["active"] = False
+    _voice_sessions[session_id]["state"] = "stopping"
+    return jsonify({"success": True})
+
+
+@app.route('/api/voice/status/<string:session_id>', methods=['GET'])
+def voice_status(session_id):
+    vs = _voice_sessions.get(session_id)
+    if not vs:
+        return jsonify({"active": False, "state": "idle"})
+    return jsonify({"active": vs.get("active", False), "state": vs.get("state", "idle")})
+
+
 if __name__ == '__main__':
     # Run the Flask app on port 5000
     app.run(debug=True, use_reloader=False) 

@@ -199,11 +199,11 @@ const App = () => {
         )}
       </div>
 
-      <h1>Smart Home Dashboard</h1>
+      <h1>BEON - Smart Home Butler</h1>
       <div className="tabs">
         <button className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`} onClick={() => openTab('tab1')}>Device Information</button>
         <button className={`tab-btn ${activeTab === 'tab2' ? 'active' : ''}`} onClick={() => openTab('tab2')}>Manual Control</button>
-        <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>BEON AI Chat</button>
+        <button className={`tab-btn ${activeTab === 'tab3' ? 'active' : ''}`} onClick={() => openTab('tab3')}>User Chat Session</button>
         <button className={`tab-btn ${activeTab === 'tab4' ? 'active' : ''}`} onClick={() => openTab('tab4')}>Notes</button>
         <button className={`tab-btn ${activeTab === 'tab5' ? 'active' : ''}`} onClick={() => openTab('tab5')}>Schedules</button>
         <button className={`tab-btn ${activeTab === 'tab6' ? 'active' : ''}`} onClick={() => openTab('tab6')}>

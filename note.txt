@@ -10,33 +10,14 @@ Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force; . .\sma
 powershell.exe -ExecutionPolicy Unrestricted -NoProfile -NoExit -Command ". .\smarthome\Scripts\Activate.ps1; Clear-Host"
 
 
-help me to make and config tab 3 (AI chat), in this tab i want it to look like a chat session (like in chat gpt browser), there will be chat tab (session) on the left side, click on it to access a specific chat session, else user will just choose new chat and it will create a new user session and user will then chat like normal
-this tab is manipulating the user session only (session_manage.py), in the chatting space, show the user message, the agent final message, agent tool use (print(f"[TOOL:{name}:RESULT]\n{safe}\n")) and appliance execution (print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")) because currently im just print it on the terminal (in agent.py)
-help me to modify the code to build the web app, think carefully, do change my current code
-
-
-
-make me a tab to control the schedule session (session_manage.py), the will be a space to modify data in weekday_weekend.json, also and space to monitor the schedule_session_loop (session_manage.py) status.
-there is also a button to turn on/off the schedule session
-
 
 For development: Run "npm run dev" in frontend (starts on port 5173 with API proxy)
 
 
+git config --global user.email "quangdungnguyen2004@gmail.com"
+git config --global user.name "Nguyen Quang Dung
 
 
-make me a tab to control the schedule session (session_manage.py), in this tab there will be a space to modify data in weekday_weekend.json, also and space to monitor the schedule_session_loop (session_manage.py) execution status (each loop execution will create an agent and automatically inference (except session that require user permission), so store the inference response for each execution (each schedule session)).
-there is also a button to turn on/off the schedule session (turn on or turn off (pausing the loop))
-
-for item in current_moment['moment']:
-    if item['type'] == 'appliance_setting' and 'Ask for user permission before execute' in item['data'].get('note', ''):
-        context_text = f"{context_text}\n{item['data'].get('appliances', '')}"
-
-if context_text:
-    context_text = "Some appliance settings require user permission before execution. Please confirm the following appliances to be set:" + context_text
-    user_text = input(f"{context_text}\nYou: ").strip()
-    context_text = f"{context_text}\n\n[User confirmation]: {user_text}"
-
-in the case above (require user permission before execution), pop up a notification (add a notification bell button on the top left) to remind user to reply
-
-think carefully, just do what i told and dont change the current code
+help me to integrate the voice function to chat tab (user session)
+click to turn on the voice function, agent will listen to user to send message, then speak out the agent response (final only)
+after agent response, agent then keep listening to user (until user click button to turn off the voice function)

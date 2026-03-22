@@ -765,7 +765,8 @@ body {
 /* ── Input bar ── */
 .chat-input-bar {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    gap: 0;
     padding: 12px 16px;
     background: #40414f;
     border-top: 1px solid #50515f;
@@ -799,6 +800,43 @@ body {
 }
 .chat-send-btn:hover:not(:disabled) { background: #1aad6f; }
 .chat-send-btn:disabled { background: #3a3b48; cursor: not-allowed; }
+
+/* ── Voice input row ── */
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-voice-btn {
+    padding: 10px 14px;
+    background: #3a3b48;
+    color: #ececf1;
+    border: 1px solid #565869;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+.chat-voice-btn:hover:not(:disabled) { background: #505165; }
+.chat-voice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-voice-btn.active {
+    background: #c0392b;
+    border-color: #e74c3c;
+    animation: voice-pulse 1.2s ease-in-out infinite;
+}
+@keyframes voice-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.45); }
+    50%       { box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+}
+
+.voice-state-indicator {
+    font-size: 12px;
+    color: #e74c3c;
+    font-weight: 600;
+    padding: 4px 4px 6px 4px;
+    letter-spacing: 0.03em;
+}
 
 /* ═══════════════════════════════════════════════
    Notification Bell

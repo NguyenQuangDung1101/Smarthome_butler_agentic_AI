@@ -7,8 +7,12 @@ const ChatTab = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [expandedEvents, setExpandedEvents] = useState({});
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceState, setVoiceState] = useState('idle');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const voicePollRef = useRef(null);
+  const voiceMsgPollRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,10 +39,77 @@ const ChatTab = () => {
     return () => clearInterval(id);
   }, [fetchSessions]);
 
+  // ── Voice polling ─────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (voiceActive && activeSessionId) {
+      voicePollRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`);
+          const data = await res.json();
+          setVoiceState(data.state || 'idle');
+          if (!data.active) {
+            setVoiceActive(false);
+            setVoiceState('idle');
+          }
+        } catch (_) {}
+      }, 1000);
+      voiceMsgPollRef.current = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/chat/sessions/${encodeURIComponent(activeSessionId)}/messages`);
+          const data = await res.json();
+          if (Array.isArray(data)) setMessages(data);
+        } catch (_) {}
+      }, 2000);
+    } else {
+      clearInterval(voicePollRef.current);
+      clearInterval(voiceMsgPollRef.current);
+    }
+    return () => {
+      clearInterval(voicePollRef.current);
+      clearInterval(voiceMsgPollRef.current);
+    };
+  }, [voiceActive, activeSessionId]);
+
+  // ── Voice toggle ──────────────────────────────────────────────────────────
+
+  const toggleVoice = async () => {
+    if (!activeSessionId) return;
+    if (voiceActive) {
+      await fetch('/api/voice/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: activeSessionId }),
+      }).catch(() => {});
+      setVoiceActive(false);
+      setVoiceState('idle');
+    } else {
+      try {
+        const res = await fetch('/api/voice/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: activeSessionId }),
+        });
+        const data = await res.json();
+        if (data.success) setVoiceActive(true);
+      } catch (_) {}
+    }
+  };
+
   // ── Load existing session ─────────────────────────────────────────────────
 
   const loadSession = async (sessionId) => {
     if (isLoading) return;
+    // Stop voice for current session before switching
+    if (voiceActive && activeSessionId) {
+      await fetch('/api/voice/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: activeSessionId }),
+      }).catch(() => {});
+      setVoiceActive(false);
+      setVoiceState('idle');
+    }
     setActiveSessionId(sessionId);
     setMessages([]);
     setExpandedEvents({});
@@ -54,6 +125,16 @@ const ChatTab = () => {
   // ── New session ───────────────────────────────────────────────────────────
 
   const createNewSession = async () => {
+    // Stop voice for current session before creating new one
+    if (voiceActive && activeSessionId) {
+      await fetch('/api/voice/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: activeSessionId }),
+      }).catch(() => {});
+      setVoiceActive(false);
+      setVoiceState('idle');
+    }
     try {
       const res = await fetch('/api/chat/sessions', {
         method: 'POST',
@@ -280,28 +361,49 @@ const ChatTab = () => {
             </div>
 
             <div className="chat-input-bar">
-              <input
-                ref={inputRef}
-                type="text"
-                className="chat-input"
-                value={inputText}
-                onChange={e => setInputText(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder="Message your home AI…"
-                disabled={isLoading}
-              />
-              <button
-                className="chat-send-btn"
-                onClick={sendMessage}
-                disabled={isLoading || !inputText.trim()}
-              >
-                {isLoading ? '…' : 'Send'}
-              </button>
+              {voiceActive && (
+                <div className="voice-state-indicator">
+                  {voiceState === 'listening'    && '🎤 Listening…'}
+                  {voiceState === 'transcribing' && '✍️ Transcribing…'}
+                  {voiceState === 'waiting'      && '⏳ Waiting for agent…'}
+                  {voiceState === 'processing'   && '⚙️ Processing…'}
+                  {voiceState === 'speaking'     && '🔊 Speaking…'}
+                  {voiceState === 'starting'     && '▶ Starting…'}
+                  {voiceState === 'stopping'     && '⏹ Stopping…'}
+                </div>
+              )}
+              <div className="chat-input-row">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  className="chat-input"
+                  value={inputText}
+                  onChange={e => setInputText(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder={voiceActive ? 'Voice mode active – listening…' : 'Message your home AI…'}
+                  disabled={isLoading || voiceActive}
+                />
+                <button
+                  className={`chat-voice-btn${voiceActive ? ' active' : ''}`}
+                  onClick={toggleVoice}
+                  disabled={!activeSessionId}
+                  title={voiceActive ? 'Stop voice mode' : 'Start voice mode'}
+                >
+                  🎤
+                </button>
+                <button
+                  className="chat-send-btn"
+                  onClick={sendMessage}
+                  disabled={isLoading || !inputText.trim() || voiceActive}
+                >
+                  {isLoading ? '…' : 'Send'}
+                </button>
+              </div>
             </div>
           </>
         )}
