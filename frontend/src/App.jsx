@@ -3,6 +3,7 @@ import ChatTab from './ChatTab.jsx';
 import NotesTab from './NotesTab.jsx';
 import ScheduleTab from './ScheduleTab.jsx';
 import ScheduleSessionTab from './ScheduleSessionTab.jsx';
+import logoUrl from './assets/logo_Beyondblue.png';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('tab1');
@@ -96,37 +97,55 @@ const App = () => {
     if (loading) return <div>Loading devices...</div>;
     if (!data) return <div>No data available.</div>;
 
+    // Index rooms by espID for fixed house layout
+    const roomsByEsp = {};
+    Object.entries(data).forEach(([roomName, roomData]) => {
+      roomsByEsp[roomData.espID] = { roomName, roomData };
+    });
+
+    const renderRoomBlock = (espID) => {
+      const entry = roomsByEsp[espID];
+      if (!entry) return null;
+      const { roomName, roomData } = entry;
+      const allDevices = [...(roomData.actuator || []), ...(roomData.sensor || [])];
+      return (
+        <div className="house-room">
+          <h3 className="room-title">
+            {roomName} <span style={{ fontSize: '0.72em', opacity: 0.55, fontWeight: 400 }}>ESP{espID}</span>
+          </h3>
+          <div className="nodes-grid">
+            {allDevices.map(device => {
+              let displayValue = device.value;
+              if (device.value_type === 'boolean') {
+                displayValue = device.value ? 'On' : 'Off';
+              }
+              if (device.constraints && device.constraints.unit) {
+                displayValue += ` ${device.constraints.unit}`;
+              }
+              return (
+                <div key={device.id} className="node-card">
+                  <div>
+                    <div className="node-header">{device.description}</div>
+                    <div className="node-id">ID: {device.id} | Type: {device.value_type}</div>
+                  </div>
+                  <div className="node-value">{displayValue}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
     return (
-      <div id="tab1-nodes">
-        {Object.entries(data).map(([roomName, roomData]) => {
-          const espID = roomData.espID;
-          const allDevices = [...(roomData.actuator || []), ...(roomData.sensor || [])];
-          return (
-            <div key={roomName} className="room-section">
-              <h3 className="room-title">{roomName} (espID: {espID})</h3>
-              <div className="nodes-grid">
-                {allDevices.map(device => {
-                  let displayValue = device.value;
-                  if (device.value_type === 'boolean') {
-                    displayValue = device.value ? 'On' : 'Off';
-                  }
-                  if (device.constraints && device.constraints.unit) {
-                    displayValue += ` ${device.constraints.unit}`;
-                  }
-                  return (
-                    <div key={device.id} className="node-card">
-                      <div>
-                        <div className="node-header">{device.description}</div>
-                        <div className="node-id">ID: {device.id} | Type: {device.value_type}</div>
-                      </div>
-                      <div className="node-value">{displayValue}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+      <div className="house-layout">
+        <div className="house-top-row">
+          {renderRoomBlock(1)}
+          {renderRoomBlock(3)}
+        </div>
+        <div className="house-bottom-row">
+          {renderRoomBlock(2)}
+        </div>
       </div>
     );
   };
@@ -145,32 +164,70 @@ const App = () => {
               <div className="nodes-grid">
                 {roomData.actuator.map(device => {
                   const inputId = `input-${espID}-${device.id}`;
-                  let inputHtml;
+                  const labelId = `label-${espID}-${device.id}`;
+
                   if (device.value_type === 'boolean') {
-                    inputHtml = (
-                      <select id={inputId} defaultValue={device.value.toString()}>
-                        <option value="true">True (On)</option>
-                        <option value="false">False (Off)</option>
-                      </select>
+                    return (
+                      <div key={device.id} className="node-card">
+                        <div>
+                          <div className="node-header">{device.description}</div>
+                          <div className="node-id">ID: {device.id} | Current: {device.value ? 'On' : 'Off'}</div>
+                        </div>
+                        {/* hidden input so updateDevice can read the chosen value */}
+                        <input type="hidden" id={inputId} defaultValue={device.value.toString()} />
+                        <div className="bool-btn-group">
+                          <button
+                            className={`bool-btn bool-on${device.value === true ? ' active' : ''}`}
+                            onClick={() => {
+                              const el = document.getElementById(inputId);
+                              if (el) el.value = 'true';
+                              updateDevice(espID, device.id, device.value_type, inputId);
+                            }}
+                          >On</button>
+                          <button
+                            className={`bool-btn bool-off${device.value === false ? ' active' : ''}`}
+                            onClick={() => {
+                              const el = document.getElementById(inputId);
+                              if (el) el.value = 'false';
+                              updateDevice(espID, device.id, device.value_type, inputId);
+                            }}
+                          >Off</button>
+                        </div>
+                        <div id={`status-${espID}-${device.id}`} className="status-msg"></div>
+                      </div>
                     );
-                  } else if (device.value_type === 'integer') {
+                  }
+
+                  if (device.value_type === 'integer') {
                     const min = device.constraints?.min ?? 0;
                     const max = device.constraints?.max ?? 100;
-                    inputHtml = <input type="number" id={inputId} defaultValue={device.value} min={min} max={max} />;
+                    return (
+                      <div key={device.id} className="node-card">
+                        <div>
+                          <div className="node-header">{device.description}</div>
+                          <div className="node-id">ID: {device.id} | Current: {device.value}</div>
+                        </div>
+                        <div className="slider-wrapper">
+                          <input
+                            type="range"
+                            id={inputId}
+                            defaultValue={device.value}
+                            min={min}
+                            max={max}
+                            onChange={e => {
+                              const lbl = document.getElementById(labelId);
+                              if (lbl) lbl.textContent = e.target.value;
+                            }}
+                          />
+                          <span id={labelId} className="slider-value">{device.value}</span>
+                        </div>
+                        <button className="update-btn" onClick={() => updateDevice(espID, device.id, device.value_type, inputId)}>Update</button>
+                        <div id={`status-${espID}-${device.id}`} className="status-msg"></div>
+                      </div>
+                    );
                   }
-                  return (
-                    <div key={device.id} className="node-card">
-                      <div>
-                        <div className="node-header">{device.description}</div>
-                        <div className="node-id">ID: {device.id} | Current: {device.value}</div>
-                      </div>
-                      <div className="control-input">
-                        {inputHtml}
-                      </div>
-                      <button className="update-btn" onClick={() => updateDevice(espID, device.id, device.value_type, inputId)}>Update</button>
-                      <div id={`status-${espID}-${device.id}`} className="status-msg"></div>
-                    </div>
-                  );
+
+                  return null;
                 })}
               </div>
             </div>
@@ -199,7 +256,10 @@ const App = () => {
         )}
       </div>
 
-      <h1>BEON - Smart Home Butler</h1>
+      <div className="site-header">
+        <img src={logoUrl} alt="BEON logo" className="site-logo" />
+        <h1>BEON - Smart Home Butler</h1>
+      </div>
       <div className="tabs">
         <button className={`tab-btn ${activeTab === 'tab1' ? 'active' : ''}`} onClick={() => openTab('tab1')}>Device Information</button>
         <button className={`tab-btn ${activeTab === 'tab2' ? 'active' : ''}`} onClick={() => openTab('tab2')}>Manual Control</button>
@@ -226,7 +286,6 @@ const App = () => {
         <div className="tab-content">
           <div className="header-action">
             <h2>Control Actuators</h2>
-            <button className="refresh-btn" onClick={fetchData}>Refresh Devices</button>
           </div>
           {renderTab2Controls()}
         </div>
