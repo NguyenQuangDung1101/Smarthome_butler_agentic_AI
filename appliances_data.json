@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 25.7,
+          "value": 29.7,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 26.5,
+          "value": 30.3,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -185,7 +185,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 60,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -197,7 +197,7 @@
           "id": "motor2",
           "description": "Window curtain",
           "value_type": "integer",
-          "value": 100,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -209,7 +209,7 @@
           "id": "servo",
           "description": "Lock",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 27.5,
+          "value": 31.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 27.4,
+          "value": 30.2,
           "constraints": {
             "type": "float",
             "min": -40.0,
