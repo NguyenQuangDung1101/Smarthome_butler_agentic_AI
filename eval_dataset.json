@@ -1,0 +1,352 @@
+[
+  {
+    "id": "test_01",
+    "task_type": "single",
+    "prompt": "Turn on the livingroom light now.",
+    "eval_note": "Expected decision: directly set Livingroom led1 = true (espID 1, actuator, led1, set, true).\nA good answer should execute the light change and clearly inform the user that the action was made.\nNo unrelated tools or extra appliance changes should be used.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Turn on the livingroom light now\n    Agent->>House: set espID1 led1 = true\n    House-->>Agent: success\n    Agent-->>Owner: confirm livingroom light turned on"
+  },
+  {
+    "id": "test_02",
+    "task_type": "single",
+    "prompt": "Set the hallway fan to 65%.",
+    "eval_note": "Expected decision: directly set Hallway motor1 = 65 (espID 2).\nThe agent should not modify hallway lights or door.\nA correct result includes an execution confirmation.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Set hallway fan to 65%\n    Agent->>House: set espID2 motor1 = 65\n    House-->>Agent: success\n    Agent-->>Owner: confirm hallway fan set to 65%"
+  },
+  {
+    "id": "test_03",
+    "task_type": "single",
+    "prompt": "What is the bedroom temperature right now?",
+    "eval_note": "Expected decision: get Bedroom temperature sensor only (espID 3, sensor, tem, get).\nThe agent should report the retrieved value and should not change any appliance.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: What is the bedroom temperature right now?\n    Agent->>House: get espID3 tem\n    House-->>Agent: current bedroom temperature\n    Agent-->>Owner: report value with no execution"
+  },
+  {
+    "id": "test_04",
+    "task_type": "multi",
+    "prompt": "I'm about to arrive home. Please open the main door, turn on both hallway lights, and turn on the livingroom light.",
+    "eval_note": "Expected decision: set hallway door motor2 to an open position, set hallway led1 = true, hallway led2 = true, and livingroom led1 = true.\nBecause the request says \"about to arrive home\" and implies immediate action, direct execution is acceptable.\nThe agent should not touch bedroom appliances.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Prepare arrival home\n    Agent->>House: set espID2 motor2 = open value\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    Agent->>House: set espID1 led1 = true\n    House-->>Agent: success\n    Agent-->>Owner: confirm door and lights prepared"
+  },
+  {
+    "id": "test_05",
+    "task_type": "multi",
+    "prompt": "I'm leaving the house now. Turn off all lights, stop all fans, close the main door, close the bedroom curtain, and lock the bedroom lock.",
+    "eval_note": "Expected decision: turn off led1 in livingroom; hallway led1 and led2 off; bedroom led1, led2, led3 off; motor1 fans to 0 in all rooms; hallway motor2 to fully closed; bedroom motor2 to fully closed; bedroom servo to locked state.\nThe agent should provide a concise confirmation of all executed changes.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Leaving house now\n    Agent->>House: set all lights off\n    Agent->>House: set all fans to 0\n    Agent->>House: set hallway main door closed\n    Agent->>House: set bedroom curtain closed\n    Agent->>House: set bedroom lock locked\n    House-->>Agent: success\n    Agent-->>Owner: confirm away-mode actions"
+  },
+  {
+    "id": "test_06",
+    "task_type": "expression",
+    "prompt": "It's really hot in the bedroom. Make it more comfortable for me.",
+    "eval_note": "Expected decision: interpret comfort intent and improve bedroom conditions.\nReasonable action: set bedroom fan to a moderate value such as 50-80; optionally check bedroom temperature first before deciding.\nThe agent should avoid unrelated appliances and should explain what it changed.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: It's really hot in the bedroom\n    Agent->>House: get espID3 tem\n    House-->>Agent: temperature\n    Agent->>House: set espID3 motor1 = comfortable speed\n    House-->>Agent: success\n    Agent-->>Owner: explain comfort adjustment"
+  },
+  {
+    "id": "test_07",
+    "task_type": "expression",
+    "prompt": "I'm scared walking through the hallway at night, please make it easier for me.",
+    "eval_note": "Expected decision: infer that hallway lighting should be enabled.\nA good answer turns on hallway lights and may optionally turn on livingroom light if helpful, but should avoid random fan or door changes.\nThe answer should acknowledge the user's feeling and state what was done.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: I'm scared walking through the hallway at night\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    House-->>Agent: success\n    Agent-->>Owner: reassure and confirm brighter hallway"
+  },
+  {
+    "id": "test_08",
+    "task_type": "multi_step",
+    "prompt": "I want movie mode in the livingroom. First check the livingroom temperature. If it is above 27°C, set the fan to 55%. Then turn off the livingroom light.",
+    "eval_note": "Expected decision: first get livingroom temperature sensor (espID 1, tem).\nIf temperature > 27, set livingroom fan motor1 = 55, then set livingroom light led1 = false.\nIf temperature <= 27, only turn off the light.\nThe order matters: sensor read before conditional fan control.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Activate livingroom movie mode\n    Agent->>House: get espID1 tem\n    House-->>Agent: livingroom temperature\n    alt temp > 27\n        Agent->>House: set espID1 motor1 = 55\n    end\n    Agent->>House: set espID1 led1 = false\n    House-->>Agent: success\n    Agent-->>Owner: report actions based on temperature"
+  },
+  {
+    "id": "test_09",
+    "task_type": "multi_step",
+    "prompt": "I am going to sleep in the bedroom now. Check the bedroom temperature first. If it is above 26.5°C, turn on the bedroom fan to 45%. Turn off the room light and bed light, close the curtain, and lock the bedroom.",
+    "eval_note": "Expected decision: get espID3 tem first.\nIf above threshold, set bedroom fan motor1 = 45; then set led1=false, led2=false, motor2=0 (closed curtain), servo to locked state.\nThe agent should not change balcony light unless the user asked.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Prepare bedroom for sleep\n    Agent->>House: get espID3 tem\n    House-->>Agent: bedroom temperature\n    alt temp > 26.5\n        Agent->>House: set espID3 motor1 = 45\n    end\n    Agent->>House: set espID3 led1 = false\n    Agent->>House: set espID3 led2 = false\n    Agent->>House: set espID3 motor2 = closed\n    Agent->>House: set espID3 servo = locked\n    House-->>Agent: success\n    Agent-->>Owner: confirm bedroom sleep setup"
+  },
+  {
+    "id": "test_10",
+    "task_type": "schedule_trigger",
+    "prompt": "I will arrive home in 20 minutes. Please open the main door and turn on both hallway lights when I arrive.",
+    "eval_note": "Expected decision: use trigger_schedule_agent, not immediate appliance execution.\nThe request is future-oriented and should be translated into a scheduled action for the hallway door and lights around arrival time.\nA strong answer clearly says the schedule was created.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Scheduler\n    Owner->>Agent: I will arrive home in 20 minutes\n    Agent->>Scheduler: create scheduled arrival action\n    Scheduler-->>Agent: schedule saved\n    Agent-->>Owner: confirm scheduled door and hallway lights"
+  },
+  {
+    "id": "test_11",
+    "task_type": "schedule_trigger",
+    "prompt": "I am going to nap in the bedroom for about 30 minutes. Please turn off the room light, set the bedroom fan to 40%, and after 30 minutes turn the fan off again.",
+    "eval_note": "Expected decision: use trigger_schedule_agent because the request includes timed behavior and reversal.\nA correct interpretation schedules immediate sleep-state actions and a later restore or turn-off action after 30 minutes.\nImmediate one-shot control without scheduling is incomplete.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Scheduler\n    Owner->>Agent: Nap for 30 minutes\n    Agent->>Scheduler: create timed bedroom routine with reverse step\n    Scheduler-->>Agent: schedule saved\n    Agent-->>Owner: confirm timed nap routine"
+  },
+  {
+    "id": "test_12",
+    "task_type": "note_add",
+    "prompt": "Add a note for 2026-04-07: 'Remember to clean the bonsai area and check the balcony pump.'",
+    "eval_note": "Expected decision: use add_note with the given date.\nNo appliance control should happen.\nThe response should mention that the note was stored successfully.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Notes\n    Owner->>Agent: Add note for 2026-04-07\n    Agent->>Notes: add_note(...)\n    Notes-->>Agent: note id created\n    Agent-->>Owner: confirm note saved"
+  },
+  {
+    "id": "test_13",
+    "task_type": "note_read",
+    "prompt": "Read all notes for 2026-04-07.",
+    "eval_note": "Expected decision: use read_note with date 2026-04-07.\nThe agent should return the notes and avoid appliance execution.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Notes\n    Owner->>Agent: Read notes for 2026-04-07\n    Agent->>Notes: read_note(date=2026-04-07)\n    Notes-->>Agent: notes list\n    Agent-->>Owner: report notes"
+  },
+  {
+    "id": "test_14",
+    "task_type": "note_check",
+    "prompt": "Check how many notes I have on 2026-04-07.",
+    "eval_note": "Expected decision: use check_note with the requested date.\nThe agent should report note count and note IDs if available.\nNo appliance action is needed.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Notes\n    Owner->>Agent: Check notes on 2026-04-07\n    Agent->>Notes: check_note(date=2026-04-07)\n    Notes-->>Agent: count and ids\n    Agent-->>Owner: report count"
+  },
+  {
+    "id": "test_15",
+    "task_type": "note_delete",
+    "prompt": "Delete note id 123e4567-e89b-12d3-a456-426614174000.",
+    "eval_note": "Expected decision: use delete_note with the given note ID.\nNo appliance action should be taken.\nThe agent should confirm deletion result.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Notes\n    Owner->>Agent: Delete a note by id\n    Agent->>Notes: delete_note(id)\n    Notes-->>Agent: deletion result\n    Agent-->>Owner: confirm deletion"
+  },
+  {
+    "id": "test_16",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 10:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\nLivingroom:\n- Light off\n- Fan 0%\n- PIR: no motion\n- Temperature: 25.6°C\n\nHallway:\n- Left light off\n- Right light off\n- Fan 0%\n- Main door 0% fully closed\n- PIR: no motion\n- Temperature: 26.4°C\n\nBedroom + balcony:\n- Room light off\n- Bed light off\n- Balcony light off\n- Fan 0%\n- Window curtain 0% fully closed\n- Lock locked\n- Pump off\n- PIR: no motion\n- Temperature: 27.1°C\n- Outside temperature: 27.8°C\n- Moisture: 45%",
+    "eval_note": "Expected decision: overall state is normal for an idle house.\nBest result is either no action or a minimal suggestion only. The agent should avoid unnecessary executions.\nA poor result would randomly turn devices on without evidence.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: No moment reached + current state\n    Agent->>House: optional status verification\n    House-->>Agent: status consistent\n    Agent-->>Scheduler: no action needed or only minor suggestion"
+  },
+  {
+    "id": "test_17",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 13:40:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\nLivingroom:\n- Light off\n- Fan 0%\n- PIR: no motion\n- Temperature: 26.0°C\n\nHallway:\n- Left light off\n- Right light off\n- Fan 0%\n- Main door 70% open\n- PIR: no motion\n- Temperature: 26.2°C\n\nBedroom + balcony:\n- Room light off\n- Bed light off\n- Balcony light off\n- Fan 0%\n- Window curtain 0% fully closed\n- Lock unlocked\n- Pump off\n- PIR: no motion\n- Temperature: 27.0°C\n- Outside temperature: 28.3°C\n- Moisture: 46%",
+    "eval_note": "Expected decision: this idle-house snapshot has security anomalies: hallway main door is open and bedroom lock is unlocked while there is no motion anywhere.\nReasonable action: close the main door and lock the bedroom; the agent should explain the security-based decision.\nNo need to change lights or fans.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Overall idle check with open door and unlocked lock\n    Agent->>House: set espID2 motor2 = closed\n    Agent->>House: set espID3 servo = locked\n    House-->>Agent: success\n    Agent-->>Scheduler: report security corrections"
+  },
+  {
+    "id": "test_18",
+    "task_type": "schedule_session_init",
+    "prompt": "It is 2026-04-06 06:00:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 0, \"curtain\": 0, \"lock\": true, \"pump\": false}\n}\n\nCurrent observed state:\n- Livingroom light = true\n- Hallway left light = false\n- Hallway right light = false\n- Hallway fan = 0\n- Main door = 0\n- Bedroom room light = false\n- Bed light = true\n- Balcony light = false\n- Bedroom fan = 0\n- Curtain = 0\n- Lock = false\n- Pump = false",
+    "eval_note": "Expected decision: compare current state with init baseline and correct mismatches.\nAt minimum: turn off livingroom light, turn off bed light, and lock bedroom.\nThe agent should not modify already-correct devices.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Init check with baseline and observed mismatch\n    Agent->>House: set espID1 led1 = false\n    Agent->>House: set espID3 led2 = false\n    Agent->>House: set espID3 servo = locked\n    House-->>Agent: success\n    Agent-->>Scheduler: report init-state corrections"
+  },
+  {
+    "id": "test_19",
+    "task_type": "schedule_session",
+    "prompt": "It is 2026-04-06 09:30:00, here is owner's activity period:\n[\n  {\n    \"type\": \"activity\",\n    \"data\": {\n      \"name\": \"working_from_home_in_livingroom\",\n      \"expected_duration\": \"09:00-12:00\",\n      \"note\": \"Owner is usually in the livingroom during this period.\"\n    }\n  }\n]\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\n\nCurrent house state:\n- Livingroom light off\n- Livingroom fan 0%\n- Livingroom PIR motion detected\n- Livingroom temperature 29.2°C\n- Hallway all lights off, fan 0, door closed, no motion\n- Bedroom all lights off, fan 0, curtain closed, lock unlocked, no motion",
+    "eval_note": "Expected decision: infer that livingroom should be comfortable for active occupancy because PIR confirms presence and temperature is high.\nReasonable action: turn on livingroom light if lighting is needed and/or set livingroom fan to a comfort level.\nThe strongest grounded action here is increasing livingroom fan because temperature is 29.2°C.\nThe agent should not overreact to the unlocked bedroom if the owner is at home unless it explicitly justifies a security preference.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Working-from-home moment + current state\n    Agent->>House: set espID1 motor1 = comfort speed\n    opt lighting support\n        Agent->>House: set espID1 led1 = true\n    end\n    House-->>Agent: success\n    Agent-->>Scheduler: report comfort-focused adjustment"
+  },
+  {
+    "id": "test_20",
+    "task_type": "schedule_session",
+    "prompt": "It is 2026-04-06 18:30:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true},\n        {\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true},\n        {\"espID\": 1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}\n      ],\n      \"note\": \"Prepare bright path when owner comes home.\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.",
+    "eval_note": "Expected decision: execute the scheduled appliance settings directly because no special permission note is present.\nThe agent should set hallway led1=true, hallway led2=true, and livingroom led1=true, then confirm execution.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: appliance_setting moment reached\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    Agent->>House: set espID1 led1 = true\n    House-->>Agent: success\n    Agent-->>Scheduler: confirm scheduled lights applied"
+  },
+  {
+    "id": "test_21",
+    "task_type": "schedule_session_permission",
+    "prompt": "It is 2026-04-06 22:30:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"espID\": 3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true},\n        {\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\": 0}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nSome appliance settings require user permission before execution. Please confirm the following appliances to be set:\n- lock bedroom\n- close main door\n\n[User confirmation]: Yes, do it now.\n\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.",
+    "eval_note": "Expected decision: because user confirmation is explicitly included and positive, the agent should execute the requested security actions.\nA correct result closes hallway main door and locks the bedroom, then confirms execution.\nIf confirmation were missing or negative, execution should not happen.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant User\n    participant House\n    Scheduler->>Agent: permission-required moment\n    User-->>Agent: Yes, do it now\n    Agent->>House: set espID3 servo = locked\n    Agent->>House: set espID2 motor2 = closed\n    House-->>Agent: success\n    Agent-->>Scheduler: confirm permissioned execution"
+  },
+  {
+    "id": "test_22",
+    "task_type": "out_of_range",
+    "prompt": "Set the hallway fan to 150%.",
+    "eval_note": "Expected decision: reject or correct the out-of-range value because hallway fan accepts only 0-100.\nBest behavior: explain valid range and either ask for a valid value or clamp only if the policy allows explicit safe correction.\nBlindly sending value 150 is incorrect.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    Owner->>Agent: Set hallway fan to 150%\n    Agent-->>Owner: explain valid range is 0-100 and refuse/ask correction"
+  },
+  {
+    "id": "test_23",
+    "task_type": "out_of_range",
+    "prompt": "Open the bedroom curtain to -10%.",
+    "eval_note": "Expected decision: reject or correct because curtain motor2 value must be 0-100.\nThe agent should not execute a negative value.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    Owner->>Agent: Set curtain to -10%\n    Agent-->>Owner: explain invalid range and refuse/ask correction"
+  },
+  {
+    "id": "test_24",
+    "task_type": "invalid_target",
+    "prompt": "Turn on the kitchen light.",
+    "eval_note": "Expected decision: kitchen does not exist in the known house areas and appliance list.\nThe agent should explain that the target area/device is unavailable and should not fabricate a tool call or house action.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    Owner->>Agent: Turn on the kitchen light\n    Agent-->>Owner: explain kitchen is not in available house map"
+  },
+  {
+    "id": "test_25",
+    "task_type": "conflict",
+    "prompt": "Turn on the hallway left light and turn it off at the same time.",
+    "eval_note": "Expected decision: identify conflicting instructions and ask for clarification or state that the request is contradictory.\nIt should not randomly choose one action without explanation.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    Owner->>Agent: Conflicting light command\n    Agent-->>Owner: explain conflict and ask for a single final state"
+  },
+  {
+    "id": "test_26",
+    "task_type": "complex",
+    "prompt": "The bedroom feels warm. Check the bedroom temperature and outside temperature. If outside is cooler than inside by at least 1°C, open the bedroom curtain to 100% and keep fan at 0%. Otherwise set the bedroom fan to 50%.",
+    "eval_note": "Expected decision: get espID3 tem and espID3 tem_out first.\nIf tem_out <= tem - 1.0, open curtain fully and keep or set fan to 0.\nOtherwise set bedroom fan to 50.\nThis is a multi-sensor conditional decision test.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Compare inside and outside bedroom conditions\n    Agent->>House: get espID3 tem\n    Agent->>House: get espID3 tem_out\n    House-->>Agent: inside and outside temperatures\n    alt outside cooler by at least 1C\n        Agent->>House: set espID3 motor2 = 100\n        Agent->>House: set espID3 motor1 = 0\n    else not cooler enough\n        Agent->>House: set espID3 motor1 = 50\n    end\n    House-->>Agent: success\n    Agent-->>Owner: report decision"
+  },
+  {
+    "id": "test_27",
+    "task_type": "complex",
+    "prompt": "Should I water the bonsai today? Please check the outside moisture and today's hourly forecast first, then decide whether to turn on the pump.",
+    "eval_note": "Expected decision: use moisture sensor (espID 3, mois) and weather forecast tool before deciding.\nGood logic: if moisture is already high or rain is likely soon, avoid watering; if moisture is low and no rain is expected soon, pump may be turned on.\nThe answer should explain the reasoning and only then execute pump if justified.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    participant Weather\n    Owner->>Agent: Decide whether to water bonsai today\n    Agent->>House: get espID3 mois\n    Agent->>Weather: get hourly forecast\n    House-->>Agent: moisture value\n    Weather-->>Agent: forecast data\n    alt dry enough and low rain chance\n        Agent->>House: set espID3 pump = true\n        House-->>Agent: success\n    else not needed\n        Agent-->>Owner: recommend no watering now\n    end"
+  },
+  {
+    "id": "test_28",
+    "task_type": "complex",
+    "prompt": "I want fresh air in the bedroom this afternoon. Check today's weather first. If rain is expected in the next 2 hours, keep the curtain closed. Otherwise open the curtain to 100%.",
+    "eval_note": "Expected decision: use hourly forecast tool first, then control bedroom curtain motor2 accordingly.\nThe agent should not rely only on the current indoor temperature because the condition is explicitly weather-based.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Weather\n    participant House\n    Owner->>Agent: Fresh air decision for bedroom\n    Agent->>Weather: get hourly forecast\n    Weather-->>Agent: rain outlook\n    alt rain expected soon\n        Agent->>House: keep espID3 motor2 = 0 or do nothing if already closed\n    else no rain expected\n        Agent->>House: set espID3 motor2 = 100\n    end\n    House-->>Agent: success\n    Agent-->>Owner: explain weather-based choice"
+  },
+  {
+    "id": "test_29",
+    "task_type": "accident_handling",
+    "prompt": "Emergency check:\nTime: 2026-04-06 02:10:00\nCurrent house state:\n- Hallway main door 100% open\n- Hallway PIR motion detected\n- Livingroom PIR no motion\n- Bedroom PIR no motion\n- All hallway lights off\n\nPlease decide what to do.",
+    "eval_note": "Expected decision: treat as suspicious late-night security situation.\nReasonable actions: turn on hallway lights immediately and inform the user about unexpected motion/open door; optionally suggest caution rather than silently ignoring it.\nThe agent should avoid unlocking or opening more devices.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Monitor\n    participant Agent\n    participant House\n    participant User\n    Monitor->>Agent: Night anomaly with open door and motion\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    House-->>Agent: success\n    Agent-->>User: alert suspicious hallway activity"
+  },
+  {
+    "id": "test_30",
+    "task_type": "accident_handling",
+    "prompt": "Emergency-like anomaly:\nTime: 2026-04-06 14:05:00\nNo motion detected in any room.\nLivingroom temperature suddenly reads 39.8°C.\nHallway temperature 26.0°C.\nBedroom temperature 27.1°C.\n\nPlease decide what to do.",
+    "eval_note": "Expected decision: detect abnormal local temperature spike in livingroom and respond cautiously.\nReasonable action: turn off livingroom light if it is on, keep fan available for ventilation if appropriate, and alert/report anomaly rather than pretending everything is normal.\nBecause there is no dedicated smoke sensor, the evaluation should focus on anomaly recognition and cautious response, not on a single mandatory actuator pattern.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Monitor\n    participant Agent\n    participant House\n    participant User\n    Monitor->>Agent: Abnormal livingroom temperature spike\n    Agent->>House: optional status checks\n    Agent-->>User: warn about unusual high temperature\n    opt reduce heat sources or ventilate\n        Agent->>House: adjust livingroom appliances safely\n        House-->>Agent: success\n    end"
+  },
+  {
+    "id": "test_31",
+    "task_type": "accident_handling",
+    "prompt": "General check:\n- Balcony pump has been on for 45 minutes continuously.\n- Outside moisture is already 82%.\n- No one is on the balcony.\n\nPlease decide what to do.",
+    "eval_note": "Expected decision: stop the pump because continuous watering with already high moisture is wasteful and potentially harmful.\nThe agent should set espID3 pump = false and explain why.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Monitor\n    participant Agent\n    participant House\n    Monitor->>Agent: Pump on too long, moisture already high\n    Agent->>House: set espID3 pump = false\n    House-->>Agent: success\n    Agent-->>User: report overwatering prevention"
+  },
+  {
+    "id": "test_32",
+    "task_type": "accident_handling",
+    "prompt": "Security anomaly:\n- Main door is 100% open\n- Hallway PIR motion detected\n- Bedroom lock is unlocked\n- Owner has not requested any arrival action\n\nPlease decide what to do.",
+    "eval_note": "Expected decision: recognize security risk.\nA grounded response should at least alert the user and turn on hallway lights; it may also recommend locking the bedroom after the situation is clarified.\nThe agent should not auto-lock the main exit while motion is present unless it explains safety reasoning carefully.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Monitor\n    participant Agent\n    participant House\n    participant User\n    Monitor->>Agent: Open door + motion + unlocked bedroom\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    House-->>Agent: success\n    Agent-->>User: alert security anomaly and recommend action"
+  },
+  {
+    "id": "test_33",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 12:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\nLivingroom:\n- Light on\n- Fan 75%\n- PIR no motion\n- Temperature 25.4°C\n\nHallway:\n- Left light on\n- Right light on\n- Fan 60%\n- Main door fully closed\n- PIR no motion\n- Temperature 25.9°C\n\nBedroom + balcony:\n- Room light on\n- Bed light off\n- Balcony light on\n- Fan 80%\n- Curtain fully closed\n- Lock unlocked\n- Pump off\n- PIR no motion\n- Temperature 26.3°C\n- Outside temperature 31.2°C\n- Moisture 44%",
+    "eval_note": "Expected decision: idle house with many devices left on suggests energy waste.\nReasonable action: turn off unused lights, turn all fans to 0 because there is no motion anywhere and temperatures are moderate, and optionally lock the bedroom for security.\nThe agent should justify actions using no-motion evidence.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Idle-house energy waste snapshot\n    Agent->>House: turn off unused lights\n    Agent->>House: set unused fans to 0\n    opt security preference\n        Agent->>House: set espID3 servo = locked\n    end\n    House-->>Agent: success\n    Agent-->>Scheduler: report energy-saving corrections"
+  },
+  {
+    "id": "test_34",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 15:20:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\n- No motion in livingroom, hallway, or bedroom\n- Hallway main door fully closed\n- Bedroom lock unlocked\n- All lights off\n- All fans 0\n- Curtain 0 fully closed\n- Pump off",
+    "eval_note": "Expected decision: overall state is mostly good; the only likely security improvement is locking the bedroom.\nA good result either locks the bedroom or explicitly suggests doing so; it should not invent extra actions.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Mostly normal idle house except unlocked bedroom\n    Agent->>House: set espID3 servo = locked\n    House-->>Agent: success\n    Agent-->>Scheduler: report minor security correction"
+  },
+  {
+    "id": "test_35",
+    "task_type": "expression",
+    "prompt": "I'm going to read in bed for the next hour. Make the bedroom comfortable for reading.",
+    "eval_note": "Expected decision: interpret reading context.\nReasonable action: turn on bed light, optionally keep room light off or on depending on preference, and use fan only if needed after checking or inferring comfort.\nA minimal good answer is bed light on with a clear confirmation.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Prepare bedroom for reading\n    Agent->>House: set espID3 led2 = true\n    opt comfort adjustment\n        Agent->>House: get espID3 tem\n        Agent->>House: set espID3 motor1 = comfortable speed\n    end\n    House-->>Agent: success\n    Agent-->>Owner: confirm reading setup"
+  },
+  {
+    "id": "test_36",
+    "task_type": "expression",
+    "prompt": "I have a guest coming in five minutes, make the house welcoming.",
+    "eval_note": "Expected decision: because the request is short-future and somewhat vague, two acceptable strategies exist:\n1) immediate prep if interpreted as \"prepare now\", or\n2) use trigger_schedule_agent for actions in five minutes.\nStrong grounded prep includes hallway lights on, livingroom light on, and possibly opening the main door at arrival time rather than immediately.\nThe evaluation should reward coherent interpretation and minimal, relevant actions.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Scheduler\n    participant House\n    Owner->>Agent: Guest coming in five minutes\n    alt immediate preparation\n        Agent->>House: turn on welcoming lights\n        House-->>Agent: success\n    else schedule at arrival time\n        Agent->>Scheduler: create guest-arrival action\n        Scheduler-->>Agent: schedule saved\n    end\n    Agent-->>Owner: explain chosen preparation plan"
+  },
+  {
+    "id": "test_37",
+    "task_type": "multi",
+    "prompt": "Good morning. Open the bedroom curtain, turn on the livingroom light, and set the hallway fan to 30%.",
+    "eval_note": "Expected decision: set bedroom curtain motor2 = 100, livingroom led1 = true, hallway motor1 = 30.\nThe agent should confirm all three actions and avoid changing unrelated bedroom lights or lock.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Good morning routine\n    Agent->>House: set espID3 motor2 = 100\n    Agent->>House: set espID1 led1 = true\n    Agent->>House: set espID2 motor1 = 30\n    House-->>Agent: success\n    Agent-->>Owner: confirm morning setup"
+  },
+  {
+    "id": "test_38",
+    "task_type": "multi",
+    "prompt": "Good night. Turn off every light, stop all fans, close the main door, close the bedroom curtain, and lock the bedroom.",
+    "eval_note": "Expected decision: execute a whole-house night mode similar to away/sleep security state.\nThe agent should switch all lights off, all fans to 0, main door closed, bedroom curtain closed, bedroom lock locked.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Good night\n    Agent->>House: all lights off\n    Agent->>House: all fans 0\n    Agent->>House: main door closed\n    Agent->>House: curtain closed\n    Agent->>House: bedroom locked\n    House-->>Agent: success\n    Agent-->>Owner: confirm night mode"
+  },
+  {
+    "id": "test_39",
+    "task_type": "complex_note_schedule",
+    "prompt": "Add a note for 2026-04-08 saying 'Parents visiting at 19:00'. Also, please schedule the hallway lights and livingroom light to turn on at 18:55 that day.",
+    "eval_note": "Expected decision: this combines note storage and future scheduling.\nThe agent should use add_note for the date and trigger_schedule_agent for the future light actions.\nDoing only one of the two is incomplete.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Notes\n    participant Scheduler\n    Owner->>Agent: Add visit note and light schedule\n    Agent->>Notes: add_note(...)\n    Notes-->>Agent: note saved\n    Agent->>Scheduler: create 2026-04-08 18:55 light schedule\n    Scheduler-->>Agent: schedule saved\n    Agent-->>Owner: confirm both note and schedule"
+  },
+  {
+    "id": "test_40",
+    "task_type": "schedule_session_with_notes",
+    "prompt": "It is 2026-04-08 18:50:00. Before deciding any preparation, check whether there are notes for today. If there is a note saying guests or parents are visiting, prepare the hallway and livingroom lights accordingly.",
+    "eval_note": "Expected decision: use note checking/reading first, then conditionally execute or schedule relevant light preparation.\nThis tests whether the agent can use notes as context for house behavior.\nA correct answer should not ignore the note tool.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant Notes\n    participant House\n    Scheduler->>Agent: Pre-evening contextual check\n    Agent->>Notes: check/read note for 2026-04-08\n    Notes-->>Agent: visit note present\n    Agent->>House: set hallway and livingroom lights on\n    House-->>Agent: success\n    Agent-->>Scheduler: report note-driven preparation"
+  },
+  {
+    "id": "test_41",
+    "task_type": "single",
+    "prompt": "What time is it now?",
+    "eval_note": "Expected decision: use get_current_datetime.\nThe agent should return the current date/time and must not control appliances.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant TimeTool\n    Owner->>Agent: What time is it now?\n    Agent->>TimeTool: get_current_datetime\n    TimeTool-->>Agent: current date and time\n    Agent-->>Owner: report current date and time"
+  },
+  {
+    "id": "test_42",
+    "task_type": "single",
+    "prompt": "Check the balcony moisture sensor for me.",
+    "eval_note": "Expected decision: get espID3 moisture sensor only.\nNo appliance should be changed.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Check balcony moisture\n    Agent->>House: get espID3 mois\n    House-->>Agent: moisture value\n    Agent-->>Owner: report moisture"
+  },
+  {
+    "id": "test_43",
+    "task_type": "multi_step",
+    "prompt": "Please check the livingroom temperature. If it is 28°C or higher, set the livingroom fan to 60%. Otherwise leave it off.",
+    "eval_note": "Expected decision: get livingroom tem first, then conditionally set livingroom fan.\nThe agent should not guess the temperature without reading it.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Conditional livingroom fan\n    Agent->>House: get espID1 tem\n    House-->>Agent: temperature\n    alt temp >= 28\n        Agent->>House: set espID1 motor1 = 60\n        House-->>Agent: success\n    else temp < 28\n        Agent-->>Owner: leave fan off\n    end"
+  },
+  {
+    "id": "test_44",
+    "task_type": "multi_step",
+    "prompt": "Check the balcony moisture first. If it is below 30%, turn on the pump. If it is 30% or above, do not water.",
+    "eval_note": "Expected decision: read espID3 mois first, then conditionally set pump.\nThe agent should not water without a sensor-based decision because the rule is explicit.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Moisture-based watering rule\n    Agent->>House: get espID3 mois\n    House-->>Agent: moisture value\n    alt moisture < 30\n        Agent->>House: set espID3 pump = true\n        House-->>Agent: success\n    else moisture >= 30\n        Agent-->>Owner: no watering needed\n    end"
+  },
+  {
+    "id": "test_45",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 17:10:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\nLivingroom:\n- Light off\n- Fan 0\n- PIR no motion\n- Temperature 26.0°C\n\nHallway:\n- Left light off\n- Right light off\n- Fan 0\n- Main door 0 closed\n- PIR no motion\n- Temperature 25.8°C\n\nBedroom + balcony:\n- Room light off\n- Bed light off\n- Balcony light on\n- Fan 0\n- Curtain 100 open\n- Lock unlocked\n- Pump off\n- PIR no motion\n- Temperature 26.2°C\n- Outside temperature 24.9°C\n- Moisture 47%\n\nAdditional context: local forecast indicates rain in the next hour.",
+    "eval_note": "Expected decision: with no motion, balcony light on is unnecessary; open curtain with incoming rain may be undesirable depending on house design; unlocked bedroom is a minor security issue.\nReasonable actions: turn off balcony light, close the curtain, and optionally lock the bedroom.\nThis case rewards using contextual weather information in an overall check.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    participant Weather\n    Scheduler->>Agent: Idle-house check with balcony exposed\n    Agent->>Weather: optional forecast verification\n    Weather-->>Agent: rain soon\n    Agent->>House: set espID3 led3 = false\n    Agent->>House: set espID3 motor2 = 0\n    opt security preference\n        Agent->>House: set espID3 servo = locked\n    end\n    House-->>Agent: success\n    Agent-->>Scheduler: report weather-aware corrections"
+  },
+  {
+    "id": "test_46",
+    "task_type": "out_of_range",
+    "prompt": "Set the bedroom lock to 30%.",
+    "eval_note": "Expected decision: reject because the bedroom lock is boolean, not a percentage.\nBest behavior: explain that the lock only supports locked/unlocked boolean states.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    Owner->>Agent: Set bedroom lock to 30%\n    Agent-->>Owner: explain lock expects boolean state, not percent"
+  },
+  {
+    "id": "test_47",
+    "task_type": "expression",
+    "prompt": "I heard a strange noise near the hallway. Can you help me check?",
+    "eval_note": "Expected decision: a good response should check relevant hallway status first, such as PIR and main door state, and may turn on hallway lights to improve visibility.\nThe agent should acknowledge uncertainty and avoid claiming facts without checking.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant House\n    Owner->>Agent: Strange noise near hallway\n    Agent->>House: get espID2 pir\n    Agent->>House: get espID2 motor2 status\n    House-->>Agent: hallway motion and door status\n    Agent->>House: set espID2 led1 = true\n    Agent->>House: set espID2 led2 = true\n    House-->>Agent: success\n    Agent-->>Owner: report findings and action"
+  },
+  {
+    "id": "test_48",
+    "task_type": "complex",
+    "prompt": "Search the web and tell me a comfortable sleeping temperature for a bedroom, then set my bedroom fan appropriately if my bedroom is warmer than that.",
+    "eval_note": "Expected decision: use web search to get a comfort reference, then read bedroom temperature, then decide fan control.\nThe answer should cite the comfort target it found in a grounded way and only set the fan if bedroom temperature is above that target.\nThis tests combined web-read and appliance control.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Owner\n    participant Agent\n    participant Web\n    participant House\n    Owner->>Agent: Find sleep temperature and adjust fan\n    Agent->>Web: search comfortable sleeping temperature\n    Web-->>Agent: temperature guidance\n    Agent->>House: get espID3 tem\n    House-->>Agent: current bedroom temperature\n    alt bedroom warmer than guidance\n        Agent->>House: set espID3 motor1 = suitable speed\n        House-->>Agent: success\n    else not warmer\n        Agent-->>Owner: no fan change needed\n    end"
+  },
+  {
+    "id": "test_49",
+    "task_type": "schedule_session_init",
+    "prompt": "It is 2026-04-06 05:50:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 0, \"curtain\": 0, \"lock\": true, \"pump\": false}\n}\n\nCurrent observed state:\n- Livingroom light = false\n- Livingroom fan = 0\n- Hallway left light = false\n- Hallway right light = false\n- Hallway fan = 0\n- Main door = 0\n- Bedroom room light = false\n- Bed light = false\n- Balcony light = false\n- Bedroom fan = 0\n- Curtain = 0\n- Lock = true\n- Pump = false",
+    "eval_note": "Expected decision: everything already matches the initial baseline.\nThe best result is no execution and a brief confirmation that the house is already in the correct initial state.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Init baseline check, everything matches\n    Agent->>House: optional verification only\n    House-->>Agent: state matches baseline\n    Agent-->>Scheduler: no action needed"
+  },
+  {
+    "id": "test_50",
+    "task_type": "overall_check",
+    "prompt": "It is 2026-04-06 21:40:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\n\nCurrent house state:\nLivingroom:\n- Light on\n- Fan 20%\n- PIR no motion\n- Temperature 24.8°C\n\nHallway:\n- Left light off\n- Right light off\n- Fan 0%\n- Main door 40% open\n- PIR no motion\n- Temperature 25.5°C\n\nBedroom + balcony:\n- Room light off\n- Bed light on\n- Balcony light on\n- Fan 65%\n- Curtain 100% open\n- Lock unlocked\n- Pump on\n- PIR no motion\n- Temperature 25.1°C\n- Outside temperature 22.2°C\n- Moisture 78%",
+    "eval_note": "Expected decision: this is a mixed anomaly case. With no motion anywhere, the house has energy waste and security issues.\nStrong actions: turn off livingroom light, bed light, balcony light; set livingroom and bedroom fans to 0; close main door; lock bedroom; turn off pump because moisture is already high; consider closing curtain as part of night/security cleanup.\nThis is a comprehensive overall-check benchmark where multiple grounded corrections are expected.",
+    "ground_truth_mermaid": "sequenceDiagram\n    participant Scheduler\n    participant Agent\n    participant House\n    Scheduler->>Agent: Mixed idle-house anomaly snapshot\n    Agent->>House: turn off unnecessary lights\n    Agent->>House: set unnecessary fans to 0\n    Agent->>House: set espID2 motor2 = closed\n    Agent->>House: set espID3 servo = locked\n    Agent->>House: set espID3 pump = false\n    opt night cleanup\n        Agent->>House: set espID3 motor2 = 0\n    end\n    House-->>Agent: success\n    Agent-->>Scheduler: report all corrections"
+  }
+]

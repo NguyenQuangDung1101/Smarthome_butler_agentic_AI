@@ -1,0 +1,524 @@
+id,task_type,prompt,generated_raw,extracted_mermaid,syntax_pass,syntax_detail,logic_score,judge_reason
+test_01,single_action,Turn on the bedroom light.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant RoomLight as Room light (espID:3, led1)
+
+    User->>Assistant: Turn on the bedroom light.
+    Assistant->>Hub: Set Room light to true
+    Hub->>RoomLight: set value = true
+    RoomLight-->>Hub: true
+    Hub-->>Assistant: Success
+    Assistant-->>User: The bedroom light has been turned on.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant RoomLight as Room light (espID:3, led1)
+
+    User->>Assistant: Turn on the bedroom light.
+    Assistant->>Hub: Set Room light to true
+    Hub->>RoomLight: set value = true
+    RoomLight-->>Hub: true
+    Hub-->>Assistant: Success
+    Assistant-->>User: The bedroom light has been turned on.",True,mmdc: OK,4,"Minor wording differences and response messages, but the participants, flow, and actions correctly match the intended logic."
+test_02,single_action,Can you set the living room fan to 70%?,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LRFan as Fan (espID:1, motor1)
+
+    User->>Assistant: Can you set the living room fan to 70%?
+    Assistant->>Hub: set motor1 (espID:1) to 70
+    Hub->>LRFan: set value = 70
+    LRFan-->>Hub: value = 70
+    Hub-->>Assistant: Success
+    Assistant-->>User: I've set the living room fan to 70%.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LRFan as Fan (espID:1, motor1)
+
+    User->>Assistant: Can you set the living room fan to 70%?
+    Assistant->>Hub: set motor1 (espID:1) to 70
+    Hub->>LRFan: set value = 70
+    LRFan-->>Hub: value = 70
+    Hub-->>Assistant: Success
+    Assistant-->>User: I've set the living room fan to 70%.",True,mmdc: OK,4,"Minor wording differences and acknowledgment phrasing, but participants, flow, and values match the ground truth."
+test_03,sensor_check,What is the temperature in the bedroom right now?,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant BedTemp as Temperature sensor (espID:3, tem)
+
+    User->>Assistant: What is the temperature in the bedroom right now?
+    Assistant->>Hub: get temperature (espID:3, tem)
+    Hub->>BedTemp: get status
+    BedTemp-->>Hub: 27.5
+    Hub-->>Assistant: 27.5
+    Assistant-->>User: The temperature in the bedroom is 27.5°C.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant BedTemp as Temperature sensor (espID:3, tem)
+
+    User->>Assistant: What is the temperature in the bedroom right now?
+    Assistant->>Hub: get temperature (espID:3, tem)
+    Hub->>BedTemp: get status
+    BedTemp-->>Hub: 27.5
+    Hub-->>Assistant: 27.5
+    Assistant-->>User: The temperature in the bedroom is 27.5°C.",True,mmdc: OK,4,"Minor wording and participant name differences, but the logical flow and temperature data are correctly represented."
+test_04,multi_action,Turn on both lights in the hallway.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LeftLight as Left light (espID:2, led1)
+    participant RightLight as Right light (espID:2, led2)
+
+    User->>Assistant: Turn on both lights in the hallway
+    Assistant->>Hub: Set hallway lights to true
+    par
+        Hub->>LeftLight: set value = true
+        LeftLight-->>Hub: success
+    and
+        Hub->>RightLight: set value = true
+        RightLight-->>Hub: success
+    end
+    Hub->>Assistant: Hallway lights turned on
+    Assistant->>User: I've turned on both lights in the hallway for you.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LeftLight as Left light (espID:2, led1)
+    participant RightLight as Right light (espID:2, led2)
+
+    User->>Assistant: Turn on both lights in the hallway
+    Assistant->>Hub: Set hallway lights to true
+    par
+        Hub->>LeftLight: set value = true
+        LeftLight-->>Hub: success
+    and
+        Hub->>RightLight: set value = true
+        RightLight-->>Hub: success
+    end
+    Hub->>Assistant: Hallway lights turned on
+    Assistant->>User: I've turned on both lights in the hallway for you.",True,mmdc: OK,5,"The generated diagram matches the ground truth in participants, flow, and actions despite minor naming differences."
+test_05,single_action,Open the front door all the way.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant MainDoor as Main door (espID:2, motor2)
+
+    User->>Assistant: Open the front door all the way.
+    Assistant->>Hub: set value = 100 for espID:2, id:motor2
+    Hub->>MainDoor: set value = 100
+    MainDoor-->>Hub: confirmation (value: 100)
+    Hub-->>Assistant: status: success
+    Assistant-->>User: The front door has been opened completely.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant MainDoor as Main door (espID:2, motor2)
+
+    User->>Assistant: Open the front door all the way.
+    Assistant->>Hub: set value = 100 for espID:2, id:motor2
+    Hub->>MainDoor: set value = 100
+    MainDoor-->>Hub: confirmation (value: 100)
+    Hub-->>Assistant: status: success
+    Assistant-->>User: The front door has been opened completely.",True,mmdc: OK,4,"Minor wording differences in messages but the participants, flow, and actions match the ground truth."
+test_06,conditional_logic,It feels stuffy in the living room. Check the temperature and turn on the fan if it is above 28 degrees.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LrTem as Temperature sensor (espID:1, tem)
+    participant LrFan as Fan (espID:1, motor1)
+
+    User->>Assistant: It feels stuffy in the living room. Check the temperature and turn on the fan if it is above 28 degrees.
+    Assistant->>Hub: get status (espID:1, tem)
+    Hub->>LrTem: get status
+    LrTem-->>Hub: 25.7
+    Hub-->>Assistant: 25.7
+    alt 25.7 > 28
+        Assistant->>Hub: set value = 100
+        Hub->>LrFan: set value = 100
+        LrFan-->>Hub: OK
+        Hub-->>Assistant: OK
+        Assistant-->>User: Temperature is above 28°C. Fan turned on.
+    else 25.7 <= 28
+        Assistant-->>User: Current temperature is 25.7°C. Fan remains off.
+    end
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LrTem as Temperature sensor (espID:1, tem)
+    participant LrFan as Fan (espID:1, motor1)
+
+    User->>Assistant: It feels stuffy in the living room. Check the temperature and turn on the fan if it is above 28 degrees.
+    Assistant->>Hub: get status (espID:1, tem)
+    Hub->>LrTem: get status
+    LrTem-->>Hub: 25.7
+    Hub-->>Assistant: 25.7
+    alt 25.7 > 28
+        Assistant->>Hub: set value = 100
+        Hub->>LrFan: set value = 100
+        LrFan-->>Hub: OK
+        Hub-->>Assistant: OK
+        Assistant-->>User: Temperature is above 28°C. Fan turned on.
+    else 25.7 <= 28
+        Assistant-->>User: Current temperature is 25.7°C. Fan remains off.
+    end",True,mmdc: OK,3,"The sequence flow and participants match, but the fan set value differs (100 vs expected75) and response details are inaccurate."
+test_07,multi_action,Switch off all the lights in the bedroom please.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant RoomLight as Room light (espID:3, led1)
+    participant BedLight as Bed light (espID:3, led2)
+    participant BalconyLight as Balcony light outside (espID:3, led3)
+
+    User->>Assistant: Switch off all the lights in the bedroom please.
+    Assistant->>Hub: Turn off all lights in espID:3
+    par
+        Hub->>RoomLight: set value = false
+        RoomLight-->>Hub: status: false
+    and
+        Hub->>BedLight: set value = false
+        BedLight-->>Hub: status: false
+    and
+        Hub->>BalconyLight: set value = false
+        BalconyLight-->>Hub: status: false
+    end
+    Hub->>Assistant: All lights in Bedroom + balcony switched off
+    Assistant->>User: I have switched off all the lights in the bedroom for you.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant RoomLight as Room light (espID:3, led1)
+    participant BedLight as Bed light (espID:3, led2)
+    participant BalconyLight as Balcony light outside (espID:3, led3)
+
+    User->>Assistant: Switch off all the lights in the bedroom please.
+    Assistant->>Hub: Turn off all lights in espID:3
+    par
+        Hub->>RoomLight: set value = false
+        RoomLight-->>Hub: status: false
+    and
+        Hub->>BedLight: set value = false
+        BedLight-->>Hub: status: false
+    and
+        Hub->>BalconyLight: set value = false
+        BalconyLight-->>Hub: status: false
+    end
+    Hub->>Assistant: All lights in Bedroom + balcony switched off
+    Assistant->>User: I have switched off all the lights in the bedroom for you.",True,mmdc: OK,5,"The generated diagram matches all participants, message flow, and actions of the ground truth despite minor wording differences."
+test_08,sensor_check,Is anyone in the living room right now?,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LivingroomPir as PIR sensor (espID:1, pir)
+
+    User->>Assistant: Is anyone in the living room right now?
+    Assistant->>Hub: Get status of Livingroom PIR
+    Hub->>LivingroomPir: get status
+    LivingroomPir-->>Hub: status
+    Hub-->>Assistant: status
+    alt status is true
+        Assistant-->>User: Yes, motion is detected in the living room.
+    else status is false
+        Assistant-->>User: No, there is no one detected in the living room.
+    end
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant LivingroomPir as PIR sensor (espID:1, pir)
+
+    User->>Assistant: Is anyone in the living room right now?
+    Assistant->>Hub: Get status of Livingroom PIR
+    Hub->>LivingroomPir: get status
+    LivingroomPir-->>Hub: status
+    Hub-->>Assistant: status
+    alt status is true
+        Assistant-->>User: Yes, motion is detected in the living room.
+    else status is false
+        Assistant-->>User: No, there is no one detected in the living room.
+    end",True,mmdc: OK,4,"Adds an extra true/false branch and minor naming differences, but overall flow and logic match the ground truth"
+test_09,single_action,Lock the bedroom door.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant BedLock as Lock (espID:3, servo)
+
+    User->>Assistant: Lock the bedroom door
+    Assistant->>Hub: Set bedroom door lock to true
+    Hub->>BedLock: set value = true
+    BedLock-->>Hub: Success
+    Hub-->>Assistant: Bedroom door locked
+    Assistant-->>User: The bedroom door has been locked.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant BedLock as Lock (espID:3, servo)
+
+    User->>Assistant: Lock the bedroom door
+    Assistant->>Hub: Set bedroom door lock to true
+    Hub->>BedLock: set value = true
+    BedLock-->>Hub: Success
+    Hub-->>Assistant: Bedroom door locked
+    Assistant-->>User: The bedroom door has been locked.",True,mmdc: OK,4,"All participants and message flow match the ground truth, with only minor wording and naming differences."
+test_10,multi_action,Goodnight! Turn off everything in the hallway and close the front door.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant HallLeft as Left light (espID:2, led1)
+    participant HallRight as Right light (espID:2, led2)
+    participant HallFan as Fan (espID:2, motor1)
+    participant FrontDoor as Main door (espID:2, motor2)
+
+    User->>Assistant: Goodnight! Turn off everything in the hallway and close the front door.
+    Assistant->>Hub: Secure hallway and close main door
+    par Turn off devices
+        Hub->>HallLeft: set value = false
+        HallLeft->>Hub: status: false
+    and
+        Hub->>HallRight: set value = false
+        HallRight->>Hub: status: false
+    and
+        Hub->>HallFan: set value = 0
+        HallFan->>Hub: status: 0
+    and
+        Hub->>FrontDoor: set value = 0
+        FrontDoor->>Hub: status: 0
+    end
+    Hub->>Assistant: Hallway secured and door closed
+    Assistant->>User: All hallway devices are off and the front door is closed. Goodnight!
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant HallLeft as Left light (espID:2, led1)
+    participant HallRight as Right light (espID:2, led2)
+    participant HallFan as Fan (espID:2, motor1)
+    participant FrontDoor as Main door (espID:2, motor2)
+
+    User->>Assistant: Goodnight! Turn off everything in the hallway and close the front door.
+    Assistant->>Hub: Secure hallway and close main door
+    par Turn off devices
+        Hub->>HallLeft: set value = false
+        HallLeft->>Hub: status: false
+    and
+        Hub->>HallRight: set value = false
+        HallRight->>Hub: status: false
+    and
+        Hub->>HallFan: set value = 0
+        HallFan->>Hub: status: 0
+    and
+        Hub->>FrontDoor: set value = 0
+        FrontDoor->>Hub: status: 0
+    end
+    Hub->>Assistant: Hallway secured and door closed
+    Assistant->>User: All hallway devices are off and the front door is closed. Goodnight!",True,mmdc: OK,5,"All devices, actions, values, and acknowledgments correspond to the ground truth despite minor naming differences."
+test_11,conditional_logic,Check if the bonsai needs watering and activate the pump if the soil is dry.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant MoisSensor as Moisture sensor outside (espID:3, mois)
+    participant Pump as Pump to watering bonsai outside (espID:3, pump)
+
+    User->>Assistant: Check if the bonsai needs watering and activate the pump if the soil is dry
+    Assistant->>Hub: get status
+    Hub->>MoisSensor: get status
+    MoisSensor-->>Hub: value = 57
+    Hub-->>Assistant: value = 57
+
+    alt value < 40
+        Assistant->>Hub: set value = true
+        Hub->>Pump: set value = true
+        Pump-->>Hub: status = true
+        Hub-->>Assistant: status = true
+        Assistant-->>User: Soil is dry. Pump has been activated to water the bonsai.
+    else value >= 40
+        Assistant-->>User: Soil moisture is currently 57%. No watering is required at this time.
+    end
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant MoisSensor as Moisture sensor outside (espID:3, mois)
+    participant Pump as Pump to watering bonsai outside (espID:3, pump)
+
+    User->>Assistant: Check if the bonsai needs watering and activate the pump if the soil is dry
+    Assistant->>Hub: get status
+    Hub->>MoisSensor: get status
+    MoisSensor-->>Hub: value = 57
+    Hub-->>Assistant: value = 57
+
+    alt value < 40
+        Assistant->>Hub: set value = true
+        Hub->>Pump: set value = true
+        Pump-->>Hub: status = true
+        Hub-->>Assistant: status = true
+        Assistant-->>User: Soil is dry. Pump has been activated to water the bonsai.
+    else value >= 40
+        Assistant-->>User: Soil moisture is currently 57%. No watering is required at this time.
+    end",True,mmdc: OK,4,"Minor wording and naming differences, but overall flow and logic correctly match the ground truth."
+test_12,single_action,Open the bedroom curtains all the way.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant Curtain as Window curtain (espID:3, motor2)
+
+    User->>Assistant: Open the bedroom curtains all the way
+    Assistant->>Hub: set motor2 value to 100
+    Hub->>Curtain: set value = 100
+    Curtain-->>Hub: status updated
+    Hub-->>Assistant: command successful
+    Assistant-->>User: The bedroom curtains are now fully open.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant Curtain as Window curtain (espID:3, motor2)
+
+    User->>Assistant: Open the bedroom curtains all the way
+    Assistant->>Hub: set motor2 value to 100
+    Hub->>Curtain: set value = 100
+    Curtain-->>Hub: status updated
+    Hub-->>Assistant: command successful
+    Assistant-->>User: The bedroom curtains are now fully open.",True,mmdc: OK,4,"Minor wording differences in messages but overall participants, flow, and actions match the ground truth."
+test_13,sensor_check,What is the temperature outside right now?,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant TemOut as Temperature sensor outside (espID:3, tem_out)
+
+    User->>Assistant: What is the temperature outside right now?
+    Assistant->>Hub: Request status of tem_out
+    Hub->>TemOut: get status
+    TemOut-->>Hub: 27.4 C
+    Hub-->>Assistant: 27.4 C
+    Assistant-->>User: The temperature outside is currently 27.4°C.
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant TemOut as Temperature sensor outside (espID:3, tem_out)
+
+    User->>Assistant: What is the temperature outside right now?
+    Assistant->>Hub: Request status of tem_out
+    Hub->>TemOut: get status
+    TemOut-->>Hub: 27.4 C
+    Hub-->>Assistant: 27.4 C
+    Assistant-->>User: The temperature outside is currently 27.4°C.",True,mmdc: OK,4,"Minor wording and label differences, but the participants, flow and temperature value correctly match the intended logic."
+test_14,multi_action,Good morning! Open the curtains and turn on the bed light at the same time.,"```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant Curtains as Window curtain (espID:3, motor2)
+    participant BedLight as Bed light (espID:3, led2)
+
+    User->>Assistant: ""Good morning! Open the curtains and turn on the bed light at the same time.""
+    Assistant->>Hub: Process commands for Bedroom + balcony
+    par Open Curtains and Turn on Bed Light
+        Hub->>Curtains: set value = 100
+        Curtains-->>Hub: acknowledge
+    and
+        Hub->>BedLight: set value = true
+        BedLight-->>Hub: acknowledge
+    end
+    Hub-->>Assistant: Commands executed successfully
+    Assistant-->>User: ""Good morning! The curtains are now open and the bed light is on.""
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant Curtains as Window curtain (espID:3, motor2)
+    participant BedLight as Bed light (espID:3, led2)
+
+    User->>Assistant: ""Good morning! Open the curtains and turn on the bed light at the same time.""
+    Assistant->>Hub: Process commands for Bedroom + balcony
+    par Open Curtains and Turn on Bed Light
+        Hub->>Curtains: set value = 100
+        Curtains-->>Hub: acknowledge
+    and
+        Hub->>BedLight: set value = true
+        BedLight-->>Hub: acknowledge
+    end
+    Hub-->>Assistant: Commands executed successfully
+    Assistant-->>User: ""Good morning! The curtains are now open and the bed light is on.""",True,mmdc: OK,4,"All participants, parallel actions, and values match, but wording and naming differ slightly from the ground truth."
+test_15,conditional_logic,"If someone is moving in the hallway, go ahead and turn both hallway lights on.","```mermaid
+sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant HallwayPir as PIR sensor (espID:2, pir)
+    participant LeftLight as Left light (espID:2, led1)
+    participant RightLight as Right light (espID:2, led2)
+
+    User->>Assistant: If someone is moving in the hallway, turn both hallway lights on
+    Assistant->>Hub: get status of pir
+    Hub->>HallwayPir: get status
+    HallwayPir-->>Hub: status
+    Hub-->>Assistant: status
+    alt status == true
+        Assistant->>Hub: turn on hallway lights
+        par
+            Hub->>LeftLight: set value = true
+        and
+            Hub->>RightLight: set value = true
+        end
+        LeftLight-->>Hub: success
+        RightLight-->>Hub: success
+        Hub-->>Assistant: updated
+        Assistant-->>User: Motion detected. Hallway lights have been turned on.
+    else status == false
+        Assistant-->>User: No motion detected in the hallway.
+    end
+```","sequenceDiagram
+    actor User
+    participant Assistant
+    participant Hub
+    participant HallwayPir as PIR sensor (espID:2, pir)
+    participant LeftLight as Left light (espID:2, led1)
+    participant RightLight as Right light (espID:2, led2)
+
+    User->>Assistant: If someone is moving in the hallway, turn both hallway lights on
+    Assistant->>Hub: get status of pir
+    Hub->>HallwayPir: get status
+    HallwayPir-->>Hub: status
+    Hub-->>Assistant: status
+    alt status == true
+        Assistant->>Hub: turn on hallway lights
+        par
+            Hub->>LeftLight: set value = true
+        and
+            Hub->>RightLight: set value = true
+        end
+        LeftLight-->>Hub: success
+        RightLight-->>Hub: success
+        Hub-->>Assistant: updated
+        Assistant-->>User: Motion detected. Hallway lights have been turned on.
+    else status == false
+        Assistant-->>User: No motion detected in the hallway.
+    end",True,mmdc: OK,5,"The generated diagram includes all participants, correct flow, and matching actions/conditions to the ground truth despite minor naming differences."
