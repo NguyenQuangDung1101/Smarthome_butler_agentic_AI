@@ -15,5 +15,51 @@ For development: Run "npm run dev" in frontend (starts on port 5173 with API pro
 
 
 git config --global user.email "quangdungnguyen2004@gmail.com"
-git config --global user.name "Nguyen Quang Dung
+git config --global user.name "Nguyen Quang Dung"
 
+
+
+help me to generate test case to eval agentic smart home
+
+Sometimes there will be note in a day
+
+when checking the house in overall, you can made up some testcase with the house appliances value
+the overall house appliances value it's being fit to the house
+this is an example if we need to check the house overall including the appliance status, appliances is fixed, value change
+Livingroom:
+Light has turned off
+Fan set to 0%
+PIR sensor no motion detected (pir)
+Temperature sensor in 25.6 Celsius degree
+
+Hallway:
+Left light has turned off
+Right light has turned off
+Fan set to 0%
+Main door set to 0% (fully closed)
+PIR sensor no motion detected (pir)
+Temperature sensor in 26.4 Celsius degree
+
+Bedroom + balcony:
+Room light has turned off
+Bed light has turned off
+Balcony light outside has turned off
+Fan set to 0%
+Window curtain set to 0% (fully closed)
+Lock has unlocked
+Pump to watering bonsai outside has turned off
+PIR sensor no motion detected (pir)
+Temperature sensor in 27.1 Celsius degree
+Temperature sensor outside in 27.8 Celsius degree
+Moisture sensor outside 45.0 %moist 
+
+a testcase will include this:
+{
+    "id": "test_01",
+    "task_type": single/multi/expression/complex/multi_step/out of range/accident handling/overrallcheck/.... (testcase name), 
+    "prompt": input prompt (beside system prompt instruction, this must include information in schedule session if need to test the schedule session(frequent session to check to house)) (dont have to include system prompt),
+    "eval_note" : note when eval the agent decision (output) (to be more objective when judging the agent),
+    "ground_truth_mermaid": "sequenceDiagram ...." (descript the expected behavior)
+}
+
+feel free and creative to makeup testcase (in acceptable manner) to validate in every aspect (security, emergency handling, combiation action with user, tool and accessibility manipulation,...)

@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 29.7,
+          "value": 25.6,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 30.3,
+          "value": 26.4,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 31.1,
+          "value": 27.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 30.2,
+          "value": 27.8,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 57,
+          "value": 45,
           "constraints": {
             "type": "float",
             "min": 0.0,
