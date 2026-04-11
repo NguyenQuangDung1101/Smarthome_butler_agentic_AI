@@ -4549,5 +4549,4 @@
       "eval_note": "Correct if the agent turns off ALL lights: espID=1 led1=false, espID=2 led1=false, espID=2 led2=false, espID=3 led1=false, espID=3 led2=false, espID=3 led3=false, AND locks the bedroom (espID=3 servo=true). All 7 commands must be issued.",
       "ground_truth_mermaid": "sequenceDiagram\nparticipant U as User\nparticipant A as Agent\nparticipant C as ApplianceController\nU->>A: Turn off all lights and lock bedroom\nA->>C: set espID=1 led1=false\nA->>C: set espID=2 led1=false\nA->>C: set espID=2 led2=false\nA->>C: set espID=3 led1=false\nA->>C: set espID=3 led2=false\nA->>C: set espID=3 led3=false\nA->>C: set espID=3 servo=true\nC-->>A: success\nA-->>U: confirm all lights off and bedroom locked"
   }
-    
 ]

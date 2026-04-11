@@ -2,7 +2,7 @@ import json
 from collections import Counter
 
 # Load the dataset
-file_path = './eval_dataset.json'
+file_path = './eval/eval_dataset.json'
 
 try:
     with open(file_path, 'r') as f:

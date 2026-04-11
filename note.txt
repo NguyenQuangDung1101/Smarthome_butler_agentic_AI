@@ -18,6 +18,11 @@ git config --global user.email "quangdungnguyen2004@gmail.com"
 git config --global user.name "Nguyen Quang Dung"
 
 
+ED edit distance
+Fix voice recording
+add database
+tidy up physical set up
+
 
 help me to generate test case to eval agentic smart home
 
