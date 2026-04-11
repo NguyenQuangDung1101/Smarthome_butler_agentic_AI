@@ -58,13 +58,117 @@ Temperature sensor in 27.1 Celsius degree
 Temperature sensor outside in 27.8 Celsius degree
 Moisture sensor outside 45.0 %moist 
 
-a testcase will include this:
+
+
+
+
+
+
+For each testcase, keep the existing fields:
+- id
+- task_type
+- prompt (except those which have [TODAY NOTES], remove that part in the prompt and set it to notes_setup in preconditions (data is today))
+
+Then add exactly these 3 structured sections:
+
+1. preconditions
 {
-    "id": "test_01",
-    "task_type": single/multi/expression/complex/multi_step/out of range/accident handling/overrallcheck/.... (testcase name), 
-    "prompt": input prompt (beside system prompt instruction, this must include information in schedule session if need to test the schedule session(frequent session to check to house)) (dont have to include system prompt),
-    "eval_note" : note when eval the agent decision (output) (to be more objective when judging the agent),
-    "ground_truth_mermaid": "sequenceDiagram ...." (descript the expected behavior)
+  "preconditions": {
+    "notes_setup": [
+      {"date": "yyyy-mm-dd/today", "note_text": "string"}
+    ],
+    "state_setup": [
+      {"espID": 0, "device_type": "actuator/sensor", "device_name": "string", "action": "set", "value": "any"}
+    ]
+  }
 }
 
-feel free and creative to makeup testcase (in acceptable manner) to validate in every aspect (security, emergency handling, combiation action with user, tool and accessibility manipulation,...)
+Rules:
+
+- notes_setup: only include when the testcase depends on note existence.
+- state_setup: only include explicit state initialization needed before inference (actuator only, action stay set).
+- use empty arrays if not needed.
+- use only valid house devices and valid values.
+
+2. deterministic_eval
+{
+  "deterministic_eval": {
+    "must_check_note": true,
+    "must_check_schedule": false,
+    "expected_state": [
+      {"espID": 0, "device_type": "actuator/sensor", "device_name": "string", "value": "any"}
+    ],
+    "required_tool_calls": ["tool_name"],
+    "abandon_tool_calls": ["tool_name"],
+    "required_appliances": [
+      {"espID": 0, "device_type": "actuator/sensor", "device_name": "string", "action": "get/set"}
+    ],
+    "abandon_appliance": [
+      {"espID": 0, "device_type": "actuator/sensor", "device_name": "string", "action": "get/set"}
+    ],
+    "ordering_constraints": [
+      ["step1", "step2", "step3"]
+    ]
+  }
+}
+
+Rules:
+
+- must_check_note = true only when the agent is expected to verify added notes.
+- must_check_schedule = true only when the agent is expected to verify created scheduled behavior (schedule trigger).
+- expected_state should contain only final physically verifiable states.
+- required_tool_calls and abandon_tool_calls should use real tool names only.
+- required_appliances and abandon_appliance should describe appliance-level get/set behavior.
+- ordering_constraints should be simple ordered lists. Only include when order really matters.
+- use empty lists where not needed.
+- do not put natural-language style evaluation here.
+
+3. llm_judge_eval (schema)
+{
+  "llm_judge_eval": {
+    "judge_focus": [
+      "intent_understanding",
+      "reasonableness_of_flow",
+      "grounded_response",
+      "handling_of_ambiguity_or_infeasibility",
+      "consistency_between_actions_and_reply"
+    ],
+    "required_behaviors": ["string"],
+    "acceptable_behaviors": ["string"],
+    "forbidden_behaviors": ["string"],
+    "response_requirements": {
+      "must_confirm_result": true,
+      "must_explain_if_not_executed": false,
+      "must_be_consistent_with_environment_change": true,
+      "must_not_overclaim": true
+    },
+    "trajectory_judgment": {
+      "required_step_patterns": [
+        {"actor": "Agent", "action": "call_tool/respond/refuse/ask_clarification", "tool": "tool_name"}
+      ],
+      "preferred_step_patterns": [
+        {"actor": "Agent", "action": "call_tool/respond/refuse/ask_clarification", "tool": "tool_name"}
+      ],
+      "forbidden_step_patterns": [
+        {"actor": "Agent", "action": "call_tool/respond", "tool": "tool_name"}
+      ],
+      "reference_flow": [
+        {"actor": "User/Agent/Controller", "action": "request/call_tool/return_success/respond/refuse/ask_clarification", "tool": "tool_name", "args": {}}
+      ]
+    },
+    "judge_note": "string"
+  }
+}
+
+Rules:
+- judge_focus tells the LLM judge what to care about.
+- required_behaviors are mandatory soft behaviors.
+- acceptable_behaviors should allow reasonable alternative valid flows.
+- forbidden_behaviors are soft failures not fully captured by deterministic checks.
+- response_requirements controls final response quality.
+- required_step_patterns should only include key patterns that must appear.
+- preferred_step_patterns are good but not mandatory.
+- forbidden_step_patterns are trajectory patterns that should fail the case.
+- reference_flow is only a soft reference, not the only valid path.
+- judge_note must stay short, objective, slightly specify case intent and directly tied to pass/fail behavior (check and do if the current judge_note it need enhance or update)
+
