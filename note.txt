@@ -63,6 +63,17 @@ Moisture sensor outside 45.0 %moist
 
 
 
+"fail_type_definitions": {
+  "STATE_MISMATCH": "The final observed state, note state, schedule state, or reported result does not match the expected result or the agent's claim.",
+  "WRONG_ACTION_TARGET": "The agent performed an action on the wrong appliance, room, device attribute, or unrelated target.",
+  "MISSING_REQUIRED_ACTION": "The agent failed to perform a required tool call, appliance interaction, note check, schedule check, or other required step needed for this testcase.",
+  "EXECUTION_FAILURE_HANDLING": "A tool call or appliance execution failed, had no effect, or lacked evidence of success, and the agent failed to handle that correctly."
+}
+
+
+
+
+
 
 For each testcase, keep the existing fields:
 - id
@@ -107,7 +118,7 @@ Rules:
       {"espID": 0, "device_type": "actuator/sensor", "device_name": "string", "action": "get/set"}
     ],
     "ordering_constraints": [
-      ["step1", "step2", "step3"]
+      ["tool_name_1", "tool_name_2", "tool_name_3"]
     ]
   }
 }
@@ -119,7 +130,7 @@ Rules:
 - expected_state should contain only final physically verifiable states.
 - required_tool_calls and abandon_tool_calls should use real tool names only.
 - required_appliances and abandon_appliance should describe appliance-level get/set behavior.
-- ordering_constraints should be simple ordered lists. Only include when order really matters.
+- ordering_constraints must be a list of ordered tool-name sequences, earlier tool must appear before the later tool, not need to be consecutive
 - use empty lists where not needed.
 - do not put natural-language style evaluation here.
 

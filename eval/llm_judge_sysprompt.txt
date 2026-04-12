@@ -37,9 +37,21 @@ Decision rule:
 - PASS only if the agent behavior satisfies the llm_judge_eval requirements with no clear disqualifying violation.
 - Otherwise FAIL.
 
+When verdict is FAIL, assign one or more fail_types using ONLY these labels:
+- STATE_MISMATCH - "The final observed state, note state, schedule state, or reported result does not match the expected result or the agent's claim."
+- WRONG_ACTION_TARGET - "The agent performed an action on the wrong tool, appliance, room, device attribute, or unrelated target."
+- MISSING_REQUIRED_ACTION - "The agent failed to perform a required tool call, appliance interaction, note check, schedule check, or other required step needed for this testcase."
+- EXECUTION_FAILURE_HANDLING - "A tool call or appliance execution failed, had no effect, or lacked evidence of success, and the agent failed to handle that correctly."
+- TRAJECTORY_VIOLATION - "The agent's action flow violates the expected soft trajectory rules in llm_judge_eval, such as missing a required step pattern, following a clearly unreasonable flow, breaking a strict required order, or triggering a forbidden step pattern."
+
+Choose only labels clearly supported by the evidence.
+Do not invent extra fail types.
+If multiple apply, return multiple.
+
 Return output in EXACTLY this JSON format:
 {
   "verdict": "PASS" or "FAIL",
+  "fail_types": [],
   "reason": "short explanation, be objective",
   "matched_required_behaviors": ["..."],
   "violated_forbidden_behaviors": ["..."],
