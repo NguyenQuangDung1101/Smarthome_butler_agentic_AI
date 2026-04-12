@@ -1,0 +1,202 @@
+[
+  {
+    "id": "tc_751",
+    "task_type": "single",
+    "prompt": "Turn on the balcony light.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets Bedroom/Balcony led3 to true and confirms. No other devices should be touched."
+    }
+  },
+  {
+    "id": "tc_752",
+    "task_type": "single",
+    "prompt": "Lock the bedroom door.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets Bedroom servo to true (locked). Should not read sensors or touch other appliances."
+    }
+  },
+  {
+    "id": "tc_753",
+    "task_type": "single",
+    "prompt": "Set the bedroom curtain to 60%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets Bedroom motor2 to 60 exactly. No other devices should change."
+    }
+  },
+  {
+    "id": "tc_754",
+    "task_type": "multi",
+    "prompt": "Turn off all bedroom lights and lock the bedroom.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets Bedroom led1=false, led2=false, led3=false, and servo=true in one coherent plan, then confirms all actions."
+    }
+  },
+  {
+    "id": "tc_755",
+    "task_type": "multi",
+    "prompt": "Set the hallway fan to 30% and turn on the left hallway light.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets Hallway motor1=30 and led1=true, then confirms both changes."
+    }
+  },
+  {
+    "id": "tc_756",
+    "task_type": "ambiguous",
+    "prompt": "Turn off the light.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks which room's light the user means (livingroom, hallway, or bedroom) instead of guessing. There are multiple lights across rooms and the user did not specify."
+    }
+  },
+  {
+    "id": "tc_757",
+    "task_type": "ambiguous",
+    "prompt": "Make it cooler.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks for clarification about which room to cool down and/or what method (fan speed, curtain position). Should not blindly set all fans to max."
+    }
+  },
+  {
+    "id": "tc_758",
+    "task_type": "ambiguous",
+    "prompt": "Is the door open?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks for clarification since there are two door-like mechanisms: the hallway main door (motor2) and the bedroom lock (servo). Alternatively, it could read both and report both statuses, which is also acceptable."
+    }
+  },
+  {
+    "id": "tc_759",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-09 05:30:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom_balcony\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 0, \"curtain\": 0, \"lock\": \"locked\", \"pump\": false}\n}\nPlease provide your suggestions or actions to ensure the appliances are set up correctly.\nCurrent observed state:\nLivingroom light off, fan 0%.\nHallway left light off, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump on.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies the single mismatch: the bonsai watering pump is running when it should be off according to init settings. Agent should turn off the pump (espID=3 pump=false). No other changes needed."
+    }
+  },
+  {
+    "id": "tc_760",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-09 05:45:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom_balcony\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 0, \"curtain\": 0, \"lock\": \"locked\", \"pump\": false}\n}\nPlease provide your suggestions or actions to ensure the appliances are set up correctly.\nCurrent observed state:\nLivingroom light off, fan 0%.\nHallway left light off, right light off, fan 0%, main door 25% (partially open).\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock unlocked, pump off.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies two mismatches: (1) hallway main door is 25% open instead of 0%, and (2) bedroom lock is unlocked instead of locked. Agent should close the door (espID=2 motor2=0) and lock bedroom (espID=3 servo=true). Security concern since it is early morning and doors should be secured."
+    }
+  },
+  {
+    "id": "tc_761",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-09 15:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 26.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 26.8 Celsius degree\nTemperature sensor outside in 28.0 Celsius degree\nMoisture sensor outside 42.0 %moist",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent determines the house is in a reasonable idle state and no action is needed. Everything is off, doors locked, temperatures normal. A brief 'all good' response is acceptable."
+    }
+  },
+  {
+    "id": "tc_762",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-09 09:15:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 30.2 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 30.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 31.0 Celsius degree\nTemperature sensor outside in 33.5 Celsius degree\nMoisture sensor outside 35.0 %moist",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent notes that indoor temperatures are getting warm (30-31Â°C) and suggests or activates fans in occupied areas, or simply flags the rising temperature. Since no PIR motion is detected, a suggestion without action is also acceptable. Optionally note low moisture (35%) for bonsai. No drastic changes required since owner appears to be away."
+    }
+  },
+  {
+    "id": "tc_763",
+    "task_type": "contradictory",
+    "prompt": "Open the bedroom curtain fully and also close it completely.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies the contradiction (open and close curtain simultaneously) and asks the user for clarification. Should NOT execute both or pick one without asking."
+    }
+  },
+  {
+    "id": "tc_764",
+    "task_type": "contradictory",
+    "prompt": "Lock the bedroom for safety but also unlock it so my guest can come in.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes the conflicting instructions about the bedroom lock and asks the user to choose one. It should not execute both sequentially as that would just leave it in the last state without user intent."
+    }
+  },
+  {
+    "id": "tc_765",
+    "task_type": "weather_driven",
+    "prompt": "Check the weather forecast for today. If it is going to be really hot (above 35Â°C), set all fans in the house to 70%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent first checks location and weather forecast, then conditionally sets livingroom motor1=70, hallway motor1=70, and bedroom motor1=70 only if the forecast shows temperatures above 35Â°C. Must not blindly set fans without checking weather first."
+    }
+  },
+  {
+    "id": "tc_766",
+    "task_type": "weather_driven",
+    "prompt": "Is it going to rain today? If so, close the bedroom curtain to protect from rain splash and turn off the balcony light.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent checks weather forecast first, then only closes curtain (espID=3 motor2=0) and turns off balcony light (espID=3 led3=false) if rain is expected. Weather check must precede any action."
+    }
+  },
+  {
+    "id": "tc_767",
+    "task_type": "comfort_optimization",
+    "prompt": "I want to take a nap on the livingroom sofa. Make it comfortable.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets up a nap-friendly environment in the livingroom: turn off the light (or keep dim), set fan to moderate speed (20-40%), and optionally inform the user. Should not change hallway or bedroom devices unless relevant (e.g., closing main door for quiet)."
+    }
+  },
+  {
+    "id": "tc_768",
+    "task_type": "comfort_optimization",
+    "prompt": "I am going to do yoga in the bedroom. Please set up a calm and airy environment.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent creates a yoga-friendly setup: moderate fan (30-50%) for airflow, lights can be on for visibility, curtain open for natural light is optional, balcony light off. The setup should prioritize airflow and calm. Locking the door for privacy is a nice touch."
+    }
+  },
+  {
+    "id": "tc_769",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-09 23:45:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"hallway\", \"device\": \"main door\", \"target\": \"open to 100%\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: No, absolutely not. Keep the door closed at this hour.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent respects the user's explicit denial and does NOT open the main door. Opening the main door fully at nearly midnight is a security risk and the user has clearly refused. Agent should confirm no action was taken."
+    }
+  },
+  {
+    "id": "tc_770",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-09 21:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"livingroom\", \"device\": \"light\", \"target\": \"off\"},\n        {\"place\": \"hallway\", \"device\": \"left light\", \"target\": \"off\"},\n        {\"place\": \"hallway\", \"device\": \"right light\", \"target\": \"off\"},\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"lock\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Turn off the hallway lights and lock bedroom, but keep the livingroom light on. I am still reading.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent partially executes based on user's selective approval: turn off hallway left light (espID=2 led1=false), turn off hallway right light (espID=2 led2=false), lock bedroom (espID=3 servo=true), but does NOT turn off livingroom light since user wants to keep reading."
+    }
+  },
+  {
+    "id": "tc_771",
+    "task_type": "energy_efficiency",
+    "prompt": "Overall house check at 11:00. Today's note: \"Owner is in the livingroom watching TV.\"\nCurrent observed state:\nLivingroom:\nLight has turned on\nFan set to 40%\nPIR sensor motion detected\nTemperature sensor in 27.5 Celsius degree\n\nHallway:\nLeft light has turned on\nRight light has turned on\nFan set to 50%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 27.0 Celsius degree\n\nBedroom + balcony:\nRoom light has turned on\nBed light has turned on\nBalcony light outside has turned on\nFan set to 60%\nWindow curtain set to 100% (fully open)\nLock has unlocked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 28.0 Celsius degree\nTemperature sensor outside in 30.5 Celsius degree\nMoisture sensor outside 38.0 %moist",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies massive energy waste in hallway and bedroom (all lights, fans running with no occupancy). Should: (1) keep livingroom as is (owner is there), (2) turn off hallway lights and fan, (3) turn off all bedroom lights, reduce/stop fan, close curtain to block 30.5Â°C heat, lock bedroom. The bonsai moisture is at 38% which may need attention."
+    }
+  },
+  {
+    "id": "tc_772",
+    "task_type": "energy_efficiency",
+    "prompt": "The bedroom fan is currently at 100%. The room temperature is 22Â°C. Is this energy efficient?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes that 100% fan at 22Â°C is excessive and wasteful. It should recommend reducing the fan speed significantly (e.g., to 20-30%) or turning it off since 22Â°C is already quite cool. Agent may optionally check the sensor to verify."
+    }
+  },
+  {
+    "id": "tc_773",
+    "task_type": "conversational",
+    "prompt": "Tell me a fun fact about smart homes.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent provides an interesting, conversational response about smart home technology without touching any appliances or tools. A purely informational/chat reply is expected."
+    }
+  },
+  {
+    "id": "tc_774",
+    "task_type": "conversational",
+    "prompt": "Do you think it is healthier to sleep with the fan on or off?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent provides a balanced conversational response about sleeping with fans, possibly mentioning pros (air circulation, comfort) and cons (dry air, noise). Should not change any appliances unless asked. A web search for health info is optional but acceptable."
+    }
+  },
+  {
+    "id": "tc_775",
+    "task_type": "out_of_range",
+    "prompt": "Set the bedroom curtain to -20%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent rejects the invalid value (-20% is below the 0-100 range for motor2) and asks the user for a valid value between 0 and 100."
+    }
+  }
+]

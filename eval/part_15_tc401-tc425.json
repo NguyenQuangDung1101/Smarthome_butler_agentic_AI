@@ -1,0 +1,3312 @@
+[
+  {
+    "id": "tc_401",
+    "task_type": "weather_driven",
+    "prompt": "The weather has been super humid lately and my bonsai soil is soggy. Check the outdoor temperature and humidity forecast for today. If it will be sunny and above 30C at any point today, open the curtain to let sunlight dry the soil. Otherwise keep it closed.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Retrieve current datetime, location, and hourly forecast before deciding",
+        "Open curtain (espID=3 motor2=100) only if forecast shows sunny conditions above 30C at any point today",
+        "Leave curtain unchanged and explain if conditions are not met"
+      ],
+      "acceptable_behaviors": [
+        "Using IP-based current location for forecast",
+        "Checking only available daylight hours for the threshold"
+      ],
+      "forbidden_behaviors": [
+        "Changing curtain state without first retrieving today's weather forecast",
+        "Activating the water pump as part of this task",
+        "Guessing weather without calling the forecast tool"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast",
+            "args": {
+              "current_location": true,
+              "date": "<today>"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Must fetch today's hourly forecast before acting. Open curtain (motor2=100, espID=3) only if sunny and above 30C at any hour today; otherwise no curtain change. Must not activate pump."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "get_current_datetime",
+        "get_current_location",
+        "get_hourly_forecast"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": [
+        [
+          "get_current_location",
+          "get_hourly_forecast"
+        ],
+        [
+          "get_current_datetime",
+          "get_hourly_forecast"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_402",
+    "task_type": "weather_driven",
+    "prompt": "I want to ventilate the house. Check the weather - if outdoor temperature is lower than indoor temperature, open the curtain and set all fans to 50%. If outdoor is hotter, close everything and set bedroom fan to 80% to compensate.\nCurrent observed state:\nBedroom temperature 29.5C, outside temperature unknown.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Retrieve current datetime, location, and hourly forecast before deciding",
+        "If outdoor temp < 29.5C: open curtain (motor2=100) and set all fans (espID 1,2,3 motor1) to 50%",
+        "If outdoor temp >= 29.5C: close curtain (motor2=0) and set bedroom fan (espID=3 motor1) to 80%"
+      ],
+      "acceptable_behaviors": [
+        "Using nearest available forecast hour for outdoor temperature comparison",
+        "Reading bedroom temperature sensor to confirm indoor value"
+      ],
+      "forbidden_behaviors": [
+        "Making ventilation decisions without retrieving outdoor weather data",
+        "Guessing outdoor temperature instead of calling forecast tool"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast",
+            "args": {
+              "current_location": true,
+              "date": "<today>"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Must check outdoor forecast before deciding. Indoor reference is 29.5C. If outdoor < indoor: open curtain + all fans 50%. If outdoor >= indoor: close curtain + bedroom fan 80%. Decision must be driven by forecast data, not assumption."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "get_current_datetime",
+        "get_current_location",
+        "get_hourly_forecast"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "get_current_location",
+          "get_hourly_forecast"
+        ],
+        [
+          "get_current_datetime",
+          "get_hourly_forecast"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_403",
+    "task_type": "weather_driven",
+    "prompt": "I'm planning a small balcony dinner tonight at 19:00. Check the weather around that time. If it will be pleasant (no rain, temp between 20-30C), turn on the balcony light and open curtain. If bad weather, just tell me to eat inside.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Retrieve current datetime, location, and hourly forecast before deciding",
+        "Check forecast specifically at or around 19:00",
+        "If pleasant (no rain, temp 20-30C at 19:00): turn on balcony light (espID=3 led3=true) and open curtain (motor2=100)",
+        "If bad weather: do not change appliances and advise the user to eat indoors"
+      ],
+      "acceptable_behaviors": [
+        "Using a nearby hour window (18:00-20:00) to assess 19:00 conditions",
+        "Explaining forecast details in the response"
+      ],
+      "forbidden_behaviors": [
+        "Executing appliances without first checking the forecast",
+        "Acting on assumed weather without tool evidence"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_location",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast",
+            "args": {
+              "current_location": true,
+              "date": "<today>"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Must check forecast at 19:00 before deciding. If pleasant (no rain, 20-30C): balcony light on and curtain open. If bad weather: advise eating indoors without changing appliances. Never act before checking forecast."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "get_current_datetime",
+        "get_current_location",
+        "get_hourly_forecast"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "get_current_location",
+          "get_hourly_forecast"
+        ],
+        [
+          "get_current_datetime",
+          "get_hourly_forecast"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_404",
+    "task_type": "comfort_optimization",
+    "prompt": "I just woke up and I'm still in bed. The room feels stuffy. Can you make it more comfortable without making it too bright?",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn on bedroom fan at a moderate level (30–50%) for airflow comfort",
+        "Must NOT turn on the bedroom room light (led1) as user wants to avoid brightness"
+      ],
+      "acceptable_behaviors": [
+        "Opening curtain slightly (30–50%) for natural airflow without full brightness",
+        "Turning on bed light (led2) at a soft level as indirect ambient light",
+        "Asking user preference before acting on curtain"
+      ],
+      "forbidden_behaviors": [
+        "Turning on the room light (espID=3 led1=true)",
+        "Setting fan to a high speed (>70%) that could disturb sleep"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "User just woke up and wants comfort without brightness. Must set bedroom fan to moderate 30–50%. Must NOT turn on room light. Curtain slight open acceptable. Bed light at low level acceptable."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_405",
+    "task_type": "comfort_optimization",
+    "prompt": "I'm watching a movie in the livingroom. The temperature is 31C and the fan is only at 20%. Also the hallway lights are distracting. Fix this for a better movie experience.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Increase livingroom fan (espID=1 motor1) to at least 50% from 20%",
+        "Turn off hallway left light (espID=2 led1=false)",
+        "Turn off hallway right light (espID=2 led2=false)"
+      ],
+      "acceptable_behaviors": [
+        "Setting livingroom fan between 50–70% for movie comfort",
+        "Dimming or keeping livingroom light at low level for ambiance"
+      ],
+      "forbidden_behaviors": [
+        "Touching bedroom appliances",
+        "Turning off the livingroom light entirely if it is needed for navigation"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Movie comfort task. Must increase livingroom fan (≥50%) and turn off both hallway lights. Must not touch bedroom. No weather tool needed."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 20
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_406",
+    "task_type": "comfort_optimization",
+    "prompt": "I'm working from home in the livingroom. I need good lighting and gentle airflow. The bedroom is empty so turn everything off there to save power.\nCurrent observed state:\nLivingroom light off, fan 0%.\nBedroom room light on, bed light on, fan 60%, curtain 100%.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn on livingroom light (espID=1 led1=true) for work lighting",
+        "Set livingroom fan (espID=1 motor1) to a gentle level (20–35%)",
+        "Turn off bedroom room light (espID=3 led1=false) and bed light (espID=3 led2=false)",
+        "Set bedroom fan to 0% (espID=3 motor1=0) since room is empty"
+      ],
+      "acceptable_behaviors": [
+        "Closing bedroom curtain (motor2=0) to save energy",
+        "Setting livingroom fan between 20–40% as reasonable gentle airflow"
+      ],
+      "forbidden_behaviors": [
+        "Leaving bedroom lights or fan on",
+        "Not turning on livingroom light for the work area"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Work-from-home setup. Livingroom needs light on and gentle fan (20–35%). Bedroom is empty: room light off, bed light off, fan off. Curtain close acceptable for energy saving."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 60
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_407",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-09 05:15:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom_balcony\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 15, \"curtain\": 0, \"lock\": \"locked\", \"pump\": false}\n}\nPlease provide your suggestions or actions to ensure the appliances are set up correctly.\nCurrent observed state:\nLivingroom light off, fan 0%.\nHallway left light off, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump off.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that bedroom fan is at 0% but initial settings require 15%",
+        "Set bedroom fan (espID=3 motor1=15) to correct the single mismatch"
+      ],
+      "acceptable_behaviors": [
+        "Listing all checked items and confirming the rest match initial settings"
+      ],
+      "forbidden_behaviors": [
+        "Changing any other appliance that already matches initial settings",
+        "Reporting no issues without correcting the fan mismatch"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Only one mismatch: bedroom fan is 0% but initial setting is 15%. Agent must set espID=3 motor1=15 and must not change anything else."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 15
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_408",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-12 04:45:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"light\": false, \"fan\": 0},\n  \"hallway\": {\"left_light\": false, \"right_light\": false, \"fan\": 0, \"main_door\": 0},\n  \"bedroom_balcony\": {\"room_light\": false, \"bed_light\": false, \"balcony_light\": false, \"fan\": 0, \"curtain\": 0, \"lock\": \"locked\", \"pump\": false}\n}\nPlease provide your suggestions or actions to ensure the appliances are set up correctly.\nCurrent observed state:\nLivingroom light off, fan 10%.\nHallway left light on, right light off, fan 0%, main door 20% (slightly open).\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock unlocked, pump off.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Set livingroom fan to 0% (espID=1 motor1=0)",
+        "Turn off hallway left light (espID=2 led1=false)",
+        "Close main door to 0% (espID=2 motor2=0)",
+        "Lock bedroom (espID=3 servo=true)"
+      ],
+      "acceptable_behaviors": [
+        "Listing all checked items and confirming which ones match"
+      ],
+      "forbidden_behaviors": [
+        "Missing any of the four mismatched appliances",
+        "Changing appliances that already match initial settings"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Four mismatches vs initial settings: livingroom fan 10%→0%, hallway left light on→off, main door 20%→0%, bedroom lock unlocked→locked. Agent must fix all four and leave others unchanged."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 10
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 20
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_409",
+    "task_type": "energy_efficiency",
+    "prompt": "I just left home for work. I forgot to turn things off. Please do an energy sweep and shut down everything unnecessary. Lock up the house too.\nCurrent observed state:\nLivingroom light on, fan 35%, PIR no motion, temperature 26.0C.\nHallway left light on, right light off, fan 0%, main door 60% (partially open), PIR no motion, temperature 26.5C.\nBedroom room light off, bed light on, balcony light off, fan 25%, curtain 80%, lock unlocked, pump off, PIR no motion, temperature 27.0C, outside temperature 28.0C, moisture 42%.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn off livingroom light and set fan to 0%",
+        "Turn off hallway left light and close main door (motor2=0)",
+        "Turn off bedroom bed light and set bedroom fan to 0%",
+        "Close bedroom curtain (motor2=0) and lock bedroom (servo=true)"
+      ],
+      "acceptable_behaviors": [
+        "Checking PIR sensors to confirm no one is home before sweeping",
+        "Providing a summary of all changes made"
+      ],
+      "forbidden_behaviors": [
+        "Leaving the main door open",
+        "Leaving the bedroom unlocked",
+        "Leaving any light on"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Comprehensive energy sweep after leaving home. Must turn off all active lights and fans, close main door, close bedroom curtain, and lock bedroom. All listed appliances must be addressed."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 35
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 60
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 25
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 80
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_410",
+    "task_type": "energy_efficiency",
+    "prompt": "Overall house check at 02:00 AM. Everyone is sleeping. Minimize energy usage while keeping minimum comfort.\nCurrent observed state:\nLivingroom light on, fan 50%, PIR no motion, temperature 25.0C.\nHallway left light on, right light on, fan 30%, main door 0%, PIR no motion, temperature 25.2C.\nBedroom room light off, bed light off, balcony light on, fan 20%, curtain 0%, lock locked, pump off, PIR no motion, temperature 26.0C, outside temperature 24.5C, moisture 50%.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn off livingroom light and set livingroom fan to 0%",
+        "Turn off both hallway lights and set hallway fan to 0%",
+        "Turn off balcony light (espID=3 led3=false)"
+      ],
+      "acceptable_behaviors": [
+        "Keeping bedroom fan (motor1) at a low level (≤20%) for sleep comfort",
+        "Explaining the sleep-time energy minimization rationale"
+      ],
+      "forbidden_behaviors": [
+        "Leaving livingroom or hallway lights or fans on",
+        "Turning off bedroom fan entirely without acknowledging sleep comfort",
+        "Waking the occupants unnecessarily"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "2AM with everyone sleeping. Must turn off all living/hallway lights and fans. Bedroom fan may stay low for sleep comfort. Balcony light must be turned off."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 50
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 30
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 20
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_411",
+    "task_type": "contradictory",
+    "prompt": "Turn on all the lights in the house and also make the bedroom pitch dark for sleeping.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "handling_of_ambiguity_or_infeasibility",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify the contradiction between turning on all lights and keeping the bedroom pitch dark",
+        "Either ask for clarification or resolve by turning on non-bedroom lights while keeping bedroom lights off"
+      ],
+      "acceptable_behaviors": [
+        "Turning on livingroom and hallway lights while leaving bedroom lights off",
+        "Asking the user which takes priority: all lights or bedroom darkness"
+      ],
+      "forbidden_behaviors": [
+        "Turning on bedroom room light (led1) or bed light (led2) while acknowledging user wants darkness",
+        "Silently executing all lights without addressing the contradiction"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null
+          }
+        ],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Contradictory request: all lights on vs bedroom dark. Agent must not turn on bedroom lights. Should ask clarification or resolve by keeping bedroom dark while lighting other rooms."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_412",
+    "task_type": "contradictory",
+    "prompt": "Lock the bedroom door and also open it wide because my cat needs to go in and out freely.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "handling_of_ambiguity_or_infeasibility",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify the contradiction between locking the bedroom door and allowing the cat to pass freely",
+        "Explain that locking (servo=true) prevents cat movement and suggest leaving servo=false for free access"
+      ],
+      "acceptable_behaviors": [
+        "Asking if the user wants the physical door locked or just a deterrent",
+        "Clarifying that servo controls the lock, not the door panel itself"
+      ],
+      "forbidden_behaviors": [
+        "Locking the bedroom (servo=true) while stating cat needs free access",
+        "Silently picking one option without explaining the conflict"
+      ],
+      "response_requirements": {
+        "must_confirm_result": false,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null
+          }
+        ],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Contradictory: lock door (servo=true) vs cat free access (needs servo=false). Agent must not blindly lock. Should ask clarification or suggest keeping servo unlocked for cat access."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_413",
+    "task_type": "single",
+    "prompt": "Water the bonsai please.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Activate the water pump (espID=3 pump=true)"
+      ],
+      "acceptable_behaviors": [
+        "Proactively reading moisture sensor before watering",
+        "Confirming the pump was turned on"
+      ],
+      "forbidden_behaviors": [
+        "Not activating the pump",
+        "Asking unnecessary clarifying questions for this simple request"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Simple single action: set espID=3 pump=true. No complex reasoning required. Agent must confirm activation."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_414",
+    "task_type": "single",
+    "prompt": "Unlock the bedroom.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Set bedroom lock to unlocked (espID=3 servo=false)"
+      ],
+      "acceptable_behaviors": [
+        "Confirming the unlock action clearly"
+      ],
+      "forbidden_behaviors": [
+        "Setting servo=true (locking instead of unlocking)",
+        "Asking for unnecessary confirmation before a simple unlock"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Simple single action: set espID=3 servo=false to unlock. Agent must confirm unlock completion."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_415",
+    "task_type": "sensor_driven",
+    "prompt": "Check all PIR sensors in the house. If any room has motion detected, turn on the light in that room. If no motion in a room, turn off the light.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read PIR sensor from all three espIDs (1, 2, 3) before acting",
+        "Turn on the light in any room where motion is detected",
+        "Turn off the light in any room where no motion is detected"
+      ],
+      "acceptable_behaviors": [
+        "Reading all three PIR sensors in a single appliance call",
+        "Summarizing the result per room"
+      ],
+      "forbidden_behaviors": [
+        "Changing lights without reading PIR sensors first",
+        "Skipping any of the three rooms"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": null,
+            "args": {
+              "note": "read PIR espID 1,2,3 via appliance"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Must read PIR from espID 1, 2, and 3 before acting. Turn on light where motion detected, turn off where no motion. All three rooms must be addressed."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_416",
+    "task_type": "sensor_driven",
+    "prompt": "Read the outdoor temperature and the bedroom temperature. If the difference is more than 5 degrees (outdoor hotter), close the curtain and set the fan to 70%. If the difference is small, open the curtain halfway.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read both tem and tem_out sensors on espID=3 before deciding",
+        "If outdoor - indoor > 5C: close curtain (motor2=0) and set fan to 70% (motor1=70)",
+        "If difference <= 5C: open curtain halfway (motor2=50)"
+      ],
+      "acceptable_behaviors": [
+        "Reading both sensors in a single appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Acting on curtain or fan without reading both temperature sensors first",
+        "Guessing temperature values"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": null,
+            "args": {
+              "note": "read tem and tem_out espID=3 via appliance"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Must read espID=3 tem and tem_out before acting. If outdoor hotter by >5C: close curtain (motor2=0) and fan 70%. If small difference: open curtain to 50%. Decision must be based on actual sensor readings."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem_out",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_417",
+    "task_type": "sensor_driven",
+    "prompt": "Check the moisture level. If it's below 20%, water the bonsai AND add a note for tomorrow to check moisture again. If it's above 60%, turn off the pump if it's on and add a note saying soil is oversaturated.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read moisture sensor (espID=3 mois) before acting",
+        "If moisture < 20%: activate pump (pump=true) AND add a note for tomorrow to check moisture again",
+        "If moisture > 60%: turn off pump if on (pump=false) AND add a note saying soil is oversaturated",
+        "If moisture is 20–60%: report normal with no action"
+      ],
+      "acceptable_behaviors": [
+        "Combining pump activation and note addition in the same step"
+      ],
+      "forbidden_behaviors": [
+        "Watering or adding notes without reading the moisture sensor first",
+        "Watering when moisture is above 60%",
+        "Skipping the note when threshold is crossed"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": null,
+            "args": {
+              "note": "read mois espID=3 via appliance"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "add_note",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Read moisture first. Below 20%: pump on + add tomorrow note. Above 60%: pump off + add oversaturation note. Between 20–60%: no action. Both appliance and tool note must be used at threshold crossings."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "mois",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_418",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-08 11:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 28.9 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 29.3 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 30.1 Celsius degree\nTemperature sensor outside in 33.5 Celsius degree\nMoisture sensor outside 28.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that the house is very hot (bedroom 30.1C, outside 33.5C) with no occupants",
+        "Suggest or activate fans for cooling"
+      ],
+      "acceptable_behaviors": [
+        "Activating bedroom fan at moderate level (20–40%) for air circulation",
+        "Suggesting watering bonsai given moisture at 28%",
+        "Providing a full status report before suggesting actions"
+      ],
+      "forbidden_behaviors": [
+        "Turning on any lights since no occupants are home",
+        "Ignoring the high temperature condition without any recommendation"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Empty house at 11:00 AM, very hot (30–33.5C). Must suggest or activate fans for cooling. No lights needed. Moisture 28% is low—recommending watering is a plus. Must not turn on lights."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_419",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-08 22:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned on\nFan set to 40%\nPIR sensor no motion detected\nTemperature sensor in 25.0 Celsius degree\n\nHallway:\nLeft light has turned on\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 25.3 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 20%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor motion detected\nTemperature sensor in 26.0 Celsius degree\nTemperature sensor outside in 23.5 Celsius degree\nMoisture sensor outside 45.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that livingroom and hallway lights are on at 22:30 with no motion in those areas",
+        "Turn off livingroom light (espID=1 led1=false) and fan (motor1=0)",
+        "Turn off hallway left light (espID=2 led1=false)"
+      ],
+      "acceptable_behaviors": [
+        "Noting that bedroom PIR motion indicates occupant sleeping, so bedroom settings are appropriate"
+      ],
+      "forbidden_behaviors": [
+        "Turning off bedroom fan which supports sleep comfort",
+        "Turning on any lights",
+        "Ignoring the unoccupied rooms with active lights"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "22:30 with bedroom occupant sleeping. Livingroom light/fan and hallway left light are on with no motion. Must turn those off. Bedroom fan at 20% for sleep is acceptable—do not reduce it."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 40
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 20
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_420",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-09 15:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor motion detected\nTemperature sensor in 27.2 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 100% (fully open)\nPIR sensor no motion detected\nTemperature sensor in 27.8 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 100% (fully open)\nLock has unlocked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 28.0 Celsius degree\nTemperature sensor outside in 29.5 Celsius degree\nMoisture sensor outside 55.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read and respect the today note about the maintenance worker (14:00–16:00 window)",
+        "Keep the main door open (espID=2 motor2=100) since the current time 15:00 is within the maintenance window"
+      ],
+      "acceptable_behaviors": [
+        "Noting that livingroom PIR motion is expected with maintenance worker present",
+        "Providing a status summary without making unnecessary changes"
+      ],
+      "forbidden_behaviors": [
+        "Closing the main door regardless of the note",
+        "Ignoring the today note when the time 15:00 is within the noted maintenance window"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Current time 15:00 is within maintenance window (14:00–16:00) noted for today. Main door must stay open. Agent must read and respect the note. Closing the door is a failure."
+    },
+    "preconditions": {
+      "notes_setup": [
+        {
+          "date": "2026-04-09",
+          "note_text": "The main door should stay open today, maintenance worker coming between 14:00-16:00."
+        }
+      ],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 100
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_421",
+    "task_type": "ambiguous",
+    "prompt": "Can you make the room nicer?",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "handling_of_ambiguity_or_infeasibility",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that the request is too vague to act on confidently",
+        "Ask which room and what aspect of 'nicer' the user means (lighting, temperature, ambiance)"
+      ],
+      "acceptable_behaviors": [
+        "Offering options such as lighting, fan speed, or curtain adjustment",
+        "Asking about the room first before asking about the type of improvement"
+      ],
+      "forbidden_behaviors": [
+        "Blindly executing appliance changes without clarification",
+        "Assuming a specific room or specific ambiance improvement"
+      ],
+      "response_requirements": {
+        "must_confirm_result": false,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Request is ambiguous: room is unspecified and 'nicer' is undefined. Agent must ask clarification rather than guessing and executing. No appliance changes should be made."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_422",
+    "task_type": "ambiguous",
+    "prompt": "Set everything to normal.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "handling_of_ambiguity_or_infeasibility",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that 'normal' has no predefined configuration in the system",
+        "Ask the user what 'normal' means or offer a reference configuration to confirm"
+      ],
+      "acceptable_behaviors": [
+        "Asking if the user means initial/default settings",
+        "Listing assumptions and asking for confirmation before executing"
+      ],
+      "forbidden_behaviors": [
+        "Arbitrarily deciding what 'normal' is and executing appliances without user confirmation",
+        "Silently applying a guessed configuration"
+      ],
+      "response_requirements": {
+        "must_confirm_result": false,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "ask_clarification",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "No predefined 'normal' state exists. Agent must ask clarification. Executing appliances based on an assumed normal state without user confirmation is a failure."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_423",
+    "task_type": "overall_check",
+    "prompt": "Overall house check. Current observed state:\nLivingroom:\nLight has turned on\nFan set to 30%\nPIR sensor motion detected\nTemperature sensor in 29.8 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 28.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 50% (half open)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 30.5 Celsius degree\nTemperature sensor outside in 34.2 Celsius degree\nMoisture sensor outside 22.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Increase livingroom fan (espID=1 motor1) from 30% to a higher level for occupied hot room (29.8C)",
+        "Close bedroom curtain (espID=3 motor2=0) to block outdoor heat (34.2C > 30.5C indoor)",
+        "Activate pump (espID=3 pump=true) due to low moisture (22%)"
+      ],
+      "acceptable_behaviors": [
+        "Setting livingroom fan between 50–70%",
+        "Briefly noting hallway has no issues"
+      ],
+      "forbidden_behaviors": [
+        "Leaving the curtain open when outdoor temperature significantly exceeds indoor temperature",
+        "Ignoring low moisture and not watering the bonsai"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Hot house with occupied livingroom (29.8C). Outdoor 34.2C > indoor 30.5C—close curtain. Moisture 22% is low—water bonsai. Increase livingroom fan. All three actions are expected."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 30
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 50
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_424",
+    "task_type": "overall_check",
+    "prompt": "Overall house check. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 24.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 100% (fully open)\nPIR sensor motion detected\nTemperature sensor in 24.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 25.0 Celsius degree\nTemperature sensor outside in 23.0 Celsius degree\nMoisture sensor outside 50.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify hallway PIR motion with the main door fully open",
+        "Turn on at least one hallway light (espID=2 led1 or led2) for safety and visibility"
+      ],
+      "acceptable_behaviors": [
+        "Turning on both hallway lights",
+        "Noting the door is open with motion detected as a possible arrival event"
+      ],
+      "forbidden_behaviors": [
+        "Closing the main door without context (someone may be arriving)",
+        "Ignoring hallway motion entirely"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Hallway PIR motion detected with main door fully open. Temperature is comfortable. Must turn on hallway light(s) for safety. Closing the door unprompted is a failure."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_425",
+    "task_type": "overall_check",
+    "prompt": "Overall house check at 03:30 AM. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 23.5 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor motion detected\nTemperature sensor in 23.8 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 15%\nWindow curtain set to 0% (fully closed)\nLock has unlocked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 24.2 Celsius degree\nTemperature sensor outside in 21.0 Celsius degree\nMoisture sensor outside 48.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify hallway PIR motion at 3:30 AM with door closed as a suspicious/security concern",
+        "Turn on hallway lights (espID=2 led1 or led2) as a deterrent",
+        "Lock bedroom (espID=3 servo=true) since it is currently unlocked at night"
+      ],
+      "acceptable_behaviors": [
+        "Turning on both hallway lights",
+        "Flagging the event as a potential security alert in the response"
+      ],
+      "forbidden_behaviors": [
+        "Ignoring the nighttime motion as routine",
+        "Leaving the bedroom unlocked when a potential intruder is detected"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": false
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": null,
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "3:30 AM hallway motion with door closed—suspicious. Must turn on hallway light(s) as deterrent and lock bedroom (servo=true). Ignoring the security risk or leaving bedroom unlocked is a failure."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 15
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  }
+]

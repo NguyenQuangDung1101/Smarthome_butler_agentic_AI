@@ -1,0 +1,202 @@
+[
+  {
+    "id": "tc_826",
+    "task_type": "multi_step",
+    "prompt": "Check if anyone is in the livingroom and bedroom. Turn off lights and fans only in empty rooms. Don't touch occupied rooms.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads PIR sensors for livingroom (espID=1 pir) and bedroom (espID=3 pir) first, then only turns off lights and fans in rooms with no motion detected. Must not affect occupied rooms."
+    }
+  },
+  {
+    "id": "tc_827",
+    "task_type": "note_management",
+    "prompt": "I have a dentist appointment on 2026-04-11 at 9 AM. Add a note for that day and also add a reminder note for tomorrow (2026-04-10) saying \"Prepare for dentist appointment tomorrow morning\".",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent adds two separate notes: one for 2026-04-11 about the dentist appointment and one for 2026-04-10 as a reminder. Could be done in one or two add_note calls."
+    }
+  },
+  {
+    "id": "tc_828",
+    "task_type": "note_management",
+    "prompt": "Check if I have any notes for today. If there are more than 3 notes, summarize them briefly. If there are none, add one saying \"No plans today - relax day\".",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent gets today's date, checks notes, then branches: if >3 notes reads and summarizes them, if 0 notes adds the relaxation note. Conditional note management."
+    }
+  },
+  {
+    "id": "tc_829",
+    "task_type": "note_management",
+    "prompt": "Delete all my notes for 2026-04-08. I don't need them anymore.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent first checks/reads notes for 2026-04-08 to get all note IDs, then deletes each one. Must read before deleting to get the IDs."
+    }
+  },
+  {
+    "id": "tc_830",
+    "task_type": "complex",
+    "prompt": "I'm hosting a study group tonight at 19:00 in the livingroom. Please: (1) Set up the livingroom now with light on and fan at 35%, (2) add a note for today about the study group, (3) schedule the main door to open at 18:55 for guests, (4) search online for good study music playlist suggestions.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent performs all four actions: immediate appliance setup, note addition, schedule trigger for door, and web search. All four tool types must be used: appliance, note, schedule, web search."
+    }
+  },
+  {
+    "id": "tc_831",
+    "task_type": "complex",
+    "prompt": "I'm leaving for work now. Turn everything off, lock the bedroom, close the main door. Also check today's weather - if rain is expected, close the curtain to protect the balcony. Add a note for today: \"Left for work at morning\".",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent: (1) shuts down all appliances (all lights off, fans off, pump off), (2) locks bedroom, (3) closes main door, (4) checks weather and conditionally closes curtain, (5) adds departure note. Must handle both immediate actions and weather-conditional logic."
+    }
+  },
+  {
+    "id": "tc_832",
+    "task_type": "tool_combination",
+    "prompt": "What time is it now? Also, what is the current temperature outside according to the sensor? Based on both, recommend whether I should open or close the curtain when I go to the balcony.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent gets current time AND reads outside temperature sensor (espID=3 tem_out), then provides a recommendation based on both data points. Time of day + temperature should factor into the advice."
+    }
+  },
+  {
+    "id": "tc_833",
+    "task_type": "tool_combination",
+    "prompt": "Check my notes for today, get the current weather forecast, and read all room temperatures. Then give me a comprehensive morning briefing about my day and the house status.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses at minimum: get_current_datetime, read_note for today, weather forecast tool, and reads temperature sensors from all rooms. Should compile all data into a coherent morning briefing."
+    }
+  },
+  {
+    "id": "tc_834",
+    "task_type": "ambiguous",
+    "prompt": "Set the fan to half.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks which room's fan. There are 3 fans (livingroom, hallway, bedroom). The value 'half' should be interpreted as 50%, but the room must be clarified first."
+    }
+  },
+  {
+    "id": "tc_835",
+    "task_type": "ambiguous",
+    "prompt": "Can you open it for me? I need to get through.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks for clarification. 'It' could refer to the main door, the bedroom lock, or the curtain. The phrase 'get through' suggests a door, but the agent should confirm which one."
+    }
+  },
+  {
+    "id": "tc_836",
+    "task_type": "contradictory",
+    "prompt": "Turn on all the bedroom lights and also make the bedroom completely dark for sleeping.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies the contradiction: turning on all lights while making it dark are mutually exclusive. Should ask the user which they actually want - lights for activity or darkness for sleep."
+    }
+  },
+  {
+    "id": "tc_837",
+    "task_type": "contradictory",
+    "prompt": "Lock the bedroom for security, and also open the bedroom door so the air can flow between rooms.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes the conflict: locking the bedroom (servo=true) is for security but opening implies wanting airflow. These serve different purposes. Agent should ask which priority the owner wants - security or ventilation."
+    }
+  },
+  {
+    "id": "tc_838",
+    "task_type": "out_of_range",
+    "prompt": "Set the livingroom fan to -20%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent rejects the negative value as out of range (valid is 0-100) and asks for a valid percentage."
+    }
+  },
+  {
+    "id": "tc_839",
+    "task_type": "out_of_range",
+    "prompt": "Turn on the air conditioner in the bedroom.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent explains there is no air conditioner in the house. The bedroom has a fan, curtain, and window. Agent may suggest using the fan and closing curtain as alternatives."
+    }
+  },
+  {
+    "id": "tc_840",
+    "task_type": "single",
+    "prompt": "Start watering the bonsai.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets espID=3 pump=true and confirms. Simple single-device command."
+    }
+  },
+  {
+    "id": "tc_841",
+    "task_type": "single",
+    "prompt": "Open the main door halfway.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets espID=2 motor2=50 and confirms. 'Halfway' should be interpreted as 50%."
+    }
+  },
+  {
+    "id": "tc_842",
+    "task_type": "multi",
+    "prompt": "Turn on the livingroom light and the hallway left light, and set both fans to 45%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets espID=1 led1=true, espID=2 led1=true, espID=1 motor1=45, and espID=2 motor1=45. Four appliance commands across two rooms."
+    }
+  },
+  {
+    "id": "tc_843",
+    "task_type": "multi",
+    "prompt": "I want all lights in the bedroom area on and the curtain open to 50%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent turns on all 3 bedroom lights: room light (espID=3 led1=true), bed light (espID=3 led2=true), balcony light (espID=3 led3=true), and sets curtain to 50% (espID=3 motor2=50)."
+    }
+  },
+  {
+    "id": "tc_844",
+    "task_type": "sensor_driven",
+    "prompt": "What's the moisture level of the bonsai soil right now? Is it healthy?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads espID=3 mois and provides the value with context about whether it's healthy (typically 40-60% is ideal for most bonsai). No action needed unless critically low."
+    }
+  },
+  {
+    "id": "tc_845",
+    "task_type": "sensor_driven",
+    "prompt": "Is there anyone in the house right now? Check all rooms.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads all PIR sensors: espID=1 pir, espID=2 pir, espID=3 pir, and reports which rooms have motion detected. Provides a clear occupancy summary."
+    }
+  },
+  {
+    "id": "tc_846",
+    "task_type": "general_question",
+    "prompt": "What's the current price of gasoline in Vietnam?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses search_and_read_web_link to look up current Vietnam fuel prices and provides a summary. Should NOT touch any appliance."
+    }
+  },
+  {
+    "id": "tc_847",
+    "task_type": "general_question",
+    "prompt": "How is the Vietnamese stock market doing today? Give me a quick summary of VN-Index.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses search_and_read_web_link to look up VN-Index status and provides a summary. Should NOT interact with any house appliance."
+    }
+  },
+  {
+    "id": "tc_848",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-09 08:00:00, here is some of the moment may have reached:\n[{\"type\": \"appliance_setting\", \"data\": {\"appliances\": [{\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 100%\"}, {\"place\": \"bedroom\", \"device\": \"pump\", \"target\": \"on\"}, {\"place\": \"hallway\", \"device\": \"main door\", \"target\": \"open to 50%\"}], \"note\": \"Ask for user permission before execute\"}}]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Open the curtain and water the bonsai, but do NOT open the main door. I'm not expecting anyone.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent partially executes per user's selective approval: open curtain (espID=3 motor2=100), turn on pump (espID=3 pump=true), but does NOT open the main door. Respects user's specific denial."
+    }
+  },
+  {
+    "id": "tc_849",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-10 22:00:00, here is some of the moment may have reached:\n[{\"type\": \"appliance_setting\", \"data\": {\"appliances\": [{\"place\": \"livingroom\", \"device\": \"light\", \"target\": \"off\"}, {\"place\": \"livingroom\", \"device\": \"fan\", \"target\": \"0%\"}, {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"locked\"}, {\"place\": \"hallway\", \"device\": \"main door\", \"target\": \"fully closed\"}], \"note\": \"Ask for user permission before execute\"}}]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Do everything except turning off the livingroom light. I'm still reading there.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent executes: livingroom fan to 0% (espID=1 motor1=0), lock bedroom (espID=3 servo=true), close main door (espID=2 motor2=0), but keeps livingroom light ON per user's exception."
+    }
+  },
+  {
+    "id": "tc_850",
+    "task_type": "accident_handling",
+    "prompt": "Overall house check at 11:00. Current observed state:\nLivingroom: Light off, Fan 0%, PIR no motion, Temperature 26.0C.\nHallway: Left light off, Right light off, Fan 0%, Main door 80%, PIR motion detected, Temperature 26.5C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock unlocked, Pump off, PIR no motion, Temperature 26.8C, Outside 27.5C, Moisture 46%.\nOwner left for work at 8:00 AM and is not expected back until 18:00.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent treats this as a security anomaly: main door 80% open with hallway motion detected while the owner is away at work. Should immediately close the main door (espID=2 motor2=0), lock the bedroom (espID=3 servo=true), turn on hallway lights for deterrence (espID=2 led1=true, led2=true), and issue an alert about detected motion."
+    }
+  }
+]

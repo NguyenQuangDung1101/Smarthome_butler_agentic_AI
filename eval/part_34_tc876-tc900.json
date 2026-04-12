@@ -1,0 +1,202 @@
+[
+  {
+    "id": "tc_876",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-12 04:45:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"led1\": false, \"motor1\": 0},\n  \"hallway\": {\"led1\": false, \"led2\": false, \"motor1\": 0, \"motor2\": 0},\n  \"bedroom\": {\"led1\": false, \"led2\": false, \"led3\": false, \"motor1\": 0, \"motor2\": 0, \"servo\": true, \"pump\": false}\n}\nCurrent observed state:\nLivingroom: Light off, Fan 0%.\nHallway: Left light off, Right light off, Fan 0%, Main door 0%.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock locked, Pump off.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies that all settings match the initial configuration. No action needed."
+    }
+  },
+  {
+    "id": "tc_877",
+    "task_type": "schedule_init",
+    "prompt": "It is 2026-04-12 05:30:00, too early and have not reached any events or execution yet.\nHave a general check of the house appliances system and compare it with the initial settings below:\n{\n  \"livingroom\": {\"led1\": false, \"motor1\": 0},\n  \"hallway\": {\"led1\": false, \"led2\": false, \"motor1\": 0, \"motor2\": 0},\n  \"bedroom\": {\"led1\": false, \"led2\": false, \"led3\": false, \"motor1\": 0, \"motor2\": 0, \"servo\": true, \"pump\": false}\n}\nCurrent observed state:\nLivingroom: Light on, Fan 25%.\nHallway: Left light off, Right light on, Fan 10%, Main door 15%.\nBedroom: Room light off, Bed light on, Balcony light off, Fan 15%, Curtain 40%, Lock unlocked, Pump on.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies all mismatches: (1) livingroom light on (espID=1 led1=false), fan 25 (espID=1 motor1=0), (2) hallway right light on (espID=2 led2=false), fan 10 (espID=2 motor1=0), door 15 (espID=2 motor2=0), (3) bedroom bed light on (espID=3 led2=false), fan 15 (espID=3 motor1=0), curtain 40 (espID=3 motor2=0), lock unlocked (espID=3 servo=true), pump on (espID=3 pump=false). 10 mismatches total."
+    }
+  },
+  {
+    "id": "tc_878",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-10 13:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom: Light off, Fan 80%, PIR no motion, Temperature 25.0C.\nHallway: Left light off, Right light off, Fan 50%, Main door 0%, PIR no motion, Temperature 25.2C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 60%, Curtain 0%, Lock locked, Pump off, PIR no motion, Temperature 25.5C, Outside 26.0C, Moisture 55%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies: house is empty and comfortable (25C range), but all fans are running at moderate-high values wasting energy. Should reduce or turn off fans since nobody is home and temperature is comfortable."
+    }
+  },
+  {
+    "id": "tc_879",
+    "task_type": "schedule_no_moment",
+    "prompt": "It is 2026-04-10 20:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom: Light off, Fan 0%, PIR motion detected, Temperature 27.0C.\nHallway: Left light off, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 26.5C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock locked, Pump off, PIR no motion, Temperature 27.2C, Outside 25.0C, Moisture 48%.\n[TODAY NOTES]: Movie night! Enjoy the evening.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent: (1) livingroom is occupied at evening but completely dark - turn on light (espID=1 led1=true), (2) temperature is warm, turn on fan (espID=1 motor1=30-40), (3) note says movie night so keep setup cozy. Hallway light off is fine for movie ambiance."
+    }
+  },
+  {
+    "id": "tc_880",
+    "task_type": "note_management",
+    "prompt": "Add a note for 2026-04-12: \"Electrician visiting at 2 PM to check wiring in the hallway. Leave main door open at 1:50 PM.\"",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent adds the note for 2026-04-12 with the specified content about the electrician visit."
+    }
+  },
+  {
+    "id": "tc_881",
+    "task_type": "note_management",
+    "prompt": "What notes do I have for this entire week?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent gets the current date, then checks notes for each day of the current week (or a range), and reports back all found notes. May need multiple read_note calls."
+    }
+  },
+  {
+    "id": "tc_882",
+    "task_type": "tool_combination",
+    "prompt": "What day is it today, and what's the weather like? Also how are all the room temperatures compared to outside?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses get_current_datetime, weather forecast tool, and reads all temperature sensors including outside (espID=1 tem, espID=2 tem, espID=3 tem, espID=3 tem_out). Should compile a comparison report."
+    }
+  },
+  {
+    "id": "tc_883",
+    "task_type": "tool_combination",
+    "prompt": "Search online for ideal bonsai moisture levels, then check my bonsai's current moisture and tell me if it needs watering.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses search_and_read_web_link to find ideal bonsai moisture ranges, reads espID=3 mois sensor, then compares and advises. May conditionally recommend turning on pump."
+    }
+  },
+  {
+    "id": "tc_884",
+    "task_type": "complex",
+    "prompt": "I'm going on a 3-day trip starting tomorrow. Please: (1) turn everything off right now, (2) lock the bedroom, (3) close the main door, (4) add a note for each of the next 3 days saying \"Owner away on trip - do not open doors\", (5) check the weather for tomorrow to see if I should close the curtain.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent performs all 5 tasks: shuts down all appliances, locks bedroom, closes door, adds 3 notes for 3 consecutive days, and checks weather to conditionally close curtain. Must use appliance, note, and weather tools."
+    }
+  },
+  {
+    "id": "tc_885",
+    "task_type": "complex",
+    "prompt": "I want to host a small party tonight. Set up the livingroom with lights on and fan at 40%. Open the main door halfway for guests arriving. Add a note for today saying \"Party at 8 PM\". Also, search online for some good party snack ideas.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent: (1) sets livingroom light on (espID=1 led1=true) and fan 40% (espID=1 motor1=40), (2) opens main door 50% (espID=2 motor2=50), (3) adds note for today about party, (4) searches web for party snack ideas."
+    }
+  },
+  {
+    "id": "tc_886",
+    "task_type": "multi_step",
+    "prompt": "First check the outside temperature. If it's above 30C, close the curtain and turn on the bedroom fan to 70%. If it's below 25C, open the curtain to 80% and turn off the fan. Otherwise, leave everything as is.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads espID=3 tem_out first, then takes conditional action based on the temperature value. Must read before acting and follow the correct branch."
+    }
+  },
+  {
+    "id": "tc_887",
+    "task_type": "multi_step",
+    "prompt": "Check the moisture level. If below 30%, water the bonsai for me and add a note for today saying \"Bonsai watered\". If above 60%, add a note saying \"Bonsai moisture high, skip watering\".",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads espID=3 mois, then conditionally either turns on pump AND adds a note, or just adds a different note. Must read sensor first, then branch correctly."
+    }
+  },
+  {
+    "id": "tc_888",
+    "task_type": "energy_efficiency",
+    "prompt": "I just left the house. Can you do an energy audit and turn off anything that's wasting electricity?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads all sensor/device states, identifies any lights, fans, or pump running with no occupancy, and turns them all off. Should keep security measures (lock, door closed) intact."
+    }
+  },
+  {
+    "id": "tc_889",
+    "task_type": "energy_efficiency",
+    "prompt": "Overall house check at 11:30. Current observed state:\nLivingroom: Light on, Fan 100%, PIR no motion, Temperature 24.5C.\nHallway: Left light on, Right light on, Fan 80%, Main door 0%, PIR no motion, Temperature 24.2C.\nBedroom: Room light on, Bed light on, Balcony light on, Fan 90%, Curtain 0%, Lock locked, Pump off, PIR no motion, Temperature 24.8C, Outside 25.0C, Moisture 50%.\n[TODAY NOTES]: Save energy today - electricity bill was high last month.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes massive energy waste: all lights and fans running at high levels in every room with no occupancy, and the note explicitly asks to save energy. Should turn off all lights and fans across all rooms."
+    }
+  },
+  {
+    "id": "tc_890",
+    "task_type": "weather_driven",
+    "prompt": "I heard there might be a storm coming this afternoon. Can you check the weather and prepare the house accordingly?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent checks the weather forecast, then if storm is expected: closes curtain (espID=3 motor2=0), closes main door (espID=2 motor2=0), turns off balcony light (espID=3 led3=false), turns off pump (espID=3 pump=false), and locks bedroom. If no storm, inform the user."
+    }
+  },
+  {
+    "id": "tc_891",
+    "task_type": "weather_driven",
+    "prompt": "The forecast says it'll be really sunny and hot tomorrow. Prepare a note and set up the house to handle the heat when I leave for work in the morning.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent: (1) closes curtain to block sun (espID=3 motor2=0), (2) sets fans to moderate levels for air circulation, (3) adds a note for tomorrow about hot weather preparation. Proactive heat management."
+    }
+  },
+  {
+    "id": "tc_892",
+    "task_type": "comfort_optimization",
+    "prompt": "I'm about to meditate in the bedroom. I need it quiet, slightly cool, and dimly lit. Can you set things up?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent creates a meditation-friendly environment: bedroom fan low 15-25% for slight cooling (espID=3 motor1=15-25), bed light on for dim lighting (espID=3 led2=true), room light off (espID=3 led1=false), curtain partially closed (espID=3 motor2=20-30), and optionally lock bedroom for privacy (espID=3 servo=true)."
+    }
+  },
+  {
+    "id": "tc_893",
+    "task_type": "comfort_optimization",
+    "prompt": "I want the house to feel welcoming and bright when I get home. I'm arriving in about 10 minutes.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets up a welcoming environment: turn on livingroom light (espID=1 led1=true), hallway lights for entrance (espID=2 led1=true, led2=true), moderate fan if warm, and optionally open main door slightly. Should create a warm welcome ambiance."
+    }
+  },
+  {
+    "id": "tc_894",
+    "task_type": "conversational",
+    "prompt": "What can you do? Tell me all the things you can help me with in this house.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent explains its capabilities: controlling appliances (lights, fans, door, curtain, lock, pump), reading sensors (temperature, PIR, moisture), managing notes, checking weather, scheduling, and answering general questions. Should NOT execute any appliance commands."
+    }
+  },
+  {
+    "id": "tc_895",
+    "task_type": "conversational",
+    "prompt": "Thanks for helping me today, you've been great!",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent responds politely and warmly without executing any device commands. A simple acknowledgment is sufficient."
+    }
+  },
+  {
+    "id": "tc_896",
+    "task_type": "general_question",
+    "prompt": "What's the weather going to be like this weekend in Ho Chi Minh City?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses the weather tool or web search to look up the weekend weather forecast for Ho Chi Minh City and provides a summary. Should NOT touch any appliances."
+    }
+  },
+  {
+    "id": "tc_897",
+    "task_type": "general_question",
+    "prompt": "How do I take care of a bonsai tree? Any tips?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses web search to find bonsai care tips and provides practical advice. May relate it to the house's bonsai and moisture sensor. Should NOT execute any appliance commands unless asked."
+    }
+  },
+  {
+    "id": "tc_898",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-11 07:00:00, here is some of the moment may have reached:\n[{\"type\": \"appliance_setting\", \"data\": {\"appliances\": [{\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 80%\"}, {\"place\": \"bedroom\", \"device\": \"room light\", \"target\": \"on\"}, {\"place\": \"hallway\", \"device\": \"left light\", \"target\": \"on\"}, {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"unlocked\"}], \"note\": \"Ask for user permission before execute\"}}]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Go ahead with everything. I'm up and ready.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent executes all actions with full permission: open curtain 80% (espID=3 motor2=80), turn on room light (espID=3 led1=true), turn on hallway left light (espID=2 led1=true), unlock bedroom (espID=3 servo=false)."
+    }
+  },
+  {
+    "id": "tc_899",
+    "task_type": "accident_handling",
+    "prompt": "Overall house check at 16:00. Current observed state:\nLivingroom: Light off, Fan 0%, PIR no motion, Temperature 26.0C.\nHallway: Left light off, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 26.2C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock locked, Pump on, PIR no motion, Temperature 26.5C, Outside 27.0C, Moisture 95%.\nOwner has been at work since 8:00 AM.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies the pump has been running unattended all day while owner is away, and moisture is at 95% (dangerously high - potential flooding/overflow). Should immediately turn off pump (espID=3 pump=false) and alert the owner about possible overwatering or pump malfunction."
+    }
+  },
+  {
+    "id": "tc_900",
+    "task_type": "accident_handling",
+    "prompt": "Overall house check at 02:30. Current observed state:\nLivingroom: Light on, Fan 80%, PIR no motion, Temperature 24.0C.\nHallway: Left light on, Right light on, Fan 60%, Main door 100%, PIR no motion, Temperature 23.5C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 20%, Curtain 0%, Lock unlocked, Pump off, PIR motion detected, Temperature 24.2C, Outside 22.0C, Moisture 50%.\nOwner confirmed they went to bed at 23:00 and lives alone.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent treats this as a critical anomaly: at 2:30 AM with owner in bed, main door is fully open, all hallway and livingroom lights/fans running but no motion there. Possible intruder who has left or door left open accidentally. Should immediately: close main door (espID=2 motor2=0), turn off livingroom light and fan (espID=1 led1=false, motor1=0), turn off hallway lights and fan (espID=2 led1=false, led2=false, motor1=0), lock bedroom (espID=3 servo=true), and issue security alert."
+    }
+  }
+]

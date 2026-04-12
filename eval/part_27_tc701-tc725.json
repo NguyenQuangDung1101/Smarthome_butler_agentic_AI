@@ -1,0 +1,3480 @@
+[
+  {
+    "id": "tc_701",
+    "task_type": "single",
+    "prompt": "Unlock the bedroom door please.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Set espID=3 servo=false to unlock the bedroom door",
+        "Confirm to the user that the bedroom door is now unlocked"
+      ],
+      "acceptable_behaviors": [
+        "Acknowledge the current locked state before unlocking"
+      ],
+      "forbidden_behaviors": [
+        "Change any other appliance besides the bedroom lock",
+        "Set servo=true (locking instead of unlocking)"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "device_name": "servo",
+              "action": "set",
+              "value": false
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Simple single-appliance command. Pass if agent sets servo=false and confirms unlock. Fail if any unrelated appliance is changed."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_702",
+    "task_type": "single",
+    "prompt": "What is the livingroom temperature right now?",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read espID=1 tem sensor to get the livingroom temperature",
+        "Report the actual temperature value returned by the sensor"
+      ],
+      "acceptable_behaviors": [
+        "Provide brief comfort context if temperature is extreme"
+      ],
+      "forbidden_behaviors": [
+        "Change any actuator or appliance setting",
+        "Assume the temperature without reading the sensor"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 1,
+              "device_name": "tem",
+              "action": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Pure sensor read. Pass if agent reads espID=1 tem and reports exact value. Fail if any actuator is changed."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_703",
+    "task_type": "multi",
+    "prompt": "Turn on every single light in the house right now.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn on all 6 lights: espID=1 led1, espID=2 led1, espID=2 led2, espID=3 led1, espID=3 led2, espID=3 led3",
+        "Confirm all lights are now on"
+      ],
+      "acceptable_behaviors": [
+        "Issue all 6 commands in a single appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Miss any of the 6 lights",
+        "Change any non-light appliances (fans, locks, etc.)"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "lights": "all 6 set true"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "All 6 lights must be set to true. Partial execution (missing any light) is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_704",
+    "task_type": "multi",
+    "prompt": "Set all fans in the house to maximum speed and open the main door fully.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Set all three fans to 100: espID=1 motor1=100, espID=2 motor1=100, espID=3 motor1=100",
+        "Open main door fully: espID=2 motor2=100",
+        "Confirm all four commands executed"
+      ],
+      "acceptable_behaviors": [
+        "Issue all four commands in one appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Miss any fan or the main door",
+        "Set fan values less than 100"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "fans": "all 100",
+              "motor2": 100
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Four commands required: 3 fans at 100 and main door at 100. Missing any command is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 100
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_705",
+    "task_type": "expression",
+    "prompt": "I'm about to take an important phone call. I need it really quiet around here.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "handling_of_ambiguity_or_infeasibility"
+      ],
+      "required_behaviors": [
+        "Infer that fans are the primary source of noise and reduce or turn them off",
+        "Focus noise reduction in the likely occupied room"
+      ],
+      "acceptable_behaviors": [
+        "Ask which room the user is in before acting",
+        "Close the main door to reduce exterior noise (espID=2 motor2=0)",
+        "Turn off all fans house-wide to ensure quiet"
+      ],
+      "forbidden_behaviors": [
+        "Turn on any noise-producing appliance (fan, pump) to higher speed",
+        "Ignore the noise concern entirely without acting"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "fans": "reduce or off"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Agent must infer that quiet = reduce fans. Fans are the main controllable noise source. Must not increase any noisy device."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 60
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 40
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 50
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_706",
+    "task_type": "expression",
+    "prompt": "It smells really musty and stale in the bedroom, like the air hasn't circulated in days.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Open the bedroom curtain (espID=3 motor2 set to 50-100) to allow fresh air circulation",
+        "Turn on the bedroom fan (espID=3 motor1 set to 40-70) to improve air circulation"
+      ],
+      "acceptable_behaviors": [
+        "Read espID=3 tem_out before opening curtain to verify outdoor air is reasonable",
+        "Suggest opening a window or door for additional ventilation"
+      ],
+      "forbidden_behaviors": [
+        "Keep curtain fully closed (motor2=0) while claiming to improve ventilation",
+        "Turn off the bedroom fan instead of turning it on"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "motor2": 80,
+              "motor1": 50
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Musty air = ventilation needed. Must open curtain and turn on fan. Checking outdoor temp before opening is a bonus. Closing things further is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 50
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 80
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_707",
+    "task_type": "multi_step",
+    "prompt": "If the hallway main door is currently open and there is no motion detected in the hallway, close the door for security. Otherwise leave it as is.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Read espID=2 motor2 to verify door is currently open",
+        "Read espID=2 pir to verify no motion is detected in hallway",
+        "Only close the door (motor2=0) if BOTH conditions are true: door open AND no motion"
+      ],
+      "acceptable_behaviors": [
+        "Combine motor2 get and pir get into one appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Close the door without first checking both door status and PIR",
+        "Close the door when motion is detected in the hallway"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 2,
+              "motor2": "get",
+              "pir": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 2,
+              "motor2": 0
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Conditional: must check door status and PIR before closing. Skip action if conditions not met. Closing without reading sensors is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 60
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_get_motor2",
+          "appliance_set_motor2"
+        ],
+        [
+          "appliance_get_pir",
+          "appliance_set_motor2"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_708",
+    "task_type": "multi_step",
+    "prompt": "Check temperatures in all rooms. For any room where the temperature exceeds 30 degrees Celsius, set that room's fan to 70%. Leave other rooms unchanged.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Read temperature sensors from all three rooms: espID=1, espID=2, espID=3",
+        "Only set fan to 70% in rooms where temperature exceeds 30C",
+        "Leave fans unchanged in rooms at 30C or below"
+      ],
+      "acceptable_behaviors": [
+        "Read all temperatures in one appliance call before deciding",
+        "Report which rooms were adjusted and which were not"
+      ],
+      "forbidden_behaviors": [
+        "Set fan without first reading temperature for that room",
+        "Set all fans to 70% regardless of temperature",
+        "Skip reading any room's temperature"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "action": "get",
+              "sensors": "tem all rooms"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "fans": "set 70 for rooms >30C"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Must read all 3 room temperatures before conditionally setting fans. Setting fan without reading is a fail. Fan value must be 70 for hot rooms only."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_get_tem_esp1",
+          "appliance_set_motor1_esp1"
+        ],
+        [
+          "appliance_get_tem_esp2",
+          "appliance_set_motor1_esp2"
+        ],
+        [
+          "appliance_get_tem_esp3",
+          "appliance_set_motor1_esp3"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_709",
+    "task_type": "complex",
+    "prompt": "A guest is arriving in 25 minutes. Right now, turn on the livingroom and hallway lights and set up the livingroom fan to 35%. Also add a note for today: 'Guest visiting - served tea and snacks.' Then schedule opening the main door when they arrive.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Immediately turn on livingroom light (espID=1 led1=true) and both hallway lights (espID=2 led1=true, led2=true)",
+        "Set livingroom fan to 35% (espID=1 motor1=35)",
+        "Add a note for today with the text 'Guest visiting - served tea and snacks.'",
+        "Schedule main door opening approximately 25 minutes from now via trigger_schedule_agent"
+      ],
+      "acceptable_behaviors": [
+        "Combine immediate appliance commands into one call",
+        "Use current datetime to compute arrival time for the schedule"
+      ],
+      "forbidden_behaviors": [
+        "Skip adding the note",
+        "Skip scheduling the door opening",
+        "Open the door immediately instead of scheduling it"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "add_note"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent"
+          }
+        ],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          }
+        ],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "livingroom_light": true,
+              "hallway_lights": true,
+              "fan": 35
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "add_note",
+            "args": {
+              "note_text": "Guest visiting - served tea and snacks.",
+              "dates": [
+                "2026-04-12"
+              ]
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent",
+            "args": {
+              "request_info": "open main door in 25 minutes"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Three tool types required: appliance (immediate lights+fan), add_note (today's note), trigger_schedule_agent (door in 25 min). All three must execute. Skipping any is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": true,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 35
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [
+        "add_note",
+        "trigger_schedule_agent"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_livingroom_hallway",
+          "add_note"
+        ],
+        [
+          "appliance_livingroom_hallway",
+          "trigger_schedule_agent"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_710",
+    "task_type": "complex",
+    "prompt": "I want to sunbathe on the balcony for the next 30 minutes. Open the bedroom curtain fully right now and turn on the balcony light. After 30 minutes, close the curtain back, turn off the balcony light, and start watering the bonsai.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Immediately open curtain fully (espID=3 motor2=100) and turn on balcony light (espID=3 led3=true)",
+        "Schedule after 30 minutes: close curtain (motor2=0), turn off balcony light (led3=false), start pump (pump=true)",
+        "Clearly separate immediate actions from scheduled actions in the response"
+      ],
+      "acceptable_behaviors": [
+        "Use get_current_datetime to compute the scheduled time"
+      ],
+      "forbidden_behaviors": [
+        "Turn on the pump immediately instead of scheduling it",
+        "Not schedule the reversal actions",
+        "Close curtain now instead of opening it"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent"
+          }
+        ],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          }
+        ],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "motor2": 100,
+              "led3": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "trigger_schedule_agent",
+            "args": {
+              "request_info": "in 30 minutes: close curtain, turn off balcony light, start watering pump"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Split execution: immediate curtain open+balcony light, then scheduled reversal+pump after 30 min. Starting pump now instead of scheduling is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": true,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [
+        "trigger_schedule_agent"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": [
+        [
+          "appliance_immediate",
+          "trigger_schedule_agent"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_711",
+    "task_type": "security",
+    "prompt": "I just got a notification on my phone that my main door opened at 2:30 AM. I'm currently away on vacation! Check everything and lock down the house immediately.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Close main door immediately (espID=2 motor2=0)",
+        "Lock bedroom door (espID=3 servo=true) for safety",
+        "Turn on all hallway lights as deterrent (espID=2 led1=true, led2=true)",
+        "Advise user to contact authorities"
+      ],
+      "acceptable_behaviors": [
+        "Turn on livingroom light for visibility",
+        "Read PIR sensors to assess intruder location"
+      ],
+      "forbidden_behaviors": [
+        "Minimize or dismiss the intrusion alert",
+        "Leave the main door open",
+        "Leave the bedroom unlocked"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "motor2": 0,
+              "servo": true,
+              "hallway_lights": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Emergency intrusion at 2:30 AM while owner is away. Must close door, lock bedroom, light up house. Dismissing the alert is a critical fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 80
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_712",
+    "task_type": "security",
+    "prompt": "I'm going to bed. Do a full security sweep of the house: verify the main door is closed, bedroom locked, check all PIR sensors for unexpected motion, and report anything unusual.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Read espID=2 motor2 to check door status",
+        "Read espID=3 servo to check bedroom lock",
+        "Read all three PIR sensors (espID=1, 2, 3)",
+        "Close door if open; lock bedroom if unlocked",
+        "Report all findings including any unexpected motion"
+      ],
+      "acceptable_behaviors": [
+        "Combine all sensor/actuator reads into one appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Skip reading PIR sensors",
+        "Skip checking door or lock status before auditing",
+        "Leave door open or bedroom unlocked without reporting"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "reads": "motor2, servo, pir all rooms"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "motor2": 0,
+              "servo": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Full security audit: read door, lock and all PIR sensors first, then remediate. Skipping any of the 5 reads is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 30
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "get"
+        },
+        {
+          "espID": 1,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_get_motor2",
+          "appliance_set_motor2"
+        ],
+        [
+          "appliance_get_servo",
+          "appliance_set_servo"
+        ],
+        [
+          "appliance_get_pir",
+          "appliance_set_motor2"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_713",
+    "task_type": "emergency_handling",
+    "prompt": "There's a loud banging noise coming from outside the bedroom window! I'm really scared. Please help!",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Lock bedroom door immediately (espID=3 servo=true) to secure the user",
+        "Close bedroom curtain (espID=3 motor2=0) to block outside view",
+        "Turn on hallway and livingroom lights to simulate full house activity as deterrent",
+        "Advise user to stay inside and call police if needed"
+      ],
+      "acceptable_behaviors": [
+        "Turn on bedroom light to help user see inside the room"
+      ],
+      "forbidden_behaviors": [
+        "Open the main door or any entry point",
+        "Dismiss the noise as non-serious without asking user",
+        "Leave bedroom unlocked"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "servo": true,
+              "motor2": 0,
+              "lights_on": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Fear-based emergency: lock bedroom and close curtain first. Turn on house lights as deterrent. Opening any entry point is a critical fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 80
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_714",
+    "task_type": "emergency_handling",
+    "prompt": "Overall house check at 11:00. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.5 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 55.0 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 27.0 Celsius degree\nTemperature sensor outside in 30.5 Celsius degree\nMoisture sensor outside 38.0 %moist",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "reasonableness_of_flow"
+      ],
+      "required_behaviors": [
+        "Identify hallway temperature of 55C as critically abnormal compared to other rooms at 26-27C",
+        "Open main door for ventilation (espID=2 motor2=100)",
+        "Turn on hallway fan at max (espID=2 motor1=100)",
+        "Turn on hallway lights for visibility",
+        "Urgently advise the owner to investigate the hallway in person"
+      ],
+      "acceptable_behaviors": [
+        "Keep bedroom locked for safety since anomaly is in hallway",
+        "Suggest possible causes: fire hazard, electrical fault, sensor malfunction"
+      ],
+      "forbidden_behaviors": [
+        "Dismiss the 55C hallway temperature without flagging it",
+        "Unlock the bedroom door (espID=3 servo=false) in this emergency",
+        "Ignore the temperature anomaly entirely"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 2,
+              "motor2": 100,
+              "motor1": 100,
+              "led1": true,
+              "led2": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Hallway 55C is a critical anomaly. Must flag it, ventilate hallway (door+fan), light up for visibility. Ignoring 55C temperature is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_715",
+    "task_type": "general_question",
+    "prompt": "What's the current exchange rate from USD to VND? I need to convert some money.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Use web search to find the current USD to VND exchange rate",
+        "Report a specific numerical exchange rate value from the search result"
+      ],
+      "acceptable_behaviors": [
+        "Note that exchange rates fluctuate and recommend checking a financial site"
+      ],
+      "forbidden_behaviors": [
+        "Control any house appliance",
+        "Fabricate an exchange rate without searching"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "search_and_read_web_link"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "search_and_read_web_link",
+            "args": {
+              "query": "USD to VND exchange rate today"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "General info query. Must search web for exchange rate and report value. No smart home action expected. Inventing rate without search is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "search_and_read_web_link"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_716",
+    "task_type": "general_question",
+    "prompt": "Is there a typhoon warning for central Vietnam this week? I have family there.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Search the web for typhoon or storm warnings for central Vietnam this week",
+        "Report factual safety-relevant information from search results"
+      ],
+      "acceptable_behaviors": [
+        "Also check the weather tool for regional conditions",
+        "Express empathy about the user's concern for family"
+      ],
+      "forbidden_behaviors": [
+        "Control any house appliance",
+        "Invent weather data without performing a search"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "search_and_read_web_link"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "search_and_read_web_link",
+            "args": {
+              "query": "typhoon warning central Vietnam this week"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Safety-sensitive query about natural disaster. Must search web and report factual warnings. No appliance control expected."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "search_and_read_web_link"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_717",
+    "task_type": "accident_handling",
+    "prompt": "The bedroom lock motor seems broken. I keep sending the lock command but it stays unlocked no matter what. What should I do?",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "handling_of_ambiguity_or_infeasibility"
+      ],
+      "required_behaviors": [
+        "Attempt to lock the bedroom (espID=3 servo=true) one more time",
+        "If lock attempt still fails, advise physical inspection of the lock motor",
+        "Suggest closing the main door as alternative security (espID=2 motor2=0)",
+        "Recommend contacting maintenance for the broken lock"
+      ],
+      "acceptable_behaviors": [
+        "Read servo status after attempt to verify if it worked"
+      ],
+      "forbidden_behaviors": [
+        "Repeatedly send lock commands without pause or user feedback",
+        "Make no attempt at all and only provide advice without trying"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "servo": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Broken hardware scenario. Must try once, then advise on alternatives (main door closed, physical check). Spamming commands or doing nothing are both fails."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_718",
+    "task_type": "accident_handling",
+    "prompt": "Oh no, I just realized the bonsai pump has been running since last night! The balcony is probably soaked. Turn off the pump and check the moisture sensor.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Turn off pump immediately as top priority (espID=3 pump=false)",
+        "Read moisture sensor (espID=3 mois) to assess current moisture level",
+        "Report the moisture reading to the user",
+        "Advise user to inspect balcony for water damage"
+      ],
+      "acceptable_behaviors": [
+        "Combine pump off and moisture read in a single appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Read moisture sensor before turning off pump",
+        "Leave pump running",
+        "Skip reading the moisture sensor"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "pump": false
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "mois": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Urgent: pump running all night. Must stop pump first, then read moisture. Leaving pump on or skipping moisture check is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "mois",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_set_pump_off",
+          "appliance_get_mois"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_719",
+    "task_type": "tool_combination",
+    "prompt": "Check the weather forecast for today. Then read my notes for today. If any note mentions watering, check the balcony moisture and water the bonsai if needed.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response"
+      ],
+      "required_behaviors": [
+        "Check weather forecast using weather tool",
+        "Read today's notes to detect a watering instruction",
+        "If watering note exists, read moisture sensor (espID=3 mois)",
+        "Water bonsai (pump=true) only if moisture is below the threshold noted"
+      ],
+      "acceptable_behaviors": [
+        "Combine get_current_datetime with forecast call",
+        "Skip pump activation if no watering note exists"
+      ],
+      "forbidden_behaviors": [
+        "Skip reading today's notes",
+        "Activate pump without checking moisture level",
+        "Skip weather check entirely"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          }
+        ],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast",
+            "args": {}
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note",
+            "args": {
+              "date": "today"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "mois": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "pump": true
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Four-stage chain: weather -> notes -> moisture sensor -> conditional pump. Skipping any stage or watering without checking moisture is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [
+        {
+          "date": "today",
+          "note_text": "Water the bonsai today if moisture is below 35%."
+        }
+      ],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": false
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "get_hourly_forecast",
+        "read_note",
+        "check_note"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "mois",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "get_hourly_forecast",
+          "read_note"
+        ],
+        [
+          "read_note",
+          "appliance_get_mois"
+        ],
+        [
+          "appliance_get_mois",
+          "appliance_set_pump"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_720",
+    "task_type": "tool_combination",
+    "prompt": "What time is it now? Also set the bedroom fan to 40%, and add a note for tomorrow reminding me to prepare lunch at noon.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Call get_current_datetime and report the current time",
+        "Set bedroom fan to 40% (espID=3 motor1=40)",
+        "Add a note for tomorrow's date with the text about preparing lunch at noon"
+      ],
+      "acceptable_behaviors": [
+        "Use the current datetime to calculate tomorrow's date for the note"
+      ],
+      "forbidden_behaviors": [
+        "Skip any of the three tasks",
+        "Add note for today's date instead of tomorrow"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "add_note"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_current_datetime",
+            "args": {}
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "motor1": 40
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "add_note",
+            "args": {
+              "note_text": "Prepare lunch at noon",
+              "dates": [
+                "tomorrow"
+              ]
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Three parallel tasks: get time, set fan 40%, add tomorrow's note. Skipping any task or using wrong date for note is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 0
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 40
+        }
+      ],
+      "required_tool_calls": [
+        "get_current_datetime",
+        "add_note"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "get_current_datetime",
+          "add_note"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_721",
+    "task_type": "tool_combination",
+    "prompt": "Give me a complete bedroom environment report: read the indoor temperature, outdoor temperature, moisture level, check the weather forecast, and read any notes I have for today. Summarize it all together.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read indoor temperature (espID=3 tem), outdoor temperature (espID=3 tem_out), and moisture (espID=3 mois)",
+        "Check weather forecast using weather tool",
+        "Read today's notes and include them in the summary",
+        "Combine all data into a single coherent bedroom environment report"
+      ],
+      "acceptable_behaviors": [
+        "Read all sensors in one appliance call",
+        "Include get_current_datetime to contextualize the report"
+      ],
+      "forbidden_behaviors": [
+        "Skip any of the three sensor reads",
+        "Skip the weather check",
+        "Skip today's notes",
+        "Change any actuator settings"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "tem": "get",
+              "tem_out": "get",
+              "mois": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "get_hourly_forecast",
+            "args": {}
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note",
+            "args": {
+              "date": "today"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Comprehensive report requiring 3 sensor reads + weather forecast + notes. Skipping any data source is a fail. No actuator changes expected."
+    },
+    "preconditions": {
+      "notes_setup": [
+        {
+          "date": "today",
+          "note_text": "Doctor appointment at 3 PM."
+        }
+      ],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "get_hourly_forecast",
+        "read_note",
+        "check_note"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem_out",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "mois",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_722",
+    "task_type": "note_management",
+    "prompt": "Read all my notes for April 10, 11, and 12. Give me a combined summary of everything planned.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Query notes for 2026-04-10, 2026-04-11, and 2026-04-12 separately",
+        "Combine all notes into a single cohesive summary",
+        "Report if any date has no notes"
+      ],
+      "acceptable_behaviors": [
+        "Use check_note first to verify note existence before reading",
+        "Organize the summary by date"
+      ],
+      "forbidden_behaviors": [
+        "Skip any of the three dates",
+        "Invent note content for dates without notes",
+        "Change any house appliance"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note",
+            "args": {
+              "date": "2026-04-10"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note",
+            "args": {
+              "date": "2026-04-11"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "read_note",
+            "args": {
+              "date": "2026-04-12"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Must read notes for all three dates. Skipping a date or inventing content is a fail. No appliance action expected."
+    },
+    "preconditions": {
+      "notes_setup": [
+        {
+          "date": "2026-04-10",
+          "note_text": "Team meeting at 9 AM."
+        },
+        {
+          "date": "2026-04-11",
+          "note_text": "Dentist appointment at 2 PM."
+        },
+        {
+          "date": "2026-04-12",
+          "note_text": "Submit monthly report by end of day."
+        }
+      ],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "read_note"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_723",
+    "task_type": "note_management",
+    "prompt": "Delete all my notes for today. They are outdated and no longer relevant.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Call check_note for today to retrieve note IDs",
+        "Delete each note by ID using delete_note",
+        "Confirm all notes have been deleted"
+      ],
+      "acceptable_behaviors": [
+        "Call read_note for today as an alternative to check_note to get IDs",
+        "Report the content of notes before deleting them"
+      ],
+      "forbidden_behaviors": [
+        "Delete notes without first checking which notes exist and their IDs",
+        "Leave any note undeleted",
+        "Change any house appliance"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "check_note"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "delete_note"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "check_note",
+            "args": {
+              "date": "today"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "delete_note",
+            "args": {
+              "id": "<note_id_1>"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "delete_note",
+            "args": {
+              "id": "<note_id_2>"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Must check_note first to get IDs, then delete each by ID. Deleting without getting IDs first is a fail. Leaving any note undeleted is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [
+        {
+          "date": "today",
+          "note_text": "Grocery list: milk, eggs, bread."
+        },
+        {
+          "date": "today",
+          "note_text": "Call plumber in the morning."
+        }
+      ],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": true,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [
+        "check_note",
+        "delete_note"
+      ],
+      "abandon_tool_calls": [],
+      "required_appliances": [],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "check_note",
+          "delete_note"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "tc_724",
+    "task_type": "sensor_driven",
+    "prompt": "Report the motion sensor status for all three rooms right now. I want to know where there is activity in the house.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Read PIR sensor from livingroom (espID=1 pir)",
+        "Read PIR sensor from hallway (espID=2 pir)",
+        "Read PIR sensor from bedroom (espID=3 pir)",
+        "Report which rooms have motion detected and which do not"
+      ],
+      "acceptable_behaviors": [
+        "Read all three PIR sensors in a single appliance call"
+      ],
+      "forbidden_behaviors": [
+        "Change any actuator based on motion results",
+        "Skip any room's PIR sensor",
+        "Fabricate motion data without reading sensors"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": false,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "pir": "get all rooms"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Pure sensor report: read all 3 PIR sensors and report. No actuator changes expected. Skipping any room is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": []
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 2,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "pir",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_725",
+    "task_type": "sensor_driven",
+    "prompt": "Read the outside temperature and moisture level together. Based on those readings, is it a good time to open the bedroom curtain for fresh air and natural drying?",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "reasonableness_of_flow"
+      ],
+      "required_behaviors": [
+        "Read espID=3 tem_out and espID=3 mois before making a recommendation",
+        "Provide a data-driven recommendation: open if temperature 20-30C and humidity is not excessively high",
+        "Advise against opening if temperature exceeds 33C or moisture/humidity is very high"
+      ],
+      "acceptable_behaviors": [
+        "Read both sensors in one appliance call",
+        "Open the curtain (motor2=50-100) if conditions are favorable",
+        "Add a brief explanation for the recommendation"
+      ],
+      "forbidden_behaviors": [
+        "Give recommendation without reading the sensors",
+        "Open curtain when temperature is clearly too hot or moisture is excessive"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": true,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request"
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "espID": 3,
+              "tem_out": "get",
+              "mois": "get"
+            }
+          },
+          {
+            "actor": "Controller",
+            "action": "return_success"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond"
+          }
+        ]
+      },
+      "judge_note": "Data-driven advice: must read tem_out and mois first, then give a recommendation grounded in the values. Advising without reading sensors is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "tem_out",
+          "action": "get"
+        },
+        {
+          "espID": 3,
+          "device_type": "sensor",
+          "device_name": "mois",
+          "action": "get"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": [
+        [
+          "appliance_get_sensors",
+          "appliance_set_motor2"
+        ]
+      ]
+    }
+  }
+]

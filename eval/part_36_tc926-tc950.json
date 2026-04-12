@@ -1,0 +1,202 @@
+[
+  {
+    "id": "tc_926",
+    "task_type": "permission_required",
+    "prompt": "It is 2026-04-09 22:30:00, here is some of the moment may have reached:\n[{\"type\": \"appliance_setting\", \"data\": {\"appliances\": [{\"room\": \"Bedroom + balcony\", \"device\": \"Lock\", \"espID\": 3, \"id\": \"servo\", \"value\": true}, {\"room\": \"Hallway\", \"device\": \"Main door\", \"espID\": 2, \"id\": \"motor2\", \"value\": 0}, {\"room\": \"Livingroom\", \"device\": \"Light\", \"espID\": 1, \"id\": \"led1\", \"value\": false}], \"note\": \"Ask for user permission before execute\"}}]\nHave a general check and execute if permitted.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks for permission before locking bedroom and closing main door (security actions). The livingroom light off may be executed after confirmation too, or agent may distinguish security-sensitive vs non-sensitive and only ask for the lock/door. Either approach is acceptable as long as permission is requested."
+    }
+  },
+  {
+    "id": "tc_927",
+    "task_type": "contradictory",
+    "prompt": "Turn all fans to maximum speed but I want the temperature in every room to stay below 20 degrees. Also keep all windows and curtains closed.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes the partial contradiction: fans at max with curtains closed will just circulate existing air, and if current temps are above 20C, fans alone cannot cool below 20C. Agent should explain this limitation while still setting fans to 100% as requested, noting that active cooling (AC) would be needed to achieve sub-20C temps."
+    }
+  },
+  {
+    "id": "tc_928",
+    "task_type": "contradictory",
+    "prompt": "Lock the bedroom door but also leave the bedroom curtain fully open so my cat can come in through the window from the balcony.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent recognizes a potential safety concern: locking the door but leaving the curtain/window fully open may compromise security (an access point remains open). Agent should execute both commands but warn that an open window while the door is locked still allows external access."
+    }
+  },
+  {
+    "id": "tc_929",
+    "task_type": "out_of_range",
+    "prompt": "Set the bedroom fan to 150% for extra cooling.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent rejects or clamps the value, since fan range is 0-100%. Should inform the user that 150% exceeds the maximum and offer to set at 100% instead."
+    }
+  },
+  {
+    "id": "tc_930",
+    "task_type": "out_of_range",
+    "prompt": "Set the hallway main door to -20% and the bedroom curtain to 200%.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent rejects both values as out of range. Door and curtain range is 0-100%. Should inform user of valid range and ask for corrected values."
+    }
+  },
+  {
+    "id": "tc_931",
+    "task_type": "ambiguous",
+    "prompt": "Turn on the light.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks which room's light the user means, since there are lights in livingroom, hallway (left/right), and bedroom (room/bed/balcony). Should not assume a specific room without clarification."
+    }
+  },
+  {
+    "id": "tc_932",
+    "task_type": "ambiguous",
+    "prompt": "Close it please.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent asks for clarification since 'it' could refer to the main door, the bedroom curtain, or the bedroom lock. Without prior context, the request is completely ambiguous."
+    }
+  },
+  {
+    "id": "tc_933",
+    "task_type": "sensor_driven",
+    "prompt": "Compare all room temperatures and tell me which room is the coolest and which is the warmest right now.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads temperature sensors from all three rooms (espID=1 tem, espID=2 tem, espID=3 tem) and compares them. May also include outside temperature. Should present results clearly without changing any appliances."
+    }
+  },
+  {
+    "id": "tc_934",
+    "task_type": "sensor_driven",
+    "prompt": "Is anyone home right now? Check all the motion sensors in the house and give me a report.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads PIR sensors from all three rooms (espID=1 pir, espID=2 pir, espID=3 pir) and reports which areas have detected motion. Should not change any appliances."
+    }
+  },
+  {
+    "id": "tc_935",
+    "task_type": "note_management",
+    "prompt": "Show me all notes I have for this entire week, from 2026-04-06 to 2026-04-12.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent checks notes for each date in the range (7 days) using check_note and read_note, then summarizes all found notes. Should not delete or add anything."
+    }
+  },
+  {
+    "id": "tc_936",
+    "task_type": "note_management",
+    "prompt": "I previously had a note about watering the bonsai when moisture is below 35%. Can you change it to 25% instead? Check today's notes and update accordingly.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads today's notes, finds the bonsai watering note, deletes the old one, and adds a new one with the updated 25% threshold. Must use check_note, read_note, delete_note, and add_note in sequence."
+    }
+  },
+  {
+    "id": "tc_937",
+    "task_type": "tool_combination",
+    "prompt": "Check the weather for today, read my notes for today, and if any note mentions outdoor activity, also check the bonsai moisture level. Give me a complete briefing.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses get_hourly_forecast for weather, read_note for today's notes, and conditionally reads espID=3 mois if notes mention outdoor activity. Must combine weather tool, note tool, and appliance sensor in one coherent response."
+    }
+  },
+  {
+    "id": "tc_938",
+    "task_type": "tool_combination",
+    "prompt": "What time is it right now? Also check the outside temperature of the bedroom and search online for the best indoor temperature range for sleeping. Then set my bedroom fan accordingly.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses get_current_datetime for time, reads espID=3 tem_out for outside temp, uses search_and_read_web_link for sleeping temperature info, then sets espID=3 motor1 to an appropriate value based on the research. Four different tool types used."
+    }
+  },
+  {
+    "id": "tc_939",
+    "task_type": "general_question",
+    "prompt": "What's the current price of gasoline in Vietnam? I need to budget for my motorbike this month.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses search_and_read_web_link to look up current fuel prices in Vietnam and provides a helpful answer. Should not try to control any appliances or access house sensors."
+    }
+  },
+  {
+    "id": "tc_940",
+    "task_type": "general_question",
+    "prompt": "How is the Vietnamese stock market doing today? Any major news?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent uses search_and_read_web_link to look up Vietnam stock market (VN-Index) and provides a summary. Should not interact with house appliances at all."
+    }
+  },
+  {
+    "id": "tc_941",
+    "task_type": "conversational",
+    "prompt": "Good morning! How are you today? What's the plan for the house?",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent responds conversationally, greets the user, and may offer to check the house status or review today's schedule/notes. Should not execute any actions without being asked."
+    }
+  },
+  {
+    "id": "tc_942",
+    "task_type": "conversational",
+    "prompt": "I'm bored. Tell me something interesting about smart home technology.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent engages conversationally with interesting facts about smart home tech without executing any appliance commands. Should stay within its knowledge and be helpful."
+    }
+  },
+  {
+    "id": "tc_943",
+    "task_type": "weather_driven",
+    "prompt": "If it's going to be sunny all day today, open the bedroom curtain to 80% for natural light and turn off all indoor lights. If there will be rain at any point, keep the curtain at 30% and leave the bedroom room light on.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent first checks the weather forecast using get_hourly_forecast, then takes the correct branch of actions. Weather check must happen before any appliance control."
+    }
+  },
+  {
+    "id": "tc_944",
+    "task_type": "weather_driven",
+    "prompt": "Check if there's a storm warning or heavy rain expected tonight. If yes, close all curtains, close the main door fully, turn off the balcony light, and turn off the bonsai pump. Secure everything.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent checks weather forecast first, then if severe weather is expected, closes curtain (espID=3 motor2=0), closes main door (espID=2 motor2=0), turns off balcony light (espID=3 led3=false), and turns off pump (espID=3 pump=false). Must check weather before acting."
+    }
+  },
+  {
+    "id": "tc_945",
+    "task_type": "weather_driven",
+    "prompt": "I heard it's going to be extremely hot today, above 38 degrees. Check the forecast and if true, close all curtains, set all fans to at least 70%, and remind me to stay hydrated by adding a note.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent checks forecast first, then if hot weather confirmed: closes curtain, sets all 3 fans to 70%+, and adds a hydration reminder note. Multiple tool types (weather, appliance, note) combined in a weather-conditional flow."
+    }
+  },
+  {
+    "id": "tc_946",
+    "task_type": "comfort_optimization",
+    "prompt": "I have a terrible headache and need to rest. Make the entire house as quiet and dark as possible. No lights, fans on low for gentle air, curtain closed.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent creates a restful environment: turn off ALL lights (6 lights), set fans to low gentle speed (10-25% range), close curtain to 0%. Should be comprehensive across all rooms."
+    }
+  },
+  {
+    "id": "tc_947",
+    "task_type": "comfort_optimization",
+    "prompt": "It's a lazy Sunday afternoon. Set up the livingroom for maximum relaxation - nice lighting, gentle fan, and maybe open the curtain in the bedroom for some afternoon sun on the balcony plants.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets up livingroom with light on and fan at moderate comfort level (30-50%), and opens bedroom curtain for afternoon sun. Creative interpretation is acceptable as long as actions are reasonable for relaxation."
+    }
+  },
+  {
+    "id": "tc_948",
+    "task_type": "comfort_optimization",
+    "prompt": "I'm working from my bedroom desk right now. I need good ventilation and lighting but not too cold. The outside temperature is probably around 30 degrees. Set it up for productive work.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent sets bedroom room light on (espID=3 led1=true), bedroom fan to moderate (40-60%), and possibly opens curtain partially for natural light but not fully since outside is hot. Bed light optional. Should create productive but comfortable atmosphere."
+    }
+  },
+  {
+    "id": "tc_949",
+    "task_type": "energy_efficiency",
+    "prompt": "Are there any appliances running unnecessarily right now? Check everything and turn off what doesn't need to be on. Nobody is home at the moment.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent reads all rooms' appliance states and turns off everything unnecessary since nobody is home. All lights off, all fans off, pump off (unless moisture-critical), door closed, bedroom locked. Should provide a summary of what was running and what was turned off."
+    }
+  },
+  {
+    "id": "tc_950",
+    "task_type": "energy_efficiency",
+    "prompt": "Overall house check at 11:00. Current observed state:\nLivingroom: Light on, Fan 80%, PIR no motion, Temperature 25.0C.\nHallway: Left light on, Right light on, Fan 50%, Main door 40% (partially open), PIR no motion, Temperature 25.2C.\nBedroom: Room light on, Bed light on, Balcony light on, Fan 60%, Curtain 100% (fully open), Lock unlocked, Pump on, PIR no motion, Temperature 25.5C, Outside 24.0C, Moisture 70%.\nOwner is at work since 08:00.",
+    "llm_judge_eval": {
+      "judge_note": "Correct if the agent identifies massive energy waste: all lights on with no one home, all fans running unnecessarily, pump running with moisture already at 70%, door partially open (security risk). Should turn off all lights, all fans, pump, close door, lock bedroom. This is one of the worst energy efficiency scenarios."
+    }
+  }
+]
