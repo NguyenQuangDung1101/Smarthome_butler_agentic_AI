@@ -249,7 +249,7 @@ def validate_testcase(tc: Dict[str, Any]) -> List[str]:
 
 
 def main():
-    p = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("part_36_tc926-tc950.json")
+    p = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("part_38_tc976-tc1000.json")
     if not p.exists():
         print(f"Dataset not found: {p}")
         sys.exit(2)
