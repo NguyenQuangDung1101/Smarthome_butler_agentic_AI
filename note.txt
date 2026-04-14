@@ -24,54 +24,6 @@ add database
 tidy up physical set up
 
 
-help me to generate test case to eval agentic smart home
-
-Sometimes there will be note in a day
-
-when checking the house in overall, you can made up some testcase with the house appliances value
-the overall house appliances value it's being fit to the house
-this is an example if we need to check the house overall including the appliance status, appliances is fixed, value change
-Livingroom:
-Light has turned off
-Fan set to 0%
-PIR sensor no motion detected (pir)
-Temperature sensor in 25.6 Celsius degree
-
-Hallway:
-Left light has turned off
-Right light has turned off
-Fan set to 0%
-Main door set to 0% (fully closed)
-PIR sensor no motion detected (pir)
-Temperature sensor in 26.4 Celsius degree
-
-Bedroom + balcony:
-Room light has turned off
-Bed light has turned off
-Balcony light outside has turned off
-Fan set to 0%
-Window curtain set to 0% (fully closed)
-Lock has unlocked
-Pump to watering bonsai outside has turned off
-PIR sensor no motion detected (pir)
-Temperature sensor in 27.1 Celsius degree
-Temperature sensor outside in 27.8 Celsius degree
-Moisture sensor outside 45.0 %moist 
-
-
-
-
-
-
-"fail_type_definitions": {
-  "STATE_MISMATCH": "The final observed state, note state, schedule state, or reported result does not match the expected result or the agent's claim.",
-  "WRONG_ACTION_TARGET": "The agent performed an action on the wrong appliance, room, device attribute, or unrelated target.",
-  "MISSING_REQUIRED_ACTION": "The agent failed to perform a required tool call, appliance interaction, note check, schedule check, or other required step needed for this testcase.",
-  "EXECUTION_FAILURE_HANDLING": "A tool call or appliance execution failed, had no effect, or lacked evidence of success, and the agent failed to handle that correctly."
-}
-
-
-
 
 
 

@@ -156,7 +156,7 @@ class ToolCallingAgent:
                 pieces.append(item.get("text", ""))
         payload = "\n".join(pieces).strip()
         safe = payload if payload else "<empty result>"
-        print(f"[TOOL:{name}:RESULT]\n{safe}\n")
+        # print(f"[TOOL:{name}:RESULT]\n{safe}\n")
         self._log_event("tool_result", safe, {"tool_name": name})
         self.conversation.append(f"[TOOL:{name}:RESULT]\n{safe}")
         self._trim_history_multi()
@@ -222,7 +222,7 @@ class ToolCallingAgent:
                 f"{self.system_prompt}"
             )
         )
-        print(f"[LLM OUTPUT]:\n{llm_out}\n")
+        # print(f"[LLM OUTPUT]:\n{llm_out}\n")
         if not llm_out:
             self._append_agent("The LLM did not return a response.")
             return None
@@ -235,7 +235,7 @@ class ToolCallingAgent:
             self._append_agent(f"Execute appliance: {appliance}")
             try:
                 formated, log_to_save = execute_appliance(appliance)
-                print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")
+                # print(f"[APPLIANCE EXECUTION RESULT]:\n{formated}\n")
                 result = f"Appliance executed successfully{log_to_save}"
                 check_appliance = False
                 self._log_event("appliance", formated, {"appliance_config": appliance})
@@ -288,6 +288,17 @@ class ToolCallingAgent:
             if final is not None:
                 return final
         return "Reached max reasoning steps without a <final_answer>. Please refine your request."
+    
+    async def eval_collect(self, user_prompt: str, use_kb=False, kb_path="./kb_store/test1") -> str:
+        self.first_comunicate = False
+        self._log_event("user", user_prompt)
+        self._append_user(user_prompt)
+        for _ in range(1, self.max_steps + 1):
+            final = await self.step_once()
+            self._trim_history_multi()
+            if final is not None:
+                return self._compose_prompt()
+        return self._compose_prompt() + "\n\nReached max reasoning steps without a <final_answer>. Please refine your request."
 
     async def chat_cli(self, first_user_prompt=None):
         self.first_comunicate = False
@@ -343,7 +354,7 @@ def build_agent(system_prompt_text: str, model: str = "gpt-oss:20b-cloud", host:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
     sp = include_notes_to_prompt(sp)
-    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=16)
+    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=18, max_history=18)
 
 
 if __name__ == "__main__":
