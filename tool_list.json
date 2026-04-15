@@ -1,7 +1,7 @@
 [
     {
         "name": "get_current_datetime",
-        "description": "Get the current date and time formatted as a readable string.",
+        "description": "Get the current date and time formatted as a readable string.(if user also provide another different datetime, follows the user provided one)",
         "inputSchema": {
             "type": "object",
             "properties": {},

@@ -1,13 +1,1 @@
-[
-  {
-    "datetime": "2026-04-14 23:01:01",
-    "appliance_control": {
-      "espID": 3,
-      "device_type": "actuator",
-      "device_name": "pump",
-      "action": "set",
-      "value": false
-    },
-    "executed": false
-  }
-]
+{}
