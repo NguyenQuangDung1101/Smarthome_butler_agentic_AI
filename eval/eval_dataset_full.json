@@ -116603,14 +116603,7 @@
         "add_note"
       ],
       "abandon_tool_calls": [],
-      "required_appliances": [
-        {
-          "espID": 3,
-          "device_type": "sensor",
-          "device_name": "mois",
-          "action": "get"
-        }
-      ],
+      "required_appliances": [],
       "abandon_appliance": [],
       "ordering_constraints": [
         [

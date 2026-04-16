@@ -148,6 +148,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "agent_output.
     
     # Return to initial setup
     testcase_initial_setup()
+    print("\n[ALL CASES FINISHED] Agent outputs collected in: "+ output_path)
 
 
 

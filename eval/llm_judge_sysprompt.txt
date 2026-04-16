@@ -44,6 +44,7 @@ When verdict is FAIL, assign one or more fail_types using ONLY these labels:
 - MISSING_REQUIRED_ACTION - "The agent failed to perform a required tool call, appliance interaction, note check, schedule check, or other required step needed for this testcase."
 - EXECUTION_FAILURE_HANDLING - "A tool call or appliance execution failed, had no effect, or lacked evidence of success, and the agent failed to handle that correctly."
 - TRAJECTORY_VIOLATION - "The agent's action flow violates the expected soft trajectory rules in llm_judge_eval, such as missing a required step pattern, following a clearly unreasonable flow, breaking a strict required order, or triggering a forbidden step pattern."
+- FINAL_RESPONSE
 
 Choose only labels clearly supported by the evidence.
 Do not invent extra fail types.
