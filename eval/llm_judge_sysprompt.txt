@@ -32,6 +32,7 @@ Important:
 - Prefer FAIL when required evidence is missing.
 - Ignore writing style unless llm_judge_eval explicitly cares about response quality.
 - Do not penalize harmless extra steps unless they conflict with forbidden behaviors or create inconsistency.
+- In some testcases, user may provide a different datetime (with datetime from get_current_datetime tool), I told the agent to follow the user provided one
 
 Decision rule:
 - PASS only if the agent behavior satisfies the llm_judge_eval requirements with no clear disqualifying violation.

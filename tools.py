@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Tuple, Union, Optional
 from bs4 import BeautifulSoup
+import re
 import os
 import uuid
 from local_llm import load_system_prompt
@@ -294,10 +295,6 @@ def delete_note(id: str) -> str:
 # ------------- SCHEDULE TRIGGER AGENT TOOL --------------
 # --------------------------------------------------------
 def trigger_schedule_agent(request_info: str) -> str:
-    import json
-    import os
-    import re
-    from datetime import datetime
 
     role_sys_prompt = load_system_prompt('./system_prompt_doc/tool_schedule_trigger_role.txt')
     instruction_sys_prompt = load_system_prompt('./system_prompt_doc/tool_schedule_trigger_instruction.txt')
@@ -505,7 +502,7 @@ def trigger_schedule_agent(request_info: str) -> str:
             user_prompt=user_prompt,
             system_prompt=sys_prompt,
         )
-        print(schedule_strigger)
+        # print(schedule_strigger)
 
         last_raw_output = schedule_strigger
 
