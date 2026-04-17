@@ -102,7 +102,7 @@
           "id": "motor2",
           "description": "Main door",
           "value_type": "integer",
-          "value": 100,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 0.5,
+          "value": 26.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 42,
+          "value": 40,
           "constraints": {
             "type": "float",
             "min": 0.0,

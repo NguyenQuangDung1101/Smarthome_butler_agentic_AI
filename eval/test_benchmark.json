@@ -842,7 +842,7 @@
   {
     "id": "tc_887",
     "task_type": "multi_step",
-    "prompt": "Check the moisture level. If below 30%, water the bonsai for me and add a note for today saying \"Bonsai watered\". If above 60%, add a note saying \"Bonsai moisture high, skip watering\".",
+    "prompt": "Check the moisture level. If below 50%, water the bonsai for me and add a note for today saying \"Bonsai watered\". If above 50%, add a note saying \"Bonsai moisture high, skip watering\".",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -853,9 +853,8 @@
       ],
       "required_behaviors": [
         "Read moisture sensor (espID=3 mois) before making any decision",
-        "If below 30%: turn on pump (espID=3 pump=true) AND add a note saying \"Bonsai watered\"",
-        "If above 60%: add a note saying \"Bonsai moisture high, skip watering\" without activating pump",
-        "If between 30-60%: inform user no action is needed"
+        "If below 50%: turn on pump (espID=3 pump=true) AND add a note saying \"Bonsai watered\"",
+        "If above 50%: add a note saying \"Bonsai moisture high, skip watering\" without activating pump"
       ],
       "acceptable_behaviors": [
         "Get current date before calling add_note if needed for date field"

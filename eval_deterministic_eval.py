@@ -358,6 +358,19 @@ def evaluate_single_case(
             "detail": ordering_detail,
         })
 
+    # 8) final_answer check
+    has_final_answer = "final_answer" in parsed["flat_sequence"]
+    final_answer_detail = {
+        "has_final_answer": has_final_answer,
+        "flat_sequence": parsed["flat_sequence"],
+    }
+    if not has_final_answer:
+        fail_types.append("MISSING_FINAL_RESPONSE")
+        fail_reasons.append({
+            "check": "final_answer",
+            "detail": final_answer_detail,
+        })
+
     # deduplicate fail_types
     dedup_fail_types: List[str] = []
     for ft in fail_types:
@@ -379,6 +392,7 @@ def evaluate_single_case(
             "required_appliance_check": required_appliance_detail,
             "abandon_appliance_check": abandon_appliance_detail,
             "ordering_check": ordering_detail,
+            "final_answer_check": final_answer_detail,
         }
     }
 
@@ -441,8 +455,8 @@ def run_deterministic_eval(benchmark_path: str, agent_output_path: str) -> Dict[
 
 if __name__ == "__main__":
     benchmark_path = "./eval/test_benchmark.json"
-    agent_output_path = "./agent_output.json"
-    output_path = "./deterministic_report.json"
+    agent_output_path = "./eval/agent_output.json"
+    output_path = "./eval/deterministic_report.json"
 
     report = run_deterministic_eval(benchmark_path, agent_output_path)
 

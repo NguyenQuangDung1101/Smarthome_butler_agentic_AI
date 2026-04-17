@@ -8011,7 +8011,7 @@
   {
     "id": "tc_67",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-07 10:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.8 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 27.2 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 28.5 Celsius degree\nTemperature sensor outside in 30.2 Celsius degree\nMoisture sensor outside 32.0 %moist",
+    "prompt": "It is 10:30:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.8 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 27.2 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 28.5 Celsius degree\nTemperature sensor outside in 30.2 Celsius degree\nMoisture sensor outside 32.0 %moist",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -16629,7 +16629,7 @@
   {
     "id": "tc_141",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-07 16:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 26.0C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 26.5C.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump off, PIR no motion, temperature 27.0C, outside temperature 28.0C, moisture 40%.",
+    "prompt": "It is 16:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 26.0C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 26.5C.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump off, PIR no motion, temperature 27.0C, outside temperature 28.0C, moisture 40%.",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -46299,7 +46299,7 @@
   {
     "id": "tc_359",
     "task_type": "schedule_moment",
-    "prompt": "It is 2026-04-08 12:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is having lunch in the livingroom\",\n  \"expected_setup\": {\n    \"livingroom_light\": true,\n    \"livingroom_fan\": 45\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nLivingroom light off, fan 0%.\nHallway left light off, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 50%, lock locked, pump off.",
+    "prompt": "It is 12:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is having lunch in the livingroom\",\n  \"expected_setup\": {\n    \"livingroom_light\": true,\n    \"livingroom_fan\": 45\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nLivingroom light off, fan 0%.\nHallway left light off, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 50%, lock locked, pump off.",
     "preconditions": {
       "notes_setup": [
         {
@@ -50752,7 +50752,7 @@
   {
     "id": "tc_392",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-08 10:30:00, no event or execution reached.\nToday's note: \"Expecting a package delivery sometime today.\"\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 26.3 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 26.8 Celsius degree\nTemperature sensor outside in 27.5 Celsius degree\nMoisture sensor outside 47.0 %moist",
+    "prompt": "It is 10:30:00, no event or execution reached.\nToday's note: \"Expecting a package delivery sometime today.\"\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 26.3 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 26.8 Celsius degree\nTemperature sensor outside in 27.5 Celsius degree\nMoisture sensor outside 47.0 %moist",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -59464,11 +59464,11 @@
           "note_text": "Buy groceries"
         },
         {
-          "date": "today + 1",
+          "date": "2026-04-16",
           "note_text": "Team meeting at 10 AM"
         },
         {
-          "date": "today + 3",
+          "date": "2026-04-17",
           "note_text": "Visit parents"
         }
       ],
@@ -74546,7 +74546,7 @@
   {
     "id": "tc_562",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-08 06:30:00, no scheduled moments have been reached yet.\nHave a general check of the house appliances system.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 24.8C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 25.0C.\nBedroom room light off, bed light off, balcony light off, fan 20%, curtain 0%, lock locked, pump on, PIR motion detected, temperature 25.5C, outside temperature 23.0C, moisture 55%.",
+    "prompt": "It is 06:30:00, no scheduled moments have been reached yet.\nHave a general check of the house appliances system.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 24.8C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 25.0C.\nBedroom room light off, bed light off, balcony light off, fan 20%, curtain 0%, lock locked, pump on, PIR motion detected, temperature 25.5C, outside temperature 23.0C, moisture 55%.",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -75931,7 +75931,7 @@
       "notes_setup": [
         {
           "date": "today",
-          "note_text": "Owner is away on business trip until April 10"
+          "note_text": "Owner is away on business trip until April 25"
         }
       ],
       "state_setup": [
@@ -88572,7 +88572,7 @@
   {
     "id": "tc_691",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-08 14:00:00, no scheduled moments have been reached at this time.\nHave a general check of the house appliances system.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 28.0C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 28.2C.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump off, PIR no motion, temperature 28.5C, outside temperature 32.5C, moisture 52%.",
+    "prompt": "It is 14:00:00, no scheduled moments have been reached at this time.\nHave a general check of the house appliances system.\nCurrent observed state:\nLivingroom light off, fan 0%, PIR no motion, temperature 28.0C.\nHallway left light off, right light off, fan 0%, main door 0%, PIR no motion, temperature 28.2C.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 0%, lock locked, pump off, PIR no motion, temperature 28.5C, outside temperature 32.5C, moisture 52%.",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -115355,7 +115355,7 @@
   {
     "id": "tc_879",
     "task_type": "schedule_no_moment",
-    "prompt": "It is 2026-04-10 20:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom: Light off, Fan 0%, PIR motion detected, Temperature 27.0C.\nHallway: Left light off, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 26.5C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock locked, Pump off, PIR no motion, Temperature 27.2C, Outside 25.0C, Moisture 48%.",
+    "prompt": "It is 20:00:00, no event or execution reached.\nPlease provide your suggestions or have a general check of the house appliances system and take action if necessary.\nCurrent observed state:\nLivingroom: Light off, Fan 0%, PIR motion detected, Temperature 27.0C.\nHallway: Left light off, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 26.5C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0%, Lock locked, Pump off, PIR no motion, Temperature 27.2C, Outside 25.0C, Moisture 48%.",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -116507,7 +116507,7 @@
   {
     "id": "tc_887",
     "task_type": "multi_step",
-    "prompt": "Check the moisture level. If below 30%, water the bonsai for me and add a note for today saying \"Bonsai watered\". If above 60%, add a note saying \"Bonsai moisture high, skip watering\".",
+    "prompt": "Check the moisture level. If below 50%, water the bonsai for me and add a note for today saying \"Bonsai watered\". If above 50%, add a note saying \"Bonsai moisture high, skip watering\".",
     "llm_judge_eval": {
       "judge_focus": [
         "intent_understanding",
@@ -116518,9 +116518,8 @@
       ],
       "required_behaviors": [
         "Read moisture sensor (espID=3 mois) before making any decision",
-        "If below 30%: turn on pump (espID=3 pump=true) AND add a note saying \"Bonsai watered\"",
-        "If above 60%: add a note saying \"Bonsai moisture high, skip watering\" without activating pump",
-        "If between 30-60%: inform user no action is needed"
+        "If below 50%: turn on pump (espID=3 pump=true) AND add a note saying \"Bonsai watered\"",
+        "If above 50%: add a note saying \"Bonsai moisture high, skip watering\" without activating pump"
       ],
       "acceptable_behaviors": [
         "Get current date before calling add_note if needed for date field"
@@ -120814,7 +120813,7 @@
   {
     "id": "tc_920",
     "task_type": "schedule_moment",
-    "prompt": "It is 2026-04-09 14:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is working from home in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": true,\n    \"bedroom_fan\": 40,\n    \"curtain\": 50,\n    \"livingroom_light\": false,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nLivingroom: Light on, Fan 30%, PIR no motion, Temperature 27.0C.\nHallway: Left light on, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 27.2C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0% (closed), Lock locked, Pump off, PIR motion detected, Temperature 27.5C, Outside 30.0C, Moisture 35%.",
+    "prompt": "It is 14:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is working from home in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": true,\n    \"bedroom_fan\": 40,\n    \"curtain\": 50,\n    \"livingroom_light\": false,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nLivingroom: Light on, Fan 30%, PIR no motion, Temperature 27.0C.\nHallway: Left light on, Right light off, Fan 0%, Main door 0%, PIR no motion, Temperature 27.2C.\nBedroom: Room light off, Bed light off, Balcony light off, Fan 0%, Curtain 0% (closed), Lock locked, Pump off, PIR motion detected, Temperature 27.5C, Outside 30.0C, Moisture 35%.",
     "preconditions": {
       "notes_setup": [
         {
