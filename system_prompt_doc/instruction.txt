@@ -59,92 +59,68 @@ Think carefully before judging and making decision (dont have to be alway execut
 Few shots ():
 [
   {
-    "id": "tc_326",
+    "id": "tc_43",
     "task_type": "complex",
-    "prompt": "I'm having a movie night. Dim everything down - turn off the bedroom lights, only keep the livingroom light on, set all fans to 25% for a gentle breeze, and add a note for tomorrow to clean the livingroom.",
+    "prompt": "I am leaving the house for school until 17:00. Make the house safe and energy-saving now, and schedule the hallway lights to turn on at 16:55 before I come back.",
+    "judge_note": "Correct if the agent performs immediate leave-home actions (lights off, lock bedroom) and also uses trigger_schedule_agent to schedule hallway lights at 16:55.",
     "deterministic_eval": {
       "expected_state": [
         {
-          "espID": 3,
+          "espID": 1,
           "device_type": "actuator",
           "device_name": "led1",
           "value": false
         },
         {
-          "espID": 3,
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
           "device_type": "actuator",
           "device_name": "led2",
           "value": false
         },
         {
-          "espID": 1,
-          "device_type": "actuator",
-          "device_name": "led1",
-          "value": true
-        },
-        {
-          "espID": 1,
-          "device_type": "actuator",
-          "device_name": "motor1",
-          "value": 25
-        },
-        {
-          "espID": 2,
-          "device_type": "actuator",
-          "device_name": "motor1",
-          "value": 25
-        },
-        {
           "espID": 3,
           "device_type": "actuator",
-          "device_name": "motor1",
-          "value": 25
+          "device_name": "servo",
+          "value": true
         }
       ],
       "required_tool_calls": [
-        "add_note"
+        "trigger_schedule_agent"
       ],
       "required_appliances": [
         {
-          "espID": 3,
-          "device_type": "actuator",
-          "device_name": "led1",
-          "action": "set"
-        },
-        {
-          "espID": 3,
-          "device_type": "actuator",
-          "device_name": "led2",
-          "action": "set"
-        },
-        {
           "espID": 1,
           "device_type": "actuator",
           "device_name": "led1",
-          "action": "set"
-        },
-        {
-          "espID": 1,
-          "device_type": "actuator",
-          "device_name": "motor1",
           "action": "set"
         },
         {
           "espID": 2,
           "device_type": "actuator",
-          "device_name": "motor1",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
           "action": "set"
         },
         {
           "espID": 3,
           "device_type": "actuator",
-          "device_name": "motor1",
+          "device_name": "servo",
           "action": "set"
         }
       ],
-    "judge_note": "Pass if agent turns off bedroom lights, keeps livingroom light on, sets all fans to 25%, and adds a note for tomorrow. Fail if note is forgotten or any required appliance change is missed."
     }
-  }
+  },
   {
     "id": "tc_426",
     "task_type": "overall_check",

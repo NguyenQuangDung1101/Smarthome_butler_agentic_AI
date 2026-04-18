@@ -77,7 +77,7 @@ def get_actual_states(expected_state, appliance_file="appliances_data.json"):
 
 
 
-def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_part_4.json") -> None:
+def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_4fewshot.json") -> None:
     with open(benchmark_path, "r", encoding="utf-8") as f:
         benchmark = json.load(f)
 
@@ -171,7 +171,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
 if __name__ == "__main__":
 
     
-    benchmark_path = "./eval/eval_dataset_part_4.json"
+    benchmark_path = "./eval/eval_dataset_full.json"
     collect_agent_outputs(benchmark_path)
 
     # mem = ''
