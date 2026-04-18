@@ -20,7 +20,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 50,
+          "value": 40,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 26,
+          "value": 31.9,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -90,7 +90,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 50,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 27.1,
+          "value": 32.9,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -185,7 +185,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 50,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -197,7 +197,7 @@
           "id": "motor2",
           "description": "Window curtain",
           "value_type": "integer",
-          "value": 50,
+          "value": 100,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 28.1,
+          "value": 32.4,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 28.1,
+          "value": 32.3,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 45,
+          "value": 51,
           "constraints": {
             "type": "float",
             "min": 0.0,

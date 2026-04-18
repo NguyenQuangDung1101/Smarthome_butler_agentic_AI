@@ -37,7 +37,7 @@ Important:
 
 Decision rule:
 - PASS if the agent behavior satisfies the llm_judge_eval requirements with no clear disqualifying violation.
-- PASS if the solution of agent make sense (even though is does not mach llm_judge_eval), but have to think carefully and provide concrete explaination in reason
+- PASS if the solution of agent make sense (even though is does not mach llm_judge_eval or all epected required tool call or appliance execution), but have to think carefully and provide concrete explaination in reason
 - Otherwise FAIL.
 
 When verdict is FAIL, assign one or more fail_types using ONLY these labels:

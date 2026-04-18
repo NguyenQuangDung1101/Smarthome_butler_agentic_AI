@@ -3,6 +3,7 @@ import os
 from typing import Any, Dict, List, Optional, Union
 from tqdm import tqdm
 from local_llm import load_system_prompt, Copilot
+import time
 
 
 ALLOWED_FAIL_TYPES = {
@@ -183,7 +184,7 @@ def infer_valid_judgment(
     system_prompt: str,
     user_prompt: str,
     case_id: str,
-    max_retries: int = 3,
+    max_retries: int = 5,
 ) -> Dict[str, Any]:
     last_error: Optional[Exception] = None
     last_raw_response = ""
@@ -200,6 +201,7 @@ def infer_valid_judgment(
             return validate_judge_result(parsed)
         except Exception as exc:
             last_error = exc
+            time.sleep(5)
 
     return {
         "verdict": "FAIL",
@@ -294,7 +296,7 @@ def save_report(report: Dict[str, Any], output_path: str) -> None:
 
 
 if __name__ == "__main__":
-    benchmark_path = "./eval/test_benchmark.json"
+    benchmark_path = "./eval/eval_dataset_full.json"
     agent_output_path = "./eval/agent_output.json"
     system_prompt_path = "./eval/llm_judge_sysprompt.txt"
     output_path = "./eval/llm_judge_report.json"

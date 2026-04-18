@@ -1,8 +1,8 @@
 import json
 import math
 
-INPUT_FILE = "./eval/eval_dataset_full.json"
-OUTPUT_PREFIX = "./eval/eval_dataset_part"
+INPUT_FILE = "eval_dataset_full.json"
+OUTPUT_PREFIX = "eval_dataset_part"
 NUM_SPLITS = 4
 
 
