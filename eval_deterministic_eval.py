@@ -454,8 +454,8 @@ def run_deterministic_eval(benchmark_path: str, agent_output_path: str) -> Dict[
 
 
 if __name__ == "__main__":
-    benchmark_path = "./eval/test_benchmark.json"
-    agent_output_path = "./eval/agent_output.json"
+    benchmark_path = "./eval/eval_dataset_part_1.json"
+    agent_output_path = "./eval/agent_output_part_1.json"
     output_path = "./eval/deterministic_report.json"
 
     report = run_deterministic_eval(benchmark_path, agent_output_path)

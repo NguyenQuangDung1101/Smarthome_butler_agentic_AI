@@ -17,10 +17,24 @@ def clear_file(path: str):
     with open(path, "w", encoding="utf-8") as f:
         json.dump({}, f, indent=2)
 
-
+delays = [5, 7, 9, 11, 13]
 def testcase_initial_setup() -> None:
-    for cmd in appliance_reset_commands:
-        send_command(cmd, cmd["espID"] - 1)
+    for attempt, delay in enumerate(delays, start=1):
+        try:
+            for cmd in appliance_reset_commands:
+                send_command(cmd, cmd["espID"] - 1)
+            break  # success → exit loop
+        except Exception as e:
+            print(f"Attempt {attempt} failed: {e}")
+
+            if attempt == len(delays):
+                print("All retries failed.")
+                raise  # or handle final failure
+
+            print(f"Retrying in {delay} seconds...")
+            time.sleep(delay)
+        
+
     clear_file("./schedule_trigger.json")
     clear_file("./note_storage.json")
 
@@ -63,7 +77,7 @@ def get_actual_states(expected_state, appliance_file="appliances_data.json"):
 
 
 
-def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output.json") -> None:
+def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_part_2.json") -> None:
     with open(benchmark_path, "r", encoding="utf-8") as f:
         benchmark = json.load(f)
 
@@ -157,7 +171,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
 if __name__ == "__main__":
 
     
-    benchmark_path = "./eval/test_benchmark.json"
+    benchmark_path = "./eval/eval_dataset_part_2.json"
     collect_agent_outputs(benchmark_path)
 
     # mem = ''
