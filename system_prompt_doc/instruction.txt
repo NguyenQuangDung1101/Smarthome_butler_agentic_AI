@@ -22,7 +22,7 @@ Hallway(espID: 2):
     - "led1" (left light) (value: True/False) (boolean)
     - "led2" (right light) (value: True/False) (boolean)
     - "motor1" (fan) (value: 0-100) (integer)
-    - "motor2" (for door(main door to get in/out of the house)) (value: 0-100) (integer)
+    - "motor2" (for door(main door to get in/out of the house)) (value: close 0-100 open) (integer)
     sensor:
     - "pir" (PIR sensor)
     - "tem"(Temperature sensor)
@@ -32,7 +32,7 @@ Bedroom + balcony(ouside the house)(espID: 3):
     - "led2" (bed light) (value: True/False) (boolean)
     - "led3" (balcony light outside) (value: True/False) (boolean)
     - "motor1" (fan) (value: 0-100) (integer)
-    - "motor2" (window cover (curtain)) (value: 0-100) (integer)
+    - "motor2" (window cover (curtain)) (value: close 0-100 open) (integer)
     - "servo" (lock) (value: True/False) (boolean)
     - "pump" (to watering bonsai outside)(value: True/False) (boolean)
     sensor:
