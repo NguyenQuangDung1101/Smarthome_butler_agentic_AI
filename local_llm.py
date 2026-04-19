@@ -9,6 +9,7 @@ import json
 import time as _time
 # from sentence_transformers import SentenceTransformer
 import google.generativeai as genai
+import re
 
 # Set up logging
 logger = logging.getLogger("OLLama")
@@ -37,158 +38,370 @@ class Copilot:
             logger.error(f"Error fetching model list: {e}")
             return []
 
+    def infer(
+        self,
+        user_prompt,
+        system_prompt=None,
+        image_path=None,
+        timeout=12000,
+        retries=5,
+        backoff=2,
+    ):
 
+        def strip_thinking(text: str) -> str:
+            if not text:
+                return ""
 
-    def infer(self, user_prompt, system_prompt=None, image_path=None,
-              timeout=10000, retries=5, backoff=3):
+            # Remove <think>...</think> blocks if model puts thinking inside response
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+
+            # Remove markdown fences if needed
+            text = text.strip()
+            if text.startswith("```"):
+                text = re.sub(r"^```[a-zA-Z0-9_+-]*\n?", "", text)
+                text = re.sub(r"\n?```$", "", text)
+
+            return text.strip()
 
         prompt = f"{system_prompt}\n\n{user_prompt}" if system_prompt else user_prompt
-        # print("Prompt to send:\n", prompt)
 
+        # Add final-only instruction without using think=False
+        prompt = (
+            prompt
+            + "\n\nImportant: Return only the final answer. "
+            + "Do not include thinking, reasoning, analysis, or <think> tags."
+        )
 
-        # if "gemini" in self.model:
-        #     model = genai.GenerativeModel(self.model)
-        #     response = model.generate_content(prompt)
-        #     return response.text
-        # else:
-            # Base kwargs for Ollama client
-        if True:
-            kwargs = {
-                "model": self.model,
-                "prompt": prompt,
-                "options": {
-                        "gpu_layers": 999
-                }
-            }
+        image_support_md = [
+            "qwen3.5:397b-cloud",
+            "gemini-3-flash-preview:cloud",
+            "qwen3-vl:235b-cloud",
+        ]
 
-            # Only add image if model supports it (your original rule)
-            image_support_md = ["qwen3.5:397b-cloud", "gemini-3-flash-preview:cloud", "qwen3-vl:235b-cloud"]
-            if any(m in self.model for m in image_support_md) and image_path:
-                try:
-                    with open(image_path, "rb") as f:
-                        image_bytes = f.read()
-                    image_b64 = base64.b64encode(image_bytes).decode("utf-8")
-                    kwargs["images"] = [image_b64]
-                except Exception as e:
-                    logger.error(f"Error loading image: {e}")
+        images = None
+        if any(m in self.model for m in image_support_md) and image_path:
+            try:
+                with open(image_path, "rb") as f:
+                    image_bytes = f.read()
+                images = [base64.b64encode(image_bytes).decode("utf-8")]
+            except Exception as e:
+                logger.error(f"Error loading image: {e}")
 
-            last_err = None
+        last_err = None
 
-            for attempt in range(retries):
-                try:
-                    # For cloud/large models, use HTTP streaming which is more resilient
-                    use_streaming_http = "cloud" in (self.model or "").lower()
+        for attempt in range(retries):
+            try:
+                use_streaming_http = "cloud" in (self.model or "").lower()
 
-                    if use_streaming_http:
-                        payload = {
-                            "model": self.model,
-                            "prompt": prompt,
-                            "options": kwargs.get("options", {}),
-                            "stream": True,
-                        }
-                        if "images" in kwargs:
-                            payload["images"] = kwargs["images"]
+                if use_streaming_http:
+                    url = f"{self.host}/api/generate"
 
-                        url = f"{self.host}/api/generate"
-                        resp_text = ""
-                        with requests.post(url, json=payload, stream=True, timeout=timeout, verify=False) as r:
-                            r.raise_for_status()
-                            # First try to read line by line (JSON-lines)
-                            for raw in r.iter_lines(decode_unicode=False):
-                                if raw is None:
-                                    continue
-                                try:
-                                    line = raw.decode("utf-8")
-                                except Exception:
-                                    continue
-                                line = line.strip()
-                                if not line:
-                                    continue
+                    payload = {
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": True,
+                    }
 
-                                # Support SSE-style 'data: {...}' lines
-                                if line.startswith("data:"):
-                                    line = line[len("data:"):].strip()
+                    # Important:
+                    # Do NOT send "think": False.
+                    # Your qwen3.5 cloud backend returns HTTP 500 with it.
 
-                                # Some servers prefix with event: or other SSE fields; ignore those
-                                if line.startswith("event:") or line.startswith("id:"):
-                                    continue
+                    if images:
+                        payload["images"] = images
 
-                                # Try JSON parse first
-                                try:
-                                    obj = json.loads(line)
-                                except Exception:
-                                    # Not JSON; skip this line entirely (don't append raw JSON)
-                                    logger.debug(f"Skipping non-JSON line: {line[:100]}...")
-                                    continue
+                    final_parts = []
 
-                                # Accept several possible response fields
-                                chunk = None
-                                for k in ("response", "text", "chunk", "data"):
-                                    if isinstance(obj, dict) and k in obj:
-                                        val = obj.get(k)
-                                        if isinstance(val, str) and val.strip():  # Only add non-empty strings
-                                            chunk = val
-                                            break
+                    with requests.post(
+                        url,
+                        json=payload,
+                        stream=True,
+                        timeout=timeout,
+                        verify=False,
+                    ) as r:
+                        if r.status_code >= 400:
+                            logger.error(f"Ollama HTTP error body: {r.text[:2000]}")
+                        r.raise_for_status()
 
-                                # If object directly is a string
-                                if chunk is None and isinstance(obj, str) and obj.strip():
-                                    chunk = obj
+                        for raw in r.iter_lines(decode_unicode=False):
+                            if raw is None:
+                                continue
 
-                                if chunk:
-                                    resp_text += chunk
+                            line = raw.decode("utf-8", errors="ignore").strip()
+                            if not line:
+                                continue
 
-                                # If the server includes a done flag, stop
-                                if isinstance(obj, dict) and obj.get("done"):
-                                    break
+                            if line.startswith("data:"):
+                                line = line[len("data:"):].strip()
 
-                        if resp_text.strip():
-                            # Filter out responses that are clearly just JSON metadata
-                            if not (resp_text.startswith('{"model"') and '"done":' in resp_text):
-                                return resp_text
-                            else:
-                                logger.warning("Received only JSON metadata, no actual response content")
-                                resp_text = ""  # Clear it and try fallback
-                        
-                        if not resp_text.strip():
-                            logger.warning("Empty response from streaming, trying non-streaming fallback")
+                            if line.startswith("event:") or line.startswith("id:"):
+                                continue
+
                             try:
-                                # Try a non-streaming request as fallback
-                                fallback_payload = payload.copy()
-                                fallback_payload["stream"] = False
-                                r2 = requests.post(url, json=fallback_payload, timeout=timeout, verify=False)
-                                r2.raise_for_status()
-                                try:
-                                    data = r2.json()
-                                except Exception:
-                                    data = {"response": r2.text}
+                                obj = json.loads(line)
+                            except Exception:
+                                continue
 
-                                # collect text from common fields
-                                if isinstance(data, dict):
-                                    for k in ("response", "text", "result", "data"):
-                                        if k in data and isinstance(data[k], str) and data[k].strip():
-                                            resp_text = data[k]
-                                            break
-                                elif isinstance(data, str):
-                                    resp_text = data
-                            except Exception as e:
-                                logger.debug(f"Non-streaming fallback failed: {e}")
+                            if not isinstance(obj, dict):
+                                continue
+
+                            # ONLY collect final answer fields.
+                            # Ignore obj["thinking"] completely.
+                            response_chunk = obj.get("response")
+                            if isinstance(response_chunk, str) and response_chunk:
+                                final_parts.append(response_chunk)
+
+                            # Some cloud wrappers use these
+                            for key in ("text", "content", "result"):
+                                val = obj.get(key)
+                                if isinstance(val, str) and val:
+                                    final_parts.append(val)
+
+                            # Chat-like wrapper
+                            message = obj.get("message")
+                            if isinstance(message, dict):
+                                content = message.get("content")
+                                if isinstance(content, str) and content:
+                                    final_parts.append(content)
+
+                            if obj.get("done") is True:
+                                break
+
+                    final_text = strip_thinking("".join(final_parts))
+
+                    if final_text:
+                        return final_text
+
+                    # Non-streaming fallback
+                    logger.warning("Empty final answer from streaming, trying non-streaming fallback")
+
+                    fallback_payload = {
+                        "model": self.model,
+                        "prompt": prompt,
+                        "stream": False,
+                    }
+
+                    if images:
+                        fallback_payload["images"] = images
+
+                    r2 = requests.post(
+                        url,
+                        json=fallback_payload,
+                        timeout=timeout,
+                        verify=False,
+                    )
+
+                    if r2.status_code >= 400:
+                        logger.error(f"Ollama fallback HTTP error body: {r2.text[:2000]}")
+                    r2.raise_for_status()
+
+                    try:
+                        data = r2.json()
+                    except Exception:
+                        data = {"response": r2.text}
+
+                    final_text = ""
+
+                    if isinstance(data, dict):
+                        final_text = (
+                            data.get("response")
+                            or data.get("text")
+                            or data.get("content")
+                            or data.get("result")
+                            or ""
+                        )
+
+                        message = data.get("message")
+                        if not final_text and isinstance(message, dict):
+                            final_text = message.get("content", "")
+
+                    elif isinstance(data, str):
+                        final_text = data
+
+                    final_text = strip_thinking(final_text)
+
+                    if final_text:
+                        return final_text
+
+                    raise RuntimeError("Empty final answer. Model may only be returning thinking chunks.")
+
+                else:
+                    kwargs = {
+                        "model": self.model,
+                        "prompt": prompt,
+                    }
+
+                    if images:
+                        kwargs["images"] = images
+
+                    response = self.client.generate(**kwargs)
+
+                    if isinstance(response, dict):
+                        final_text = response.get("response", "")
+                        return strip_thinking(final_text)
+
+                    return strip_thinking(str(response))
+
+            except Exception as e:
+                last_err = e
+                logger.error(f"Inference failed (attempt {attempt + 1}/{retries}): {e}")
+
+                if attempt < retries - 1:
+                    _time.sleep(backoff ** attempt)
+
+        logger.error(f"Inference failed: {last_err}")
+        return None
+
+    # def infer(self, user_prompt, system_prompt=None, image_path=None,
+    #           timeout=12000, retries=5, backoff=2):
+
+    #     prompt = f"{system_prompt}\n\n{user_prompt}" if system_prompt else user_prompt
+    #     # print("Prompt to send:\n", prompt)
+
+
+    #     # if "gemini" in self.model:
+    #     #     model = genai.GenerativeModel(self.model)
+    #     #     response = model.generate_content(prompt)
+    #     #     return response.text
+    #     # else:
+    #         # Base kwargs for Ollama client
+    #     if True:
+    #         kwargs = {
+    #             "model": self.model,
+    #             "prompt": prompt,
+    #             "options": {
+    #                     "gpu_layers": 999
+    #             }
+    #         }
+
+    #         # Only add image if model supports it (your original rule)
+    #         image_support_md = ["qwen3.5:397b-cloud", "gemini-3-flash-preview:cloud", "qwen3-vl:235b-cloud"]
+    #         if any(m in self.model for m in image_support_md) and image_path:
+    #             try:
+    #                 with open(image_path, "rb") as f:
+    #                     image_bytes = f.read()
+    #                 image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+    #                 kwargs["images"] = [image_b64]
+    #             except Exception as e:
+    #                 logger.error(f"Error loading image: {e}")
+
+    #         last_err = None
+
+    #         for attempt in range(retries):
+    #             try:
+    #                 # For cloud/large models, use HTTP streaming which is more resilient
+    #                 use_streaming_http = "cloud" in (self.model or "").lower()
+
+    #                 if use_streaming_http:
+    #                     payload = {
+    #                         "model": self.model,
+    #                         "prompt": prompt,
+    #                         "options": kwargs.get("options", {}),
+    #                         "stream": True,
+    #                         "think": False,
+    #                     }
+    #                     if "images" in kwargs:
+    #                         payload["images"] = kwargs["images"]
+
+    #                     url = f"{self.host}/api/generate"
+    #                     resp_text = ""
+    #                     with requests.post(url, json=payload, stream=True, timeout=timeout, verify=False) as r:
+    #                         r.raise_for_status()
+    #                         # First try to read line by line (JSON-lines)
+    #                         for raw in r.iter_lines(decode_unicode=False):
+    #                             if raw is None:
+    #                                 continue
+    #                             try:
+    #                                 line = raw.decode("utf-8")
+    #                             except Exception:
+    #                                 continue
+    #                             line = line.strip()
+    #                             if not line:
+    #                                 continue
+
+    #                             # Support SSE-style 'data: {...}' lines
+    #                             if line.startswith("data:"):
+    #                                 line = line[len("data:"):].strip()
+
+    #                             # Some servers prefix with event: or other SSE fields; ignore those
+    #                             if line.startswith("event:") or line.startswith("id:"):
+    #                                 continue
+
+    #                             # Try JSON parse first
+    #                             try:
+    #                                 obj = json.loads(line)
+    #                             except Exception:
+    #                                 # Not JSON; skip this line entirely (don't append raw JSON)
+    #                                 logger.debug(f"Skipping non-JSON line: {line[:100]}...")
+    #                                 continue
+
+    #                             # Accept several possible response fields
+    #                             chunk = None
+    #                             for k in ("response", "text", "chunk", "data"):
+    #                                 if isinstance(obj, dict) and k in obj:
+    #                                     val = obj.get(k)
+    #                                     if isinstance(val, str) and val.strip():  # Only add non-empty strings
+    #                                         chunk = val
+    #                                         break
+
+    #                             # If object directly is a string
+    #                             if chunk is None and isinstance(obj, str) and obj.strip():
+    #                                 chunk = obj
+
+    #                             if chunk:
+    #                                 resp_text += chunk
+
+    #                             # If the server includes a done flag, stop
+    #                             if isinstance(obj, dict) and obj.get("done"):
+    #                                 break
+
+    #                     if resp_text.strip():
+    #                         # Filter out responses that are clearly just JSON metadata
+    #                         if not (resp_text.startswith('{"model"') and '"done":' in resp_text):
+    #                             return resp_text
+    #                         else:
+    #                             logger.warning("Received only JSON metadata, no actual response content")
+    #                             resp_text = ""  # Clear it and try fallback
                         
-                        if resp_text.strip():
-                            return resp_text
-                        raise RuntimeError("Empty response (streaming HTTP)")
-                    else:
-                        # Original client path
-                        response = self.client.generate(**kwargs)
-                        return response["response"]
+    #                     if not resp_text.strip():
+    #                         logger.warning("Empty response from streaming, trying non-streaming fallback")
+    #                         try:
+    #                             # Try a non-streaming request as fallback
+    #                             fallback_payload = payload.copy()
+    #                             fallback_payload["stream"] = False
+    #                             r2 = requests.post(url, json=fallback_payload, timeout=timeout, verify=False)
+    #                             r2.raise_for_status()
+    #                             try:
+    #                                 data = r2.json()
+    #                             except Exception:
+    #                                 data = {"response": r2.text}
 
-                except Exception as e:
-                    last_err = e
-                    logger.error(f"Inference failed (attempt {attempt+1}/{retries}): {e}")
-                    if attempt < retries:
-                        _time.sleep(backoff ** attempt)
+    #                             # collect text from common fields
+    #                             if isinstance(data, dict):
+    #                                 for k in ("response", "text", "result", "data"):
+    #                                     if k in data and isinstance(data[k], str) and data[k].strip():
+    #                                         resp_text = data[k]
+    #                                         break
+    #                             elif isinstance(data, str):
+    #                                 resp_text = data
+    #                         except Exception as e:
+    #                             logger.debug(f"Non-streaming fallback failed: {e}")
+                        
+    #                     if resp_text.strip():
+    #                         return resp_text
+    #                     raise RuntimeError("Empty response (streaming HTTP)")
+    #                 else:
+    #                     # Original client path
+    #                     response = self.client.generate(**kwargs)
+    #                     return response["response"]
 
-            logger.error(f"Inference failed: {last_err}")
-            return None
+    #             except Exception as e:
+    #                 last_err = e
+    #                 logger.error(f"Inference failed (attempt {attempt+1}/{retries}): {e}")
+    #                 if attempt < retries:
+    #                     _time.sleep(backoff ** attempt)
+
+    #         logger.error(f"Inference failed: {last_err}")
+    #         return None
 
 # class KnowledgeBase:
 #     def __init__(self,
