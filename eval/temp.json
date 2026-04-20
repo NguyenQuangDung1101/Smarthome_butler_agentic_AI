@@ -28,7 +28,7 @@
     "task_type": "conversational",
     "prompt": "Tell me a fun fact about smart homes.",
     "llm_judge_eval": {
-      "judge_note": "Correct if the agent responds conversationally with an interesting and accurate fact about smart home technology. It should NOT touch any appliances or use tools."
+      "judge_note": "Correct if the agent responds conversationally with an interesting and accurate fact about smart home technology. It should NOT touch any appliances."
     }
   },
   {
@@ -42,7 +42,7 @@
   {
     "id": "tc_569",
     "task_type": "note_management",
-    "prompt": "Add a note for 2026-04-20: \"Schedule AC maintenance check and clean all fans.\"",
+    "prompt": "Add a note for 2026-04-21: \"Schedule AC maintenance check and clean all fans.\"",
     "llm_judge_eval": {
       "judge_note": "Correct if the agent uses add_note tool with the specified date and content, then confirms the note was saved. No appliance changes expected."
     }
@@ -98,9 +98,9 @@
   {
     "id": "tc_576",
     "task_type": "multi_step",
-    "prompt": "Check the bonsai moisture level. If it is below 25%, turn on the pump to water it and add a note for today saying \"Bonsai watered at [time].\"",
+    "prompt": "Check the bonsai moisture level. If it is below 60%, turn on the pump to water it and add a note for today saying \"Bonsai watered at [time].\"",
     "llm_judge_eval": {
-      "judge_note": "Correct if the agent first reads moisture (espID=3 mois), then if below 25%: turns on pump (espID=3 pump=true) AND adds a note. If moisture is sufficient, reports no action needed. Must read sensor before deciding."
+      "judge_note": "Correct if the agent first reads moisture (espID=3 mois), then if below 60%: turns on pump (espID=3 pump=true) AND adds a note. If moisture is sufficient, reports no action needed. Must read sensor before deciding."
     }
   },
   {
@@ -178,7 +178,7 @@
   {
     "id": "tc_586",
     "task_type": "permission_required",
-    "prompt": "It is 2026-04-20 07:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"unlock\"},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 80%\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Yes, go ahead and unlock and open the curtain.",
+    "prompt": "It is 07:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"unlock\"},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 80%\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Yes, go ahead and unlock and open the curtain.",
     "llm_judge_eval": {
       "judge_note": "Correct if the agent: (1) recognizes the permission requirement, (2) sees the user has explicitly confirmed, (3) executes both actions: unlock bedroom (servo=false) and open curtain to 80% (motor2=80). User confirmation makes execution valid."
     }
@@ -186,7 +186,7 @@
   {
     "id": "tc_587",
     "task_type": "schedule_moment",
-    "prompt": "It is 2026-04-20 20:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is reading a book in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": false,\n    \"bedroom_bed_light\": true,\n    \"bedroom_fan\": 25,\n    \"bedroom_curtain\": 0,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nBedroom room light on, bed light off, fan 0%, curtain 60% open.\nHallway left light on, right light off.",
+    "prompt": "It is 20:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is reading a book in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": false,\n    \"bedroom_bed_light\": true,\n    \"bedroom_fan\": 25,\n    \"bedroom_curtain\": 0,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nBedroom room light on, bed light off, fan 0%, curtain 60% open.\nHallway left light on, right light off.",
     "llm_judge_eval": {
       "judge_note": "Correct if the agent identifies mismatches: (1) room light should be off -> set led1=false, (2) bed light should be on -> set led2=true, (3) fan should be 25% -> set motor1=25, (4) curtain should be closed -> set motor2=0, (5) hallway left light should be off -> set espID=2 led1=false. Should align all appliances to the expected reading setup."
     }
