@@ -1,36 +1,88 @@
 import json
 
-EVAL_DATASET_FILE = "./eval/eval_dataset_full.json"
-AGENT_OUTPUT_FILE = "./eval/agent_output_qwen35_fewshot.json"
-OUTPUT_FILE = "./eval/temp.json"
+SOURCE_FILE = "./eval/agent_output_qwen35_fewshot.json"
+TARGET_FILE = "./eval/agent_output_temp.json"
+OUTPUT_FILE = "./eval/agent_output_temp_updated.json"
 
-TARGET_STRING = "<final_answer>Inference failed after retries, no response.</final_answer>"
+
 
 
 def main():
-    with open(EVAL_DATASET_FILE, "r", encoding="utf-8") as f:
-        eval_data = json.load(f)
+    with open(SOURCE_FILE, "r", encoding="utf-8") as f:
+        source_data = json.load(f)
 
-    with open(AGENT_OUTPUT_FILE, "r", encoding="utf-8") as f:
-        agent_outputs = json.load(f)
+    with open(TARGET_FILE, "r", encoding="utf-8") as f:
+        replace_data = json.load(f)
 
-    # Collect failed IDs
-    failed_ids = set()
-    for item in agent_outputs:
-        if "inference_ouput" not in item:
-            continue  # skip items without this field
+    # Items in agent_output_temp.json will replace matching IDs in source
+    replace_map = {item["id"]: item for item in replace_data}
 
-        inference_output = item["inference_ouput"]
-        if TARGET_STRING in inference_output:
-            failed_ids.add(item["id"])
+    updated_data = []
+    replaced_count = 0
 
-    # Filter matching items from eval dataset
-    filtered = [item for item in eval_data if item["id"] in failed_ids]
+    for item in source_data:
+        case_id = item["id"]
 
-    # Save to temp.json
+        if case_id in replace_map:
+            updated_data.append(replace_map[case_id])
+            replaced_count += 1
+        else:
+            updated_data.append(item)
+
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(filtered, f, indent=2, ensure_ascii=False)
+        json.dump(updated_data, f, indent=2, ensure_ascii=False)
+
+    print(f"Total source items: {len(source_data)}")
+    print(f"Total replacement items: {len(replace_data)}")
+    print(f"Total replaced: {replaced_count}")
+    print(f"Saved to: {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":
     main()
+
+
+
+# import json
+
+# EVAL_DATASET_FILE = "./eval/eval_dataset_full.json"
+# AGENT_OUTPUT_FILE = "./eval/agent_output_qwen35_fewshot.json"
+# OUTPUT_FILE = "./eval/temp.json"
+
+# TARGET_STRING = "<final_answer>Inference failed after retries, no response.</final_answer>"
+
+
+# def main():
+#     with open(EVAL_DATASET_FILE, "r", encoding="utf-8") as f:
+#         eval_data = json.load(f)
+
+#     with open(AGENT_OUTPUT_FILE, "r", encoding="utf-8") as f:
+#         agent_outputs = json.load(f)
+
+#     # Collect failed IDs
+#     failed_ids = set()
+#     total_checked = 0
+
+#     for item in agent_outputs:
+#         if "inference_ouput" not in item:
+#             continue
+
+#         total_checked += 1
+#         if TARGET_STRING in item["inference_ouput"]:
+#             failed_ids.add(item["id"])
+
+#     # Filter matching items from eval dataset
+#     filtered = [item for item in eval_data if item["id"] in failed_ids]
+
+#     # Save to temp.json
+#     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+#         json.dump(filtered, f, indent=2, ensure_ascii=False)
+
+#     # ---- Counts ----
+#     print(f"Total agent outputs with inference_ouput: {total_checked}")
+#     print(f"Total failed (matched string): {len(failed_ids)}")
+#     print(f"Total copied to temp.json: {len(filtered)}")
+
+
+# if __name__ == "__main__":
+#     main()

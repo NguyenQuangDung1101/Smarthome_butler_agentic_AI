@@ -20,7 +20,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 45,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 0.6,
+          "value": 29.5,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -102,7 +102,7 @@
           "id": "motor2",
           "description": "Main door",
           "value_type": "integer",
-          "value": 60,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 0.9,
+          "value": 30.1,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -197,7 +197,7 @@
           "id": "motor2",
           "description": "Window curtain",
           "value_type": "integer",
-          "value": 100,
+          "value": 0,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 29.3,
+          "value": 31.7,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 29.1,
+          "value": 30.2,
           "constraints": {
             "type": "float",
             "min": -40.0,
