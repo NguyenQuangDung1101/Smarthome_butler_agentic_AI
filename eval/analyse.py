@@ -1,6 +1,6 @@
 import json
 
-SOURCE_FILE = "./eval/gemma4-31b-cloud-4fewshot/agent_output_gemma4_fewshot.json"
+SOURCE_FILE = "./eval/gemini-3-flash-preview-cloud/llm_judge_report_gemini_0shot.json"
 TARGET_FILE = "./eval/agent_output_temp.json"
 OUTPUT_FILE = "./eval/agent_output_temp_updated.json"
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
 # import json
 
-# SOURCE_FILE = "./eval/gemma4-31b-cloud-4fewshot/llm_judge_report_gemma4_fewshot.json"
+# SOURCE_FILE = "./eval/gemini-3-flash-preview-cloud/llm_judge_report_gemini_0shot.json"
 # TARGET_FILE = "./eval/llm_judge_report_temp.json"
 # OUTPUT_FILE = "./eval/llm_judge_report_updated.json"
 

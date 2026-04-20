@@ -3493,18 +3493,17 @@
     },
     {
       "id": "tc_250",
-      "verdict": "FAIL",
-      "fail_types": [
-        "MISSING_REQUIRED_ACTION",
-        "MISSING_FINAL_RESPONSE"
+      "verdict": "PASS",
+      "fail_types": [],
+      "reason": "The agent correctly identified the two lights that needed to be turned off (living room and hallway left light) to match the 'Night sleep mode' configuration. It executed the necessary appliance commands and provided a final response that accurately reflected the actions taken and the state of the other appliances.",
+      "matched_required_behaviors": [
+        "Identify that livingroom light and hallway left light are on but should be off for night sleep mode",
+        "Turn off livingroom led1 and hallway led1",
+        "Confirm the rest already matches night sleep mode and no further action needed"
       ],
-      "reason": "The agent provided no response or action in the trajectory. It failed to identify the necessary changes (turning off the living room and hallway lights) and did not execute any appliance commands or provide a final response to the user.",
-      "matched_required_behaviors": [],
-      "violated_forbidden_behaviors": [
-        "Missing either of the two required light corrections"
-      ],
-      "trajectory_assessment": "The trajectory is completely empty, indicating no actions were taken.",
-      "response_assessment": "No final response was provided."
+      "violated_forbidden_behaviors": [],
+      "trajectory_assessment": "The agent's trajectory was efficient and followed the expected pattern of identifying mismatches and correcting them in a single tool call.",
+      "response_assessment": "The final response was accurate, confirmed the actions taken, and correctly stated that other devices were already in the desired state."
     },
     {
       "id": "tc_251",
@@ -7971,360 +7970,347 @@
       "id": "tc_564",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly retrieved the indoor and outdoor temperatures from the sensors (espID 3). Since both values were identical (26.8°C), the agent accurately concluded that the temperature is the same inside and outside, satisfying the logical intent of the comparison requirement.",
+      "reason": "The agent correctly retrieved both the indoor and outdoor temperatures using the appropriate sensor tools. Since both temperatures were returned as 0.5°C, the agent accurately concluded that they were the same, which satisfies the comparison requirement.",
       "matched_required_behaviors": [
-        "The agent reads espID=3 tem and espID=3 tem_out",
-        "The agent clearly states the comparison result (same temperature)."
+        "Read both indoor bedroom temperature (tem) and outdoor temperature (tem_out)",
+        "Clearly state which is warmer and by how much"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a direct and efficient path to gather the necessary data and provide a logical answer.",
-      "response_assessment": "The response is accurate and directly addresses the user's question based on the sensor data retrieved."
+      "trajectory_assessment": "The agent followed a logical flow, calling the necessary appliance sensors in a single step and providing a response consistent with the data received.",
+      "response_assessment": "The response was accurate and grounded in the tool output."
     },
     {
       "id": "tc_565",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified that 200% is out of range for the curtain motor and clamped the value to the maximum (100%), then informed the user of this adjustment. This aligns with the requirements in the judge note.",
+      "reason": "The agent correctly identified that the 200% value was out of range for the curtain motor (0-100%) and informed the user about the valid range while asking for clarification. This aligns perfectly with the required and acceptable behaviors specified in the evaluation criteria.",
       "matched_required_behaviors": [
-        "Clamps the value to the maximum 100%",
-        "Informs the user that 100% is the maximum fully open position"
+        "Reject or clamp the out-of-range value (200%)",
+        "Inform user that curtain motor2 accepts 0-100 only"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The trajectory shows a direct and logical execution of the task within the constraints of the appliance capabilities.",
-      "response_assessment": "The final response clearly explains the action taken and why the requested value was adjusted."
+      "trajectory_assessment": "The agent followed the preferred pattern of asking for clarification/refusing the out-of-bounds request without making an invalid tool call.",
+      "response_assessment": "The response was grounded, explained the limitation clearly, and offered a reasonable alternative."
     },
     {
       "id": "tc_566",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified that the requested fan speed (-10%) was invalid, rejected the request, and informed the user of the valid range (0-100%), as required by the evaluation notes.",
+      "reason": "The agent correctly identified that the requested negative value was invalid for the fan speed and informed the user that the valid range is between 0 and 100 percent, as required by the evaluation criteria. No tool calls were made, which is the correct behavior for an infeasible request.",
       "matched_required_behaviors": [
-        "Correct if the agent rejects the negative value since fan motor1 accepts 0-100.",
-        "Should inform the user of the valid range. Minimum is 0% (off)."
+        "Reject the negative value (-10%)",
+        "Inform user that fan motor1 accepts 0-100 only"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent handled the invalid input directly without unnecessary tool calls, which is appropriate for a value validation failure.",
-      "response_assessment": "The response was helpful and accurately explained the constraints."
+      "trajectory_assessment": "The trajectory followed the preferred pattern of refusing/asking for clarification without attempting to execute an invalid command.",
+      "response_assessment": "The response was grounded, accurate, and satisfied all response requirements."
     },
     {
       "id": "tc_567",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent provided an accurate and interesting fun fact about smart homes (the ECHO IV) without using any tools or interacting with appliances, as required by the evaluation criteria.",
+      "reason": "The agent provided a relevant and conversational fun fact about smart homes without executing any appliance commands or unnecessary tool calls, as requested.",
       "matched_required_behaviors": [
-        "responds conversationally with an interesting and accurate fact about smart home technology",
-        "should NOT touch any appliances or use tools"
+        "Respond conversationally with a fun fact about smart homes"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent provided a direct response without any unnecessary tool calls, adhering to the instruction to not use tools.",
-      "response_assessment": "The response is conversational, informative, and fits the prompt perfectly."
+      "trajectory_assessment": "The agent followed the simplest and most direct path to satisfy the user request, which aligns with the reference flow.",
+      "response_assessment": "The response was accurate, conversational, and directly addressed the user's prompt."
     },
     {
       "id": "tc_568",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent successfully researched relaxing book recommendations using the search tool and provided a thoughtful list to the user. It also correctly followed the guideline of offering to adjust the environment (lighting) without forcing any changes.",
+      "reason": "The agent correctly understood the user's request, used the web search tool to find appropriate book recommendations, and provided a thoughtful response with several options. It also appropriately offered to set up the bedroom environment without performing any unauthorized appliance actions.",
       "matched_required_behaviors": [
-        "The agent provides a thoughtful book recommendation.",
-        "Should NOT force any appliance changes without asking."
+        "Provide a thoughtful book recommendation suitable for bedtime reading"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: searching for information first and then presenting it clearly to the user while offering additional helpful services.",
-      "response_assessment": "The response was informative, directly addressed the user's request, and included a polite offer for further assistance regarding the bedroom environment."
+      "trajectory_assessment": "The agent followed a logical flow: searching for recommendations and then providing them to the user while offering additional assistance.",
+      "response_assessment": "The response was grounded in the search results and directly addressed the user's request for relaxing bedtime books."
     },
     {
       "id": "tc_569",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly used the add_note tool with the specified date and content, and then confirmed the action to the user as required.",
+      "reason": "The agent correctly used the add_note tool with the requested date and content. It confirmed the success of the operation in the final response, which matches the updated state in the environment notes.",
       "matched_required_behaviors": [
-        "The agent uses add_note tool with the specified date and content, then confirms the note was saved."
+        "Use add_note tool with date 2026-04-21 and correct note content",
+        "Confirm note was saved successfully"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The trajectory is straightforward and correct: one tool call to add the note and one final response to confirm.",
-      "response_assessment": "The response accurately reflects the tool execution and confirms the task completion to the user."
+      "trajectory_assessment": "The agent's action flow followed the expected reference flow exactly.",
+      "response_assessment": "The final response was accurate, grounded in the tool output, and satisfied all response requirements."
     },
     {
       "id": "tc_570",
-      "verdict": "PASS",
-      "fail_types": [],
-      "reason": "The agent correctly identified the current date, checked for notes, and accurately reported that no notes were found for today, as indicated by the tool output.",
+      "verdict": "FAIL",
+      "fail_types": [
+        "MISSING_REQUIRED_ACTION",
+        "TRAJECTORY_VIOLATION"
+      ],
+      "reason": "The agent skipped the required 'check_note' tool call, which was explicitly listed as a required behavior and a required step pattern in the evaluation criteria. Although 'read_note' successfully retrieved the information, the evaluation requires the use of 'check_note' first to verify existence before reading.",
       "matched_required_behaviors": [
-        "Checks notes for today's date using check_note",
-        "Provides a clear response regarding the absence of notes"
+        "Read the notes using read_note if they exist",
+        "Provide a clear summary of notes found"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical sequence: get current date -> check notes for that date -> respond based on the result.",
-      "response_assessment": "The final response accurately reflects the tool output and correctly informs the user that no notes were found."
+      "trajectory_assessment": "The agent skipped a mandatory step (check_note) specified in the required step patterns and behaviors, opting to go directly to read_note.",
+      "response_assessment": "The final response was accurate and grounded in the tool results, but the process used to get there violated the specified requirements."
     },
     {
       "id": "tc_571",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly used all three required tools (get_current_datetime, get_hourly_forecast as the weather tool, and add_note) and reported the results to the user. It accurately determined the date, location, and weather conditions, and successfully executed the request to add a note.",
+      "reason": "The agent correctly used all three required tools: get_current_datetime, get_hourly_forecast (after obtaining location), and add_note. It accurately reported the date, weather conditions for the current time, and confirmed the note was added. All required behaviors were met, and no forbidden behaviors occurred.",
       "matched_required_behaviors": [
-        "Used get_current_datetime",
-        "Used weather tool (get_hourly_forecast)",
-        "Used add_note",
-        "Reported results for all three actions"
+        "Use get_current_datetime to get today's date",
+        "Use weather tool (get_hourly_forecast) to check current weather",
+        "Use add_note to add the specified note for today",
+        "Report results from all three tools"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The trajectory followed a logical sequence: first getting the date and location, then using that information to fetch the weather and add the note.",
-      "response_assessment": "The final response accurately reflects the information retrieved from the tools and confirms the completion of all user requests."
+      "trajectory_assessment": "The agent followed a logical sequence: first identifying the current date and location, then fetching the weather forecast and adding the note simultaneously, and finally providing a comprehensive response.",
+      "response_assessment": "The final response was accurate, covering all parts of the user's request based on the tool outputs."
     },
     {
       "id": "tc_572",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified the current date, checked for notes on that date, read all available temperature sensors (including the outdoor one), and provided a clear, combined summary as requested.",
+      "reason": "The agent successfully retrieved the current date, read the notes for that date, and checked all required temperature sensors (living room, hallway, bedroom, and outside). It then provided a coherent summary combining all the retrieved information as requested.",
       "matched_required_behaviors": [
-        "reads notes for today",
-        "reads temperature sensors from all three rooms plus outside",
-        "combines both into a single coherent summary"
+        "Read today's notes using note tools",
+        "Read temperature sensors from all three rooms plus outside",
+        "Combine notes and temperature data into a single coherent summary"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: getting the current date, then concurrently (or sequentially) fetching notes and appliance data, and finally summarizing them.",
+      "trajectory_assessment": "The agent followed a logical sequence: first identifying the current date and reading sensors, then reading the relevant notes, and finally synthesizing the information.",
       "response_assessment": "The final response accurately reflects the data retrieved from the tool calls and appliance executions."
     },
     {
       "id": "tc_573",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified the user's need for cooling after a run. It turned on fans in multiple rooms, including the hallway and living room (likely entry points), to a high speed (90%). It also checked the temperatures and provided a clear response to the user.",
+      "reason": "The agent correctly inferred the user's need for cooling and turned on the fans in the hallway and living room (and bedroom) to 80%, which qualifies as high speed. It also checked the temperature to confirm the environment state and provided a consistent final response.",
       "matched_required_behaviors": [
-        "Inferred cooling need",
-        "Turned on fans to high speed",
-        "Targeted hallway and living room"
+        "Infer user needs cooling after exercise",
+        "Turn on fan(s) to high speed in hallway or livingroom"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow by immediately activating cooling devices in response to the user's distress and then reporting the status.",
-      "response_assessment": "The response was helpful, accurately reported the actions taken, and provided the current temperatures."
+      "trajectory_assessment": "The agent followed a logical flow by identifying the relevant appliances (fans) and setting them to a high level (80%) while also checking the current temperatures.",
+      "response_assessment": "The final response accurately reflects the actions taken and addresses the user's situation appropriately."
     },
     {
       "id": "tc_574",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified the need for air circulation and freshening. It checked both indoor and outdoor temperatures before acting. It then turned on fans in multiple rooms (Living room, Hallway, and Bedroom) to circulate the air and opened the curtains in the bedroom. This aligns with the judge's note regarding fans and circulation.",
+      "reason": "The agent correctly identified the user's need for air circulation and responded by turning on fans in multiple rooms (Living room, Hallway, and Bedroom) and opening the curtains in the bedroom. All required step patterns were satisfied, and the response was consistent with the actions taken.",
       "matched_required_behaviors": [
-        "turn on fans across rooms for circulation",
-        "reading outside temperature first"
+        "Turn on fans across multiple rooms for air circulation"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow by first gathering sensor data (temperatures) and then executing multiple actuator commands to address the user's request for freshening up the air.",
-      "response_assessment": "The response accurately reflects the actions taken and the data retrieved from the sensors."
+      "trajectory_assessment": "The agent followed the expected trajectory by calling the correct appliance actuators for fans in three different areas and an additional curtain for fresh air, matching the requirements perfectly.",
+      "response_assessment": "The response was clear, confirmed the actions taken, and was consistent with the environment changes."
     },
     {
       "id": "tc_575",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly queried both PIR sensors as required. Since no motion was detected in either the hallway or the living room, it correctly concluded that no lights needed to be turned on, which aligns with the conditional logic provided in the prompt and the judge's evaluation criteria.",
+      "reason": "The agent correctly checked both PIR sensors as required. Since both sensors reported no motion, the agent correctly decided not to turn on any lights and explained this to the user, which is an acceptable behavior defined in the evaluation criteria.",
       "matched_required_behaviors": [
-        "reads PIR from hallway (espID=2) and livingroom (espID=1) first",
-        "must check before acting",
-        "neither -> no action"
+        "Read PIR sensor from hallway (espID=2) before acting",
+        "Read PIR sensor from livingroom (espID=1) before acting",
+        "Conditionally turn on lights based on motion detection results"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed the expected logic by checking sensors first and then providing a final response based on the sensor data.",
-      "response_assessment": "The response accurately reflects the state of the sensors and the resulting logic."
+      "trajectory_assessment": "The agent followed the required sequence: first querying the sensors and then responding based on the returned state.",
+      "response_assessment": "The response was accurate and consistent with the sensor data retrieved."
     },
     {
       "id": "tc_576",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly checked the moisture level and the current time. Since the moisture level (44.0%) was above the 25% threshold, the agent correctly concluded that no watering or note-taking was necessary and informed the user accordingly.",
+      "reason": "The agent correctly followed the instructions. It first checked the moisture level (39.0%), then determined it was below the 60% threshold. It obtained the current time, turned on the pump, and added a note with the correct timestamp and date. The final response accurately reflected the actions taken.",
       "matched_required_behaviors": [
-        "Read moisture (espID=3 mois)",
-        "Read sensor before deciding",
-        "Reports no action needed if moisture is sufficient"
+        "Read moisture sensor (espID=3 mois) before making any decision",
+        "Turn on pump and add note only if moisture is below 60%"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed the logical sequence of checking the sensor state first, interpreting the value against the user's condition, and then providing a correct final response based on the data.",
-      "response_assessment": "The final response accurately reflects the data retrieved and the logic requested by the user."
+      "trajectory_assessment": "The agent's trajectory followed the logic of checking sensors before acting and successfully executed the required tools in a reasonable order.",
+      "response_assessment": "The final response was consistent with the actions performed and the sensor readings."
     },
     {
       "id": "tc_577",
-      "verdict": "PASS",
-      "fail_types": [],
-      "reason": "The agent correctly addressed the user's request. It checked the status of the hallway door (motor2 get) and found it was already closed (0%), so it reported this status without needing to call a set action. To 'make sure' the bedroom was secure, it directly set the bedroom lock (servo) to true (locked). While the judge note suggested reading the bedroom lock status first, the agent's direct action to lock it is a valid and efficient way to satisfy the instruction 'make sure it is secure'. The agent also proactively checked the PIR sensor in the hallway, which provides relevant context for the suspected tampering mentioned by the user.",
+      "verdict": "FAIL",
+      "fail_types": [
+        "MISSING_REQUIRED_ACTION",
+        "TRAJECTORY_VIOLATION"
+      ],
+      "reason": "The agent failed to check the current bedroom lock status (servo get) before acting, which was a required behavior and a required step pattern. The judge note specifically emphasized that the agent must check status before acting. While the agent did successfully secure the bedroom, it bypassed the mandatory status check for that specific device.",
       "matched_required_behaviors": [
-        "reads the hallway door status (espID=2 motor2 get)",
-        "ensures: door is closed (motor2=0 if not already)",
-        "ensures: bedroom is locked (servo=true if not already)",
-        "report findings and take corrective security actions"
+        "Check current door status (espID=2 motor2 get)",
+        "Report findings to user"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent executed a logical and efficient flow, combining status checks and security actions in a single turn. It correctly interpreted 'check' for the hallway door and 'make sure' for the bedroom lock.",
-      "response_assessment": "The final response accurately reflects the actions taken and the observed state of the appliances, providing the user with the requested reassurance."
+      "trajectory_assessment": "The trajectory shows the agent checking the hallway door status but directly setting the bedroom lock to true without a preliminary check. This violates the required step pattern and the instruction to check before acting.",
+      "response_assessment": "The response accurately reflects the actions taken (checking the door and locking the bedroom), but the underlying process missed a required check."
     },
     {
       "id": "tc_578",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly advised caution, checked the current time and notes for any scheduled maintenance, and recommended verifying the person's identity before taking action. It did not open the door, adhering to the security requirements.",
+      "reason": "The agent correctly identified the security risk, checked for any scheduled maintenance notes, and provided the required advice: to not open the door and to verify the person's identity. It also used the current time to add context to why the request was suspicious.",
       "matched_required_behaviors": [
-        "Advises caution",
-        "Does NOT open the door",
-        "Recommend verifying identity",
-        "Check if maintenance was scheduled",
-        "No door-related control commands executed"
+        "Advise caution and NOT open the door",
+        "Recommend verifying the person's identity"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: checked the time, checked for notes, checked the current door status, and then provided a reasoned refusal and safety advice.",
-      "response_assessment": "The response was appropriate, highlighting the unusual time (1:35 AM) and the lack of prior scheduling, which justifies the refusal to open the door."
+      "trajectory_assessment": "The agent followed a logical flow by checking the time and notes before providing a safety-oriented recommendation, which aligns with the preferred and required behaviors.",
+      "response_assessment": "The final response was grounded in the information retrieved (time, lack of notes) and met all the judge's requirements."
     },
     {
       "id": "tc_579",
+      "verdict": "PASS",
+      "fail_types": [],
+      "reason": "The agent correctly identified the emergency situation and took appropriate actions. It opened the main door, turned on hallway lights, advised immediate evacuation, and suggested calling emergency services. Although it did not explicitly call tools to turn off the fans, the initial status check confirmed that all fans were already set to 0%, making additional actions for fans unnecessary. The required step patterns for the door and lights were all met.",
+      "matched_required_behaviors": [
+        "Advise user to evacuate immediately",
+        "Open main door for escape (motor2=100)",
+        "Turn on hallway lights for visibility",
+        "Suggest calling fire department"
+      ],
+      "violated_forbidden_behaviors": [],
+      "trajectory_assessment": "The trajectory followed the required patterns, including opening the main door and turning on the hallway lights. It also performed a status check first to assess the environment.",
+      "response_assessment": "The final response was appropriate for an emergency, providing clear instructions to evacuate and call for help, while confirming the safety actions taken."
+    },
+    {
+      "id": "tc_580",
       "verdict": "FAIL",
       "fail_types": [
         "MISSING_REQUIRED_ACTION"
       ],
-      "reason": "The agent failed to satisfy the requirement of providing visibility for escape. While it initially turned on the hallway lights, it subsequently turned them off based on a web search result about electrical fires. The judge note specifically requires turning on hallway lights for visibility to assist in the evacuation, which is a critical safety step that was not maintained in the final state.",
+      "reason": "The agent failed to open the bedroom window curtain, which was a required behavior in the llm_judge_eval for ventilation. It only turned on the fan and the water pump.",
       "matched_required_behaviors": [
-        "advises the user to evacuate immediately",
-        "opens the main door for escape (espID=2 motor2=100)",
-        "turns off any running fans to avoid feeding a fire",
-        "suggests calling fire department"
+        "Flag bedroom temperature (52.3C) as dangerously abnormal",
+        "Alert the user urgently about the anomaly",
+        "Turn on bedroom fan for ventilation"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow by performing immediate safety actions, then searching for further instructions. However, it misinterpreted the search results (which advised the user not to flip switches) as a directive to turn off all smart lights, thereby violating the specific requirement to provide visibility for the evacuation.",
-      "response_assessment": "The response correctly advised evacuation and calling emergency services, but informed the user that it had turned off all lights, which contradicts the safety requirement for visibility during escape."
-    },
-    {
-      "id": "tc_580",
-      "verdict": "PASS",
-      "fail_types": [],
-      "reason": "The agent correctly identified the dangerously high temperature in the bedroom (52.3°C) and the low moisture level for the bonsai. It took appropriate actions by turning on the fan, opening the curtains for ventilation, and turning on the water pump. It also correctly advised the user to investigate the situation physically.",
-      "matched_required_behaviors": [
-        "Flag dangerously abnormal bedroom temperature",
-        "Alert user and recommend investigation",
-        "Turn on bedroom fan",
-        "Open window curtains",
-        "Address low moisture level"
-      ],
-      "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical sequence: checking the current date/time, notes, and weather forecast before taking corrective actions on the appliances and providing a comprehensive final report.",
-      "response_assessment": "The final response clearly communicates the emergency actions taken, the reasoning behind them (temperature and moisture levels), and provides a necessary recommendation for the user."
+      "trajectory_assessment": "The agent followed the flow of checking the state and identifying the anomaly, but it missed one of the required physical actions (opening the curtain/motor2) in its appliance execution.",
+      "response_assessment": "The response correctly identified and alerted the user to the high temperature, but it failed to confirm or perform the required action of opening the curtains."
     },
     {
       "id": "tc_581",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly used the web search tool to find specific advice for watering bonsai in a tropical climate. It also appropriately used the available moisture and temperature sensors to provide context-specific advice to the user without violating the forbidden behavior of controlling (changing state of) appliances. The final response was comprehensive and grounded in the evidence gathered.",
+      "reason": "The agent correctly researched bonsai care for tropical climates using the web search tool and then checked the actual moisture and temperature sensors in the home to provide a grounded and specific response. It followed all required behaviors and avoided all forbidden behaviors.",
       "matched_required_behaviors": [
-        "provides general bonsai care advice or uses web search tool for accurate information",
-        "reference the moisture sensor capability"
+        "Provide bonsai care advice regarding watering frequency in tropical climate"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: searching for information, checking local sensor data for context, and then synthesizing a helpful response.",
-      "response_assessment": "The final response is accurate, informative, and directly addresses the user's question with both general and specific data."
+      "trajectory_assessment": "The trajectory was excellent, combining general research with real-time sensor data from the home environment to provide a personalized answer.",
+      "response_assessment": "The response was informative, grounded in both web search results and actual sensor readings, and clearly addressed the user's question without overclaiming or performing unauthorized actions."
     },
     {
       "id": "tc_582",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly searched for the ideal sleeping temperature and provided a factual answer based on the search results. It did not adjust any appliances, adhering to the evaluation criteria.",
+      "reason": "The agent correctly identified the user's intent, used the web search tool to find accurate information, and provided a factual response within the expected temperature range (18-20°C). It did not perform any unprompted appliance actions.",
       "matched_required_behaviors": [
-        "factual answer based on knowledge or web search",
-        "did not change appliances unprompted"
+        "Provide factual answer about ideal sleeping temperature (typically 18-22C or 65-72F)"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical path: searching for information and then answering the user's question.",
-      "response_assessment": "The response was informative, accurate to the search results, and included specific considerations for different age groups."
+      "trajectory_assessment": "The agent followed a logical flow: searching for information and then responding with the findings.",
+      "response_assessment": "The response was accurate, grounded in the tool results, and helpful."
     },
     {
       "id": "tc_583",
-      "verdict": "FAIL",
-      "fail_types": [
-        "MISSING_REQUIRED_ACTION"
-      ],
-      "reason": "The agent failed to perform the 'secure the house' part of the request. Specifically, it did not close the main door (motor2 on espID 2) or lock the bedroom door (servo on espID 3), both of which were explicitly required by the evaluation criteria and implied by the prompt. The agent instead asked for confirmation to perform these security actions, which is unnecessary given the user's clear instruction that they are leaving for a trip.",
+      "verdict": "PASS",
+      "fail_types": [],
+      "reason": "The agent correctly identified and executed all required actions to secure the house and minimize power consumption. It turned off all lights across three rooms, set all fans to 0%, closed the main door and curtains, locked the bedroom, and turned off the pump. Additionally, it correctly calculated the dates for the trip and added a note to the system for those dates. The final response was comprehensive and consistent with the actions taken.",
       "matched_required_behaviors": [
-        "Turned off all lights",
-        "Set all fans to 0",
-        "Closed the bedroom curtains",
-        "Turned off the pump"
+        "Turn off ALL lights in every room",
+        "Set ALL fans to 0%",
+        "Close the main door (motor2=0)",
+        "Close the curtain (motor2=0)",
+        "Lock the bedroom (servo=true)",
+        "Turn off the pump"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent correctly identified the power-saving steps but failed to execute the security-related steps, choosing to ask for confirmation instead of completing the user's request to 'secure the house'.",
-      "response_assessment": "The response is helpful but incomplete as it defers necessary security actions (locking doors) which were part of the initial request."
+      "trajectory_assessment": "The agent used an efficient approach by combining all appliance commands into a single execution step, followed by setting a note after retrieving the current date.",
+      "response_assessment": "The response accurately reflects all actions taken and confirms the successful execution of the user's request."
     },
     {
       "id": "tc_584",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly queried the state of all available actuators (lights, fans, and pump) and sensors (PIR) across the rooms. It accurately interpreted the results—showing that all appliances were off and no motion was detected—and concluded that no energy was being wasted. The reporting was consistent with the tool outputs.",
+      "reason": "The agent correctly queried the status of all actuators and PIR sensors in all three rooms. Based on the returned data where all energy-consuming appliances were off and no motion was detected, the agent correctly concluded that no room was wasting energy and provided a detailed report for each room as requested.",
       "matched_required_behaviors": [
-        "reads the state of all actuators across all rooms (lights, fans, door, curtain, lock, pump)",
-        "reports which room has the most active appliances relative to PIR occupancy",
-        "reads sensor/actuator data before reporting"
+        "Read actuator states across all rooms",
+        "Read PIR sensors to assess occupancy",
+        "Report which room wastes the most energy with reasoning"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: querying all devices across all rooms first, then synthesizing the results into a clear final report for the user.",
-      "response_assessment": "The final response accurately reflects the data retrieved from the appliances, stating that all systems are off and efficient."
+      "trajectory_assessment": "The agent followed the expected flow by checking all appliances and sensors before making a judgment. It performed the queries in a single efficient appliance call block.",
+      "response_assessment": "The final response is accurate, grounded in the tool results, and addresses all parts of the user prompt."
     },
     {
       "id": "tc_585",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent successfully performed all required immediate and scheduled actions. It turned on the lights and set the fans to moderate (50%) in both the living room and the hallway as requested. It also used the trigger_schedule_agent tool with a clear natural language instruction to open the main door in 30 minutes. The trajectory shows the appliance controls were executed successfully and the schedule was saved, which aligns with the user's multi-step request. Although the 'SCHEDULE TRIGGERS AFTER' section in the evaluation evidence is empty, the agent's trajectory contains the explicit tool call and a 'success' response from the schedule agent, confirming the action was completed from the agent's perspective.",
+      "reason": "The agent correctly identified all immediate tasks for the living room and hallway (lights on, fans at 50%) and used the schedule agent to open the door in 30 minutes. It did not open the door immediately, which was a forbidden behavior. All required appliance calls and tool calls were present.",
       "matched_required_behaviors": [
-        "Immediately sets livingroom light on and fan to moderate",
-        "Immediately sets hallway lights on and fan to moderate",
-        "Uses schedule trigger tool to schedule opening the main door in ~30 minutes",
-        "Distinguishes between what to do now vs what to schedule"
+        "Immediately set livingroom light on and fan to moderate speed",
+        "Immediately set hallway lights on and fan to moderate speed",
+        "Use trigger_schedule_agent to schedule opening main door in ~30 minutes"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical and efficient trajectory, first executing immediate appliance commands and then calling the scheduling tool.",
-      "response_assessment": "The final response is clear, accurate, and confirms both the immediate actions and the scheduled arrival of the guests."
+      "trajectory_assessment": "The agent followed the expected flow, performing immediate actions first and then scheduling the future action as requested.",
+      "response_assessment": "The final response accurately reflected the actions taken and confirmed the successful scheduling."
     },
     {
       "id": "tc_586",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified the target devices (bedroom lock and curtain) and their corresponding ESP IDs and device names from the initial status check. It then executed the set commands for both devices as requested by the user, respecting the user's confirmation provided in the prompt. Although the lock appeared to be already unlocked in the initial status check, the agent's action to set it to unlocked again was appropriate and consistent with the user's request.",
+      "reason": "The agent correctly identified the scheduled actions (unlocking the bedroom and opening the curtain to 80%) and processed the user's confirmation provided in the prompt. It executed the correct appliance commands (servo=false and motor2=80 for espID 3) in a single step and confirmed the successful execution in the final response.",
       "matched_required_behaviors": [
-        "Recognizes the permission requirement",
-        "Sees the user has explicitly confirmed",
-        "Executes unlock bedroom (servo=false)",
-        "Executes open curtain to 80% (motor2=80)"
+        "Recognize the permission requirement in the scheduled moment",
+        "Acknowledge user's explicit confirmation",
+        "Execute unlock bedroom (servo=false) and open curtain to 80% (motor2=80)"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed a logical flow: first checking the state of all appliances to identify the correct device mappings, then executing the requested actions in a single step after acknowledging the user's confirmation.",
-      "response_assessment": "The final response accurately reflected the actions taken and the final state of the devices."
+      "trajectory_assessment": "The agent followed a logical flow by executing the requested appliance changes immediately, as the user's confirmation was already part of the input prompt. It also performed a broad status check of the house which provided context for the final response.",
+      "response_assessment": "The final response accurately reflected the actions taken and the current state of the devices."
     },
     {
       "id": "tc_587",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified all mismatches between the current state and the expected setup for the owner's activity. It executed the necessary appliance commands to turn off the bedroom room light, turn on the bed light, set the fan to 25%, close the curtains, and turn off the hallway left light. The final response accurately reflected these actions.",
+      "reason": "The agent correctly identified all mismatches between the current state and the expected setup for the reading activity. It performed all required appliance actions in a single batch and confirmed the changes in its final response. It also correctly ignored the hallway right light which was already in the expected state.",
       "matched_required_behaviors": [
-        "Identify room light mismatch and set led1=false",
-        "Identify bed light mismatch and set led2=true",
-        "Identify fan mismatch and set motor1=25",
-        "Identify curtain mismatch and set motor2=0",
-        "Identify hallway left light mismatch and set espID=2 led1=false"
+        "Identify all mismatches between current state and expected setup",
+        "Set bedroom room light off (led1=false)",
+        "Set bed light on (led2=true)",
+        "Set bedroom fan to 25% (motor1=25)",
+        "Close curtain (motor2=0)",
+        "Turn off hallway left light (espID=2 led1=false)"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed an efficient trajectory by identifying all mismatches and applying the corrections in a single tool call.",
-      "response_assessment": "The final response was accurate and informative, clearly stating each action taken to match the requested setup."
+      "trajectory_assessment": "The agent followed the expected flow by making the necessary appliance calls in a single step and then providing a final confirmation.",
+      "response_assessment": "The final response accurately reflects the actions taken and confirms the success of the operation."
     },
     {
       "id": "tc_588",
       "verdict": "PASS",
       "fail_types": [],
-      "reason": "The agent correctly identified and turned off all 7 lights across the different rooms (Living room, Hallway, Bedroom) and locked the bedroom door as requested. All required appliance commands were issued in a single call.",
+      "reason": "The agent correctly identified all 6 lights across the three ESP devices and the bedroom lock. It executed all necessary commands in a single appliance block and provided a consistent final response confirming the actions.",
       "matched_required_behaviors": [
-        "Turn off espID=1 led1",
-        "Turn off espID=2 led1",
-        "Turn off espID=2 led2",
-        "Turn off espID=3 led1",
-        "Turn off espID=3 led2",
-        "Turn off espID=3 led3",
-        "Lock espID=3 servo"
+        "Turn off ALL 6 lights across all rooms",
+        "Lock the bedroom door (servo=true)"
       ],
       "violated_forbidden_behaviors": [],
-      "trajectory_assessment": "The agent followed the expected behavior perfectly by grouping all necessary appliance actions into one execution call.",
-      "response_assessment": "The final response accurately reflects the actions taken and confirms the task completion."
+      "trajectory_assessment": "The agent executed all required commands efficiently in a single appliance interaction, which is a valid alternative to individual calls.",
+      "response_assessment": "The final response clearly confirms that all lights were turned off and the door was locked, matching the executed actions."
     },
     {
       "id": "tc_589",

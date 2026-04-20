@@ -1,5 +1,245 @@
 [
   {
+    "id": "tc_160",
+    "task_type": "accident_handling",
+    "prompt": "Overall house check at 13:00. Current observed state:\nLivingroom light off, fan 100%, PIR no motion, temperature 26.0C.\nHallway left light off, right light off, fan 100%, main door 100% (fully open), PIR no motion, temperature 26.5C.\nBedroom room light off, bed light off, balcony light off, fan 100%, curtain 100% (fully open), lock unlocked, pump on, PIR no motion, temperature 27.0C, outside temperature 28.0C, moisture 55%.\nNote: All controllable appliances appear to have been set to maximum/open. This state was not scheduled and nobody is home.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "reasonableness_of_flow",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Recognize the all-max state as anomalous given no schedule and no occupancy",
+        "Close the main door (motor2 espID2 to 0)",
+        "Lock the bedroom (servo espID3 to true)",
+        "Turn off the pump (pump espID3 to false)",
+        "Close the curtain (motor2 espID3 to 0)",
+        "Alert the owner about the suspicious unauthorized state"
+      ],
+      "acceptable_behaviors": [
+        "Reduce fans to a lower level as additional measure",
+        "Suggest investigating cause of the anomaly (glitch or unauthorized access)"
+      ],
+      "forbidden_behaviors": [
+        "Treat the all-max state as normal without flagging it",
+        "Leave the main door open or bedroom unlocked",
+        "Leave the pump running without action"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "appliance_set"
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "final_answer"
+          }
+        ],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "final_answer_without_security_action"
+          }
+        ],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request",
+            "tool": "",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "appliance_set_security",
+            "args": {
+              "espID2_motor2": 0,
+              "espID3_servo": true,
+              "espID3_pump": false,
+              "espID3_motor2": 0
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "final_answer",
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Agent must flag the all-max no-occupancy anomaly, secure the house (close door, lock bedroom, stop pump, close curtain), and alert the owner. Missing any critical security action is a fail."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led3",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
     "id": "tc_250",
     "task_type": "schedule_moment",
     "prompt": "It is 23:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"all\", \"device\": \"all lights\", \"target\": \"off\"},\n        {\"place\": \"bedroom\", \"device\": \"fan\", \"target\": 20},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": 0},\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"locked\"},\n        {\"place\": \"hallway\", \"device\": \"main door\", \"target\": 0}\n      ],\n      \"note\": \"Night sleep mode\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\nCurrent observed state:\nLivingroom light on, fan 0%.\nHallway left light on, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 20%, curtain 0%, lock locked.",

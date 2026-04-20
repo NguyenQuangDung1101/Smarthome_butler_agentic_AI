@@ -122,7 +122,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
             instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
             parts = [role_sys_prompt, instruction_sys_prompt]
             sys_prompt = "\n\n".join([p for p in parts if p])
-            agent = build_agent(sys_prompt, model="gemma4:31b-cloud")
+            agent = build_agent(sys_prompt, model="gemini-3-flash-preview:cloud")
             # gemini-3-flash-preview:cloud
             # gemma4:31b-cloud
             # qwen3.5:397b-cloud
