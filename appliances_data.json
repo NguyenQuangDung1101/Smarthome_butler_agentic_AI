@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 24.9,
+          "value": 24.2,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 24.2,
+          "value": 25,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -209,7 +209,7 @@
           "id": "servo",
           "description": "Lock",
           "value_type": "boolean",
-          "value": true,
+          "value": false,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 26.5,
+          "value": 26.4,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 26.8,
+          "value": 26.3,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 39,
+          "value": 40,
           "constraints": {
             "type": "float",
             "min": 0.0,

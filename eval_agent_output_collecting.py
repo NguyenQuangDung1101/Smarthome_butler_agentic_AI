@@ -77,7 +77,7 @@ def get_actual_states(expected_state, appliance_file="appliances_data.json"):
 
 
 
-def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_temp.json") -> None:
+def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_oss120.json") -> None:
     with open(benchmark_path, "r", encoding="utf-8") as f:
         benchmark = json.load(f)
 
@@ -122,7 +122,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
             instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
             parts = [role_sys_prompt, instruction_sys_prompt]
             sys_prompt = "\n\n".join([p for p in parts if p])
-            agent = build_agent(sys_prompt, model="gemini-3-flash-preview:cloud")
+            agent = build_agent(sys_prompt, model="gpt-oss:120b-cloud")
             # gemini-3-flash-preview:cloud
             # gemma4:31b-cloud
             # qwen3.5:397b-cloud
@@ -174,7 +174,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
 if __name__ == "__main__":
 
     
-    benchmark_path = "./eval/temp.json"
+    benchmark_path = "./eval/eval_dataset_full.json"
     collect_agent_outputs(benchmark_path)
 
     # testcase_initial_setup()
