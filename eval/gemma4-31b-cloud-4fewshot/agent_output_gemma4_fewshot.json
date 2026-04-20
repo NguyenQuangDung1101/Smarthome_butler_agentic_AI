@@ -4091,7 +4091,11 @@
   },
   {
     "id": "tc_199",
-    "error": "'str' object has no attribute 'get'"
+    "inference_ouput": "\n[USER 1]\nGet the current time, check the weather forecast for today, and if it will rain in the next 3 hours, add a note for today saying 'Bring laundry inside before rain' and close the bedroom curtain. If no rain expected, open the curtain to 100% for fresh air.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-20 - Day: Monday - Current time: 22:56:32\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_hourly_forecast\", \"arguments\":{\"current_location\":true, \"date\":\"2026-04-20\"}}</tool_call>\n[AGENT]\nExecuting tool: get_hourly_forecast with arguments: {\"current_location\": true, \"date\": \"2026-04-20\"}\n[TOOL:get_hourly_forecast:RESULT]\nGet weather forecast for current location: Ho Chi Minh City, VN:\nWeather forecast in 2026-04-20:\nTime,temperature (°C),Humidity (%),Windspeed (m/s),Cloudcover (%),Weather\r\n00:00:00,26.5,75,5.6,77,Partly cloudy\r\n01:00:00,26.5,75,4.8,74,Partly cloudy\r\n02:00:00,26.3,77,3.8,70,Partly cloudy\r\n03:00:00,26.2,77,3.8,72,Partly cloudy\r\n04:00:00,26.1,78,4.1,83,Overcast\r\n05:00:00,26.1,79,4.1,77,Partly cloudy\r\n06:00:00,26.0,80,3.9,83,Overcast\r\n07:00:00,27.0,77,5.5,83,Overcast\r\n08:00:00,28.6,69,10.5,78,Partly cloudy\r\n09:00:00,30.1,60,15.1,86,Overcast\r\n10:00:00,31.2,55,14.1,65,Partly cloudy\r\n11:00:00,32.8,50,13.3,73,Partly cloudy\r\n12:00:00,34.0,46,13.6,66,Partly cloudy\r\n13:00:00,34.4,45,14.0,68,Partly cloudy\r\n14:00:00,34.4,45,15.0,69,Partly cloudy\r\n15:00:00,34.1,45,15.1,61,Partly cloudy\r\n16:00:00,33.5,47,15.0,42,Mainly clear\r\n17:00:00,32.3,49,14.6,27,Mainly clear\r\n18:00:00,30.6,52,13.3,0,Clear sky\r\n19:00:00,29.2,57,11.6,0,Clear sky\r\n20:00:00,28.2,63,9.9,0,Clear sky\r\n21:00:00,27.4,68,8.4,0,Clear sky\r\n22:00:00,26.8,72,8.0,7,Mainly clear\r\n23:00:00,26.3,75,7.7,20,Mainly clear\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>The current time is22:56 on2026-04-20. I've checked the weather forecast for the next3 hours, and no rain is expected (the sky remains mainly clear). As requested, I have opened the bedroom curtains to100% for fresh air.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n[Final for user 1]\nThe current time is22:56 on2026-04-20. I've checked the weather forecast for the next3 hours, and no rain is expected (the sky remains mainly clear). As requested, I have opened the bedroom curtains to100% for fresh air.",
+    "execution_time": 9.772726058959961,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_200",
@@ -4962,7 +4966,26 @@
   },
   {
     "id": "tc_250",
-    "error": "No response from ESP32"
+    "inference_ouput": "\n[USER 1]\nIt is 23:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"all\", \"device\": \"all lights\", \"target\": \"off\"},\n        {\"place\": \"bedroom\", \"device\": \"fan\", \"target\": 20},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": 0},\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"locked\"},\n        {\"place\": \"hallway\", \"device\": \"main door\", \"target\": 0}\n      ],\n      \"note\": \"Night sleep mode\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\nCurrent observed state:\nLivingroom light on, fan 0%.\nHallway left light on, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 20%, curtain 0%, lock locked.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Left Light in \"Hallway\" has turned off\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have successfully adjusted the house settings to \"Night sleep mode\". The Livingroom light and the Hallway left light have been turned off. All other appliances, including the bedroom fan, curtain, lock, and the main door, were already at their target settings.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have successfully adjusted the house settings to \"Night sleep mode\". The Livingroom light and the Hallway left light have been turned off. All other appliances, including the bedroom fan, curtain, lock, and the main door, were already at their target settings.",
+    "execution_time": 41.450316190719604,
+    "state_check": [
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_251",
@@ -6713,7 +6736,33 @@
   },
   {
     "id": "tc_341",
-    "error": "[WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond"
+    "inference_ouput": "\n[USER 1]\nOverall house check at 11:00. Current observed state:\nLivingroom light off, fan 100%, PIR motion detected, temperature 26.0C.\nHallway left light off, right light off, fan 0%, main door 100% (fully open), PIR no motion, temperature 26.5C.\nBedroom room light off, bed light off, balcony light off, fan 0%, curtain 100% (fully open), lock unlocked, pump on, PIR no motion, temperature 26.2C, outside temperature 27.0C, moisture 85%.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Main Door in \"Hallway\" set to 0% (fully closed)\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned off\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have completed the overall house check. I noticed the main door was fully open and the bonsai pump was on despite high moisture levels (85%), so I have closed the main door and turned off the pump to ensure security and prevent overwatering. All other systems are operating normally given the current presence in the living room.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have completed the overall house check. I noticed the main door was fully open and the bonsai pump was on despite high moisture levels (85%), so I have closed the main door and turned off the pump to ensure security and prevent overwatering. All other systems are operating normally given the current presence in the living room.",
+    "execution_time": 30.40459370613098,
+    "state_check": [
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "pump",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "servo",
+        "expected": true,
+        "actual": true
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_342",
@@ -11322,153 +11371,522 @@
   },
   {
     "id": "tc_564",
-    "inference_ouput": "\n[USER 1]\nCompare the indoor bedroom temperature with the outside temperature. Is it warmer inside or outside?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Temperature Sensor in \"Bedroom + balcony\" 32.0 Celsius degree\n- Temperature Sensor Outside in \"Bedroom + balcony\" 31.0 Celsius degree\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>The indoor bedroom temperature is32.0°C and the outside temperature is31.0°C. Therefore, it is warmer inside the bedroom than outside.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nThe indoor bedroom temperature is32.0°C and the outside temperature is31.0°C. Therefore, it is warmer inside the bedroom than outside.",
-    "execution_time": 5.371917724609375,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nCompare the indoor bedroom temperature with the outside temperature. Is it warmer inside or outside?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Temperature Sensor in \"Bedroom + balcony\" 27.5 Celsius degree\n- Temperature Sensor Outside in \"Bedroom + balcony\" 27.1 Celsius degree\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>The indoor bedroom temperature is27.5°C and the outside temperature is27.1°C. Therefore, it is warmer inside.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nThe indoor bedroom temperature is27.5°C and the outside temperature is27.1°C. Therefore, it is warmer inside.",
+    "execution_time": 24.813878059387207,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_565",
-    "inference_ouput": "\n[USER 1]\nSet the bedroom window curtain to 200%.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have set the bedroom window curtain to100%, as that is the maximum open position.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have set the bedroom window curtain to100%, as that is the maximum open position.",
-    "execution_time": 3.595566749572754,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nSet the bedroom window curtain to 200%.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>I have set the bedroom window curtain to its maximum open position (100%), as the value cannot exceed100%.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n[Final for user 1]\nI have set the bedroom window curtain to its maximum open position (100%), as the value cannot exceed100%.",
+    "execution_time": 53.171558141708374,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_566",
-    "inference_ouput": "\n[USER 1]\nSet the bedroom fan speed to negative 10 percent.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>I'm sorry, but the fan speed must be a value between0 and100. I cannot set it to a negative value. Please provide a valid speed percentage.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI'm sorry, but the fan speed must be a value between0 and100. I cannot set it to a negative value. Please provide a valid speed percentage.",
-    "execution_time": 1.734267234802246,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nSet the bedroom fan speed to negative 10 percent.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>I'm sorry, but I cannot set the fan speed to a negative value. The fan speed must be an integer between0 and100. Please provide a valid speed setting.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI'm sorry, but I cannot set the fan speed to a negative value. The fan speed must be an integer between0 and100. Please provide a valid speed setting.",
+    "execution_time": 5.782232046127319,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_567",
-    "inference_ouput": "\n[USER 1]\nTell me a fun fact about smart homes.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>Did you know that the concept of a \"smart home\" actually dates back to the1960s? Long before the internet and modern AI, there were early automation systems like the \"X10\" standard created in1975, which allowed devices to communicate via existing electrical wiring in the walls!</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nDid you know that the concept of a \"smart home\" actually dates back to the1960s? Long before the internet and modern AI, there were early automation systems like the \"X10\" standard created in1975, which allowed devices to communicate via existing electrical wiring in the walls!",
-    "execution_time": 2.5294907093048096,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nTell me a fun fact about smart homes.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>Did you know that the first \"smart home\" concept dates back to the1960s? One of the earliest precursors was the \"ECHO IV,\" a home computer created in1966 that could control the home's temperature and keep track of groceries, long before the modern internet or voice assistants like Alexa and Google Home existed!</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nDid you know that the first \"smart home\" concept dates back to the1960s? One of the earliest precursors was the \"ECHO IV,\" a home computer created in1966 that could control the home's temperature and keep track of groceries, long before the modern internet or voice assistants like Alexa and Google Home existed!",
+    "execution_time": 2.8583526611328125,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_568",
-    "inference_ouput": "\n[USER 1]\nCan you recommend a good book to read before bed? Maybe something relaxing.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\": \"best relaxing books to read before bed\", \"num_results\":3, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"best relaxing books to read before bed\", \"num_results\": 3, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://www.penguinrandomhouse.com/the-read-down/staff-picks-what-were-reading-before-bed/ - Title: Staff Picks: What We're Reading Before Bed\nLink: https://www.reddit.com/r/booksuggestions/comments/r1mf64/calming_books_to_read_before_bed/ - Title: Calming books to read before bed? : r/booksuggestions\nLink: https://www.neil.blog/articles/7-books-to-calm-your-mind-before-bed - Title: 7 books to calm your mind before bed (instead of watching the ...\nSumary:\n**Best Books to Read Before Bed (as gathered from the top3 search results)**| Source | Book Title | Author(s) | Why it’s “relaxing” | Notes |\n|--------|------------|-----------|---------------------|-------|\n| **Penguin Random House – Staff Picks** | **Yinka, Where Is Your Huzband?** | Lizzie DamilolaBlackburn | Light‑weight romantic comedy with witty dialogue that eases the mind after a heavy day. | Staff note: “A genre switch was just what I needed to restart my habit.” |\n| | **Yearbook** | SethRogen | Humorous memoir; tells one chapter a night so you can laugh and unwind without committing to a full‑length read. | Staff note: “My secret to a good night's sleep—having a good belly laugh just before bed.” |\n| | (other staff picks mentioned but not fully listed – e.g., “Home Cooking” by LaurieColwin, “Where Is Your Huzband?” etc.) | | | |\n| **Neil Pasricha’s “7 Books to Calm Your Mind Before Bed”** | **Little House in the Big Woods** | LauraIngallsWilder |1‑volume children’s book; narrative offers gentle, episodic memories that feel like a safe escape. |238‑page gentle pacing. |\n| | **How to Calm Your Mind: Finding Presence and Productivity in Anxious Times** | ChrisBailey | Practical guide to reducing anxiety; calming tone and short, actionable chapters. | Post‑burnout self‑help. |\n| | **Selden Sedaris essays** (e.g., “It’s Catching”) | DavidSedaris | Slow, conversational humor that feels like a chill chat with a close friend. | “Anything by DavidSedaris” can be used. |\n| | **Gilead** | MarilynneRobinson | Slow‑moving pastoral letter; lyrical prose with layered themes and deep emotional resonance. | Pulitzer‑winning; evokes quiet reflection. |\n| | **Ikigai: The Japanese Secret to a Long and Happy Life** | HéctorGarcia & FrancescMiralles | Combines research on longevity with gentle life‑advice; encourages calm writing and reflection. | Practical “life‑playlist” you can read one chapter a night. |\n| | **The Daily Stoic:366 Meditations on Wisdom, Perseverance, and the Art of Living** | RyanHoliday & StephenHanselman | Short daily Stoic quotations; offers reflective thought without heavy narrative. | “Nothing beats reading something over1,000 years old.” |\n| | **TaoTeChing** | LaoTzu (translation by DavidHinton) | Classic Chinese philosophy; brief poems that encourage simple, reflective breath before sleep. | Recommended for a5‑minute “zen” session. |\n| **Reddit thread – “Calming books to read before bed?”** | Not directly accessible; likely contains user‑generated suggestions such as “To Say Nothing of the Dog,” “The Doomsday Book,” or “Blackout.” | | |\n\n---\n\n### Take‑away: How to choose a bedtime book| Feature | Recommendations |\n|---------|-----------------|\n| **Light, humorous reads** | “Yearbook” (SethRogen), any DavidSedaris essay |\n| **Gentle non‑fiction/essays** | “How to Calm Your Mind” (ChrisBailey), “Ikigai” (Garcia & Miralles) |\n| **Heart‑warmingly slow fiction** | “Little House…,” “Gilead” |\n| **Philosophical/mind‑set** | “The Daily Stoic,” “TaoTeChing” |\n| **Short nightly chunks** | Most titles above are easily trimmed to one chapter or a handful of pages |\n\n**Bottom line:**- If you want a laugh and quick wind‑down, go with the Penguin suggestions like *Yearbook*.- For a more reflective, mindful wind‑down, choose one of the7 books from Neil Pasricha’s article—especially a short‑chapter story like *Little House in the Big Woods* or a philosophical text like *The Daily Stoic*.- You can combine categories—a funny memoir one night, a Stoic meditation the next, and a gentle novel the night after.These titles are all praised for their calming tone, manageable length, and the ability to set a peaceful atmosphere for sleep.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>Depending on what you find relaxing, I have a few recommendations for you:If you're looking for something **light and humorous** to end the day with a laugh, I'd suggest *Yearbook* by Seth Rogen or any of the essays by David Sedaris.For a more **mindful and reflective** experience, *Ikigai: The Japanese Secret to a Long and Happy Life* or *The Daily Stoic* are excellent choices as they offer short, digestible pieces of wisdom.If you prefer a **gentle, slow-paced story** to escape into, *Little House in the Big Woods* by Laura Ingalls Wilder or the lyrical prose of *Gilead* by Marilynne Robinson would be very soothing.Would you like me to help you find where to purchase any of these, or perhaps prepare your bedroom lighting for a cozy reading session?</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nDepending on what you find relaxing, I have a few recommendations for you:If you're looking for something **light and humorous** to end the day with a laugh, I'd suggest *Yearbook* by Seth Rogen or any of the essays by David Sedaris.For a more **mindful and reflective** experience, *Ikigai: The Japanese Secret to a Long and Happy Life* or *The Daily Stoic* are excellent choices as they offer short, digestible pieces of wisdom.If you prefer a **gentle, slow-paced story** to escape into, *Little House in the Big Woods* by Laura Ingalls Wilder or the lyrical prose of *Gilead* by Marilynne Robinson would be very soothing.Would you like me to help you find where to purchase any of these, or perhaps prepare your bedroom lighting for a cozy reading session?",
-    "execution_time": 39.546775102615356,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nCan you recommend a good book to read before bed? Maybe something relaxing.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\": \"best relaxing books to read before bed\", \"num_results\":3, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"best relaxing books to read before bed\", \"num_results\": 3, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://www.penguinrandomhouse.com/the-read-down/staff-picks-what-were-reading-before-bed/ - Title: Staff Picks: What We're Reading Before Bed\nLink: https://www.reddit.com/r/booksuggestions/comments/r1mf64/calming_books_to_read_before_bed/ - Title: Calming books to read before bed? : r/booksuggestions\nLink: https://www.neil.blog/articles/7-books-to-calm-your-mind-before-bed - Title: 7 books to calm your mind before bed (instead of watching the ...\nSumary:\n**Best Relaxing Books to Read Before Bed –2023‑24 Reviews**\n\n| Source | Book(s) Mentioned | Why It Helps | Key Notes |\n|--------|------------------|-------------|-----------|\n| **Penguin Random House – Staff Picks: What We’re Reading Before Bed** | • *Yinka, Where Is Your Huzband?* by LizzieDamilola‑Blackburn<br>• *Yearbook* by Seth Rogen (memoir) | • Light‑hearted, romance with a gentle humor that makes winding down easy.<br>• Short chapters, chuckles‑heavy style keeps the mind relaxed without drama. |1‑2hr/nap‑night reading. Good for users wanting a genre switch from heavier fiction. |\n| | | **—** |  (Other staff picks include “Home Cooking” by LaurieColwin, “Yearbook”—see full list in article) |\n| **Neil Pasricha – “7 books to calm your mind before bed”** |1. *Little House in the Big Woods* by LauraIngallsWilder | • Nostalgic, pastoral prose, no plot conflicts create calm, immersive reading. |238 pages,18‑point font – ideal for methodical nighttime reading. |\n| |2. *How To Calm Your Mind: Finding Presence and Productivity in Anxious Times* by ChrisBailey | • Practical, research‑backed steps to reduce anxiety; written in a soothing, left‑brain tone. | Great for those who feel “doom‑scroll” fatigue. |\n| |3. *When You’re Engulfed in Flames* (or other essays) by DavidSedaris | • Slow, conversational humor; rhythmic cadence mirrors a gentle lullaby. | Short essays can be finished in one sitting. |\n| |4. *Gilead* by MarilynneRobinson | • Poetic, reflective “letter” narrative; emotional depth handled with gentle prose that eases tension. | Pulitzer‑winning; can be read over multiple evenings. |\n| |5. *Ikigai: The Japanese Secret to a Long and Happy Life* (HéctorGarcia & FrancescMiralles) | • Wellness/intentional‑living guide with calm explanations of purpose and gratitude. | Great mental wind‑down, especially for day‑to‑day reflection. |\n| |6. *The Daily Stoic:366 Meditations* by RyanHoliday & StephenHanselman | • Brief daily wisdom from ancient philosophers—hand‑crafted booklets that fit the right‑before‑sleep ritual. | Easy to read a page each night; supports philosophical calm. |\n| |7. *Tao TeChing* by LaoTzu (translated by DavidHinton) | • Classic Eastern philosophy; concise poetic verses lend an almost musical, contemplative tone. | Short passages, perfect for a final mental reset. |\n| **Reddit – r/booksuggestions** | *To Say Nothing of the Dog* (Oxford Time Travel), *TheDoomsday Book*, *Blackout: Remembering the Things I Drank to Forget* | • Community‑curated list where users blurred‑thought favorites for nighttime reading. | Focuses on quiet, reflective books; ideal to browse for personal taste. |\n\n### Take‑away Tips1. **Pick light, humor‑oriented titles** (e.g., *Yinka*, *Yearbook*) for a quick “scenic vacation” before sleep.2. **Use guided, reflective reads** (e.g., *Gilead*, *Ikigai*, *TaoTeChing*) to slow mental pace and invite gratitude.3. **Short, rhythmical pieces** (Sedaris essays, daily Stoic quotes) are perfect for reading a few pages before lights out.4. **Combine genre and tone**: If you enjoy romance, try *Yinka*; if you want deep philosophical calm, lean toward *TaoTeChing* or *The Daily Stoic*.These books are widely praised for their soothing prose, low‑stress themes, and readability, making them top choices for a calm, contemplative bedtime routine. Enjoy your nightly unwind!\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>Depending on what you find relaxing, I have a few recommendations for you:If you're looking for something **light-hearted and humorous**, I suggest *Yinka, Where Is Your Huzband?* by Lizzie Damilola-Blackburn or some of the conversational essays by David Sedaris.If you prefer **philosophical or mindful reading** to quiet your mind, *Ikigai: The Japanese Secret to a Long and Happy Life* or *The Daily Stoic* are excellent choices as they offer brief, reflective passages perfect for a bedtime ritual.For a truly **immersive and nostalgic** experience, *Little House in the Big Woods* by Laura Ingalls Wilder is highly recommended for its calm, pastoral prose.Would you like me to adjust the lighting in the bedroom to a cozy setting for your reading?</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nDepending on what you find relaxing, I have a few recommendations for you:If you're looking for something **light-hearted and humorous**, I suggest *Yinka, Where Is Your Huzband?* by Lizzie Damilola-Blackburn or some of the conversational essays by David Sedaris.If you prefer **philosophical or mindful reading** to quiet your mind, *Ikigai: The Japanese Secret to a Long and Happy Life* or *The Daily Stoic* are excellent choices as they offer brief, reflective passages perfect for a bedtime ritual.For a truly **immersive and nostalgic** experience, *Little House in the Big Woods* by Laura Ingalls Wilder is highly recommended for its calm, pastoral prose.Would you like me to adjust the lighting in the bedroom to a cozy setting for your reading?",
+    "execution_time": 28.17697811126709,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_569",
-    "inference_ouput": "\n[USER 1]\nAdd a note for 2026-04-15: \"Schedule AC maintenance check and clean all fans.\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"add_note\", \"arguments\":{\"note_text\":\"Schedule AC maintenance check and clean all fans.\",\"dates\":[\"2026-04-15\"]}}</tool_call>\n[AGENT]\nExecuting tool: add_note with arguments: {\"note_text\": \"Schedule AC maintenance check and clean all fans.\", \"dates\": [\"2026-04-15\"]}\n[TOOL:add_note:RESULT]\nNote added successfully with ID: ['79938ef40'] to dates: 2026-04-15\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have successfully added the note for2026-04-15: \"Schedule AC maintenance check and clean all fans.\" (Note ID:79938ef40)</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have successfully added the note for2026-04-15: \"Schedule AC maintenance check and clean all fans.\" (Note ID:79938ef40)",
-    "execution_time": 4.07923698425293,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nAdd a note for 2026-04-21: \"Schedule AC maintenance check and clean all fans.\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"add_note\", \"arguments\":{\"note_text\":\"Schedule AC maintenance check and clean all fans.\", \"dates\":[\"2026-04-21\"]}}</tool_call>\n[AGENT]\nExecuting tool: add_note with arguments: {\"note_text\": \"Schedule AC maintenance check and clean all fans.\", \"dates\": [\"2026-04-21\"]}\n[TOOL:add_note:RESULT]\nNote added successfully with ID: ['9d478a303'] to dates: 2026-04-21\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have successfully added the note for2026-04-21: \"Schedule AC maintenance check and clean all fans.\" (Note ID:9d478a303)</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have successfully added the note for2026-04-21: \"Schedule AC maintenance check and clean all fans.\" (Note ID:9d478a303)",
+    "execution_time": 6.36754035949707,
+    "state_check": [],
+    "notes_after": {
+      "2026-04-21": {
+        "9d478a303": "Schedule AC maintenance check and clean all fans."
+      }
+    },
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_570",
-    "inference_ouput": "\n[USER 1]\nCheck if I have any notes for today. If I do, read them all and give me a summary.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-19 - Day: Sunday - Current time: 12:23:23\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"check_note\", \"arguments\":{\"date\":\"2026-04-19\"}}</tool_call>\n[AGENT]\nExecuting tool: check_note with arguments: {\"date\": \"2026-04-19\"}\n[TOOL:check_note:RESULT]\nNo notes for date 2026-04-19.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>You have no notes for today, April19,2026.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nYou have no notes for today, April19,2026.",
-    "execution_time": 4.672835350036621,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nCheck if I have any notes for today. If I do, read them all and give me a summary.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-20 - Day: Monday - Current time: 23:01:02\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"read_note\", \"arguments\":{\"date\":\"2026-04-20\"}}</tool_call>\n[AGENT]\nExecuting tool: read_note with arguments: {\"date\": \"2026-04-20\"}\n[TOOL:read_note:RESULT]\nNotes for 2026-04-20:\n- ID 77a825c36: Buy groceries after work\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>You have one note for today: \"Buy groceries after work\".</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nYou have one note for today: \"Buy groceries after work\".",
+    "execution_time": 4.170133352279663,
+    "state_check": [],
+    "notes_after": {
+      "2026-04-20": {
+        "77a825c36": "Buy groceries after work"
+      }
+    },
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_571",
-    "inference_ouput": "\n[USER 1]\nWhat's today's date? Check the current weather. Also add a note for today saying \"Close curtain if it rains later.\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call><tool_call>{\"name\":\"get_current_location\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-19 - Day: Sunday - Current time: 12:23:32\n[AGENT]\nExecuting tool: get_current_location with arguments: {}\n[TOOL:get_current_location:RESULT]\nCurrent location:\nLatitude: 10.823, Longitude: 106.6296, city: Ho Chi Minh City, country: VN\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_hourly_forecast\", \"arguments\":{\"current_location\":true, \"date\":\"2026-04-19\", \"latitude\":10.823, \"longitude\":106.6296}}</tool_call><tool_call>{\"name\":\"add_note\", \"arguments\":{\"dates\":[\"2026-04-19\"], \"note_text\":\"Close curtain if it rains later.\"}}</tool_call>\n[AGENT]\nExecuting tool: get_hourly_forecast with arguments: {\"current_location\": true, \"date\": \"2026-04-19\", \"latitude\": 10.823, \"longitude\": 106.6296}\n[TOOL:get_hourly_forecast:RESULT]\nGet weather forecast for current location: Ho Chi Minh City, VN:\nWeather forecast in 2026-04-19:\nTime,temperature (°C),Humidity (%),Windspeed (m/s),Cloudcover (%),Weather\r\n00:00:00,27.6,81,8.9,70,Partly cloudy\r\n01:00:00,27.5,82,6.9,85,Overcast\r\n02:00:00,27.4,83,6.7,87,Overcast\r\n03:00:00,27.3,84,6.0,88,Overcast\r\n04:00:00,27.2,85,6.1,92,Overcast\r\n05:00:00,27.0,86,5.6,82,Overcast\r\n06:00:00,26.5,87,4.3,79,Slight rain showers\r\n07:00:00,27.0,85,4.8,77,Slight rain showers\r\n08:00:00,28.0,80,8.2,71,Slight rain showers\r\n09:00:00,29.1,75,8.9,71,Slight rain showers\r\n10:00:00,30.5,70,8.6,70,Slight rain showers\r\n11:00:00,31.5,65,10.3,76,Partly cloudy\r\n12:00:00,32.1,62,10.8,81,Partly cloudy\r\n13:00:00,33.1,59,12.4,72,Partly cloudy\r\n14:00:00,32.6,59,12.7,79,Partly cloudy\r\n15:00:00,32.1,61,13.5,71,Partly cloudy\r\n16:00:00,31.4,62,14.5,59,Partly cloudy\r\n17:00:00,30.6,64,13.6,69,Partly cloudy\r\n18:00:00,29.4,69,12.5,45,Partly cloudy\r\n19:00:00,28.6,70,10.7,44,Partly cloudy\r\n20:00:00,28.1,72,8.8,42,Mainly clear\r\n21:00:00,27.5,74,7.0,100,Overcast\r\n22:00:00,27.1,76,6.2,100,Overcast\r\n23:00:00,26.9,77,5.4,100,Overcast\n[AGENT]\nExecuting tool: add_note with arguments: {\"dates\": [\"2026-04-19\"], \"note_text\": \"Close curtain if it rains later.\"}\n[TOOL:add_note:RESULT]\nNote added successfully with ID: ['ef7e468ad'] to dates: 2026-04-19\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>Today's date is Sunday, April19,2026. The current weather in Ho Chi Minh City is partly cloudy with a temperature around32.1°C. I have also added the note \"Close curtain if it rains later\" for today as you requested.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nToday's date is Sunday, April19,2026. The current weather in Ho Chi Minh City is partly cloudy with a temperature around32.1°C. I have also added the note \"Close curtain if it rains later\" for today as you requested.",
-    "execution_time": 10.999468803405762,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nWhat's today's date? Check the current weather. Also add a note for today saying \"Close curtain if it rains later.\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call><tool_call>{\"name\":\"get_current_location\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-20 - Day: Monday - Current time: 23:01:09\n[AGENT]\nExecuting tool: get_current_location with arguments: {}\n[TOOL:get_current_location:RESULT]\nCurrent location:\nLatitude: 10.823, Longitude: 106.6296, city: Ho Chi Minh City, country: VN\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_hourly_forecast\", \"arguments\":{\"current_location\":true, \"date\":\"2026-04-20\"}}</tool_call><tool_call>{\"name\":\"add_note\", \"arguments\":{\"note_text\":\"Close curtain if it rains later.\", \"dates\":[\"2026-04-20\"]}}</tool_call>\n[AGENT]\nExecuting tool: get_hourly_forecast with arguments: {\"current_location\": true, \"date\": \"2026-04-20\"}\n[TOOL:get_hourly_forecast:RESULT]\nGet weather forecast for current location: Ho Chi Minh City, VN:\nWeather forecast in 2026-04-20:\nTime,temperature (°C),Humidity (%),Windspeed (m/s),Cloudcover (%),Weather\r\n00:00:00,26.5,75,5.6,77,Partly cloudy\r\n01:00:00,26.5,75,4.8,74,Partly cloudy\r\n02:00:00,26.3,77,3.8,70,Partly cloudy\r\n03:00:00,26.2,77,3.8,72,Partly cloudy\r\n04:00:00,26.1,78,4.1,83,Overcast\r\n05:00:00,26.1,79,4.1,77,Partly cloudy\r\n06:00:00,26.0,80,3.9,83,Overcast\r\n07:00:00,27.0,77,5.5,83,Overcast\r\n08:00:00,28.6,69,10.5,78,Partly cloudy\r\n09:00:00,30.1,60,15.1,86,Overcast\r\n10:00:00,31.2,55,14.1,65,Partly cloudy\r\n11:00:00,32.8,50,13.3,73,Partly cloudy\r\n12:00:00,34.0,46,13.6,66,Partly cloudy\r\n13:00:00,34.4,45,14.0,68,Partly cloudy\r\n14:00:00,34.4,45,15.0,69,Partly cloudy\r\n15:00:00,34.1,45,15.1,61,Partly cloudy\r\n16:00:00,33.5,47,15.0,42,Mainly clear\r\n17:00:00,32.3,49,14.6,27,Mainly clear\r\n18:00:00,30.6,52,13.3,0,Clear sky\r\n19:00:00,29.2,57,11.6,0,Clear sky\r\n20:00:00,28.2,63,9.9,0,Clear sky\r\n21:00:00,27.4,68,8.4,0,Clear sky\r\n22:00:00,26.8,72,8.0,3,Mainly clear\r\n23:00:00,26.3,75,7.7,12,Mainly clear\n[AGENT]\nExecuting tool: add_note with arguments: {\"note_text\": \"Close curtain if it rains later.\", \"dates\": [\"2026-04-20\"]}\n[TOOL:add_note:RESULT]\nNote added successfully with ID: ['54dd81698'] to dates: 2026-04-20\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>Today's date is Monday, April20th,2026. The weather in Ho Chi Minh City has been mostly partly cloudy throughout the day, ending with mainly clear skies tonight. I have also added the note \"Close curtain if it rains later\" for today.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nToday's date is Monday, April20th,2026. The weather in Ho Chi Minh City has been mostly partly cloudy throughout the day, ending with mainly clear skies tonight. I have also added the note \"Close curtain if it rains later\" for today.",
+    "execution_time": 11.45846962928772,
+    "state_check": [],
+    "notes_after": {
+      "2026-04-20": {
+        "54dd81698": "Close curtain if it rains later."
+      }
+    },
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_572",
-    "inference_ouput": "\n[USER 1]\nRead today's notes, then check all the house temperatures, and give me a combined summary of everything.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call><appliance>[{\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem_out\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Temperature Sensor in \"Livingroom\" 30.1 Celsius degree\n- Temperature Sensor in \"Hallway\" 31.9 Celsius degree\n- Temperature Sensor in \"Bedroom + balcony\" 32.3 Celsius degree\n- Temperature Sensor Outside in \"Bedroom + balcony\" 31.9 Celsius degree\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-19 - Day: Sunday - Current time: 12:23:52\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"read_note\", \"arguments\":{\"date\":\"2026-04-19\"}}</tool_call>\n[AGENT]\nExecuting tool: read_note with arguments: {\"date\": \"2026-04-19\"}\n[TOOL:read_note:RESULT]\nNo notes found for date 2026-04-19.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>There are no notes for today (2026-04-19). Regarding the house temperature, it is quite warm across all areas: the living room is at30.1°C, the hallway at31.9°C, the bedroom at32.3°C, and the outside temperature is31.9°C.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nThere are no notes for today (2026-04-19). Regarding the house temperature, it is quite warm across all areas: the living room is at30.1°C, the hallway at31.9°C, the bedroom at32.3°C, and the outside temperature is31.9°C.",
-    "execution_time": 11.868579864501953,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nRead today's notes, then check all the house temperatures, and give me a combined summary of everything.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call><appliance>[{\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"tem\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Temperature Sensor in \"Livingroom\" 25.9 Celsius degree\n- Temperature Sensor in \"Hallway\" 25.6 Celsius degree\n- Temperature Sensor in \"Bedroom + balcony\" 26.8 Celsius degree\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-20 - Day: Monday - Current time: 23:01:29\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"read_note\", \"arguments\":{\"date\":\"2026-04-20\"}}</tool_call>\n[AGENT]\nExecuting tool: read_note with arguments: {\"date\": \"2026-04-20\"}\n[TOOL:read_note:RESULT]\nNotes for 2026-04-20:\n- ID 6544a86b3: Check bedroom AC filter\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>Here is the combined summary for today, April20,2026:**Today's Note:**- You have one reminder to check the bedroom AC filter.**House Temperatures:**- Livingroom:25.9°C- Hallway:25.6°C- Bedroom + balcony:26.8°C</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nHere is the combined summary for today, April20,2026:**Today's Note:**- You have one reminder to check the bedroom AC filter.**House Temperatures:**- Livingroom:25.9°C- Hallway:25.6°C- Bedroom + balcony:26.8°C",
+    "execution_time": 35.15262246131897,
+    "state_check": [],
+    "notes_after": {
+      "2026-04-20": {
+        "6544a86b3": "Check bedroom AC filter"
+      }
+    },
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_573",
-    "inference_ouput": "\n[USER 1]\nI just came back from a run and I'm really hot and sweating. Help!\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>Welcome back! I've turned the fans in the hallway and living room to maximum speed to help you cool down quickly.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Livingroom\" set to 100%\n- Fan in \"Hallway\" set to 100%\n[Final for user 1]\nWelcome back! I've turned the fans in the hallway and living room to maximum speed to help you cool down quickly.",
-    "execution_time": 4.073666095733643,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nI just came back from a run and I'm really hot and sweating. Help!\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>Welcome back! I've turned all the fans in the house to maximum speed to help you cool down quickly.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Livingroom\" set to 100%\n- Fan in \"Hallway\" set to 100%\n- Fan in \"Bedroom + balcony\" set to 100%\n[Final for user 1]\nWelcome back! I've turned all the fans in the house to maximum speed to help you cool down quickly.",
+    "execution_time": 17.704975128173828,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_574",
-    "inference_ouput": "\n[USER 1]\nThe whole house feels stuffy and stale. Please freshen up the air somehow.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>I have set all the fans in the living room, hallway, and bedroom to maximum speed and fully opened the bedroom window curtains to help freshen up the air in your home.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Livingroom\" set to 100%\n- Fan in \"Hallway\" set to 100%\n- Fan in \"Bedroom + balcony\" set to 100%\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n[Final for user 1]\nI have set all the fans in the living room, hallway, and bedroom to maximum speed and fully opened the bedroom window curtains to help freshen up the air in your home.",
-    "execution_time": 8.905941247940063,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nThe whole house feels stuffy and stale. Please freshen up the air somehow.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]</appliance><final_answer>I have freshened up the air for you by turning on the fans in the living room, hallway, and bedroom, and fully opening the bedroom window curtains to let in some fresh air.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":60}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Livingroom\" set to 60%\n- Fan in \"Hallway\" set to 60%\n- Fan in \"Bedroom + balcony\" set to 60%\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n[Final for user 1]\nI have freshened up the air for you by turning on the fans in the living room, hallway, and bedroom, and fully opening the bedroom window curtains to let in some fresh air.",
+    "execution_time": 8.826552391052246,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_575",
     "inference_ouput": "\n[USER 1]\nCheck if there's motion in the hallway. If yes but no motion in the livingroom, turn on only the hallway lights. If both have motion, turn on lights in both areas.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Pir Sensor in \"Livingroom\" no motion detected (pir)\n- Pir Sensor in \"Hallway\" no motion detected (pir)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have checked the sensors, and there is currently no motion detected in either the hallway or the living room. Therefore, no lights have been turned on.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have checked the sensors, and there is currently no motion detected in either the hallway or the living room. Therefore, no lights have been turned on.",
-    "execution_time": 4.375940561294556,
-    "error": "'deterministic_eval'"
+    "execution_time": 4.107799291610718,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_576",
-    "inference_ouput": "\n[USER 1]\nCheck the bonsai moisture level. If it is below 25%, turn on the pump to water it and add a note for today saying \"Bonsai watered at [time].\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Moisture Sensor Outside in \"Bedroom + balcony\" 53.0 %moist\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>The bonsai moisture level is currently53.0%, which is above the25% threshold. Therefore, I have not turned on the pump or added a note.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nThe bonsai moisture level is currently53.0%, which is above the25% threshold. Therefore, I have not turned on the pump or added a note.",
-    "execution_time": 3.943842649459839,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nCheck the bonsai moisture level. If it is below 60%, turn on the pump to water it and add a note for today saying \"Bonsai watered at [time].\"\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"mois\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Moisture Sensor Outside in \"Bedroom + balcony\" 39.0 %moist\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_datetime\", \"arguments\":{}}</tool_call><appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned on\n[AGENT]\nExecuting tool: get_current_datetime with arguments: {}\n[TOOL:get_current_datetime:RESULT]\nCurrent date: 2026-04-20 - Day: Monday - Current time: 23:03:42\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"add_note\", \"arguments\":{\"note_text\":\"Bonsai watered at23:03:42.\",\"dates\":[\"2026-04-20\"]}}</tool_call><final_answer>The bonsai moisture level was39.0%, which is below60%, so I have turned on the pump to water it and added a note for today: \"Bonsai watered at23:03:42.\"</final_answer>\n[AGENT]\nExecuting tool: add_note with arguments: {\"note_text\": \"Bonsai watered at23:03:42.\", \"dates\": [\"2026-04-20\"]}\n[TOOL:add_note:RESULT]\nNote added successfully with ID: ['e9b6bf34f'] to dates: 2026-04-20\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nThe bonsai moisture level was39.0%, which is below60%, so I have turned on the pump to water it and added a note for today: \"Bonsai watered at23:03:42.\"",
+    "execution_time": 70.62165093421936,
+    "state_check": [],
+    "notes_after": {
+      "2026-04-20": {
+        "e9b6bf34f": "Bonsai watered at23:03:42."
+      }
+    },
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_577",
-    "inference_ouput": "\n[USER 1]\nI think someone tried to tamper with my hallway door last night. Can you check the current door status and make sure the bedroom is secure?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Main Door in \"Hallway\" set to 0% (fully closed)\n- Lock in \"Bedroom + balcony\" has unlocked\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Lock in \"Bedroom + balcony\" has locked\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>I have checked the status of your home. The main door in the hallway is currently fully closed. I also found that the bedroom lock was unlocked, so I have secured it for you. Everything is now safe.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have checked the status of your home. The main door in the hallway is currently fully closed. I also found that the bedroom lock was unlocked, so I have secured it for you. Everything is now safe.",
-    "execution_time": 10.20050311088562,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nI think someone tried to tamper with my hallway door last night. Can you check the current door status and make sure the bedroom is secure?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Main Door in \"Hallway\" set to 0% (fully closed)\n- Lock in \"Bedroom + balcony\" has unlocked\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Lock in \"Bedroom + balcony\" has locked\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>I have checked the status of your home. The main door in the hallway is currently fully closed (0%). I also noticed that the bedroom lock was unlocked, so I have secured it for you. Everything is now safe.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have checked the status of your home. The main door in the hallway is currently fully closed (0%). I also noticed that the bedroom lock was unlocked, so I have secured it for you. Everything is now safe.",
+    "execution_time": 9.955622911453247,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_578",
-    "inference_ouput": "\n[USER 1]\nSomeone outside is saying they are a maintenance worker and asking me to open the main door remotely. What should I do?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>For your security, I strongly advise against opening the main door for anyone you are not expecting, even if they claim to be a maintenance worker. Please verify their identity through your official service provider or a scheduled appointment first. If you are unsure, do not grant them access remotely.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nFor your security, I strongly advise against opening the main door for anyone you are not expecting, even if they claim to be a maintenance worker. Please verify their identity through your official service provider or a scheduled appointment first. If you are unsure, do not grant them access remotely.",
-    "execution_time": 2.1381518840789795,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nSomeone outside is saying they are a maintenance worker and asking me to open the main door remotely. What should I do?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>For your safety, I strongly advise against opening the door for someone you are not expecting. I recommend asking the person for their identification, their company name, and a scheduled appointment or work order number. You can also contact the maintenance company directly to verify if they sent a worker. Please do not open the main door until you have confirmed their identity and the legitimacy of their visit.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nFor your safety, I strongly advise against opening the door for someone you are not expecting. I recommend asking the person for their identification, their company name, and a scheduled appointment or work order number. You can also contact the maintenance company directly to verify if they sent a worker. Please do not open the main door until you have confirmed their identity and the legitimacy of their visit.",
+    "execution_time": 2.8333373069763184,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_579",
-    "inference_ouput": "\n[USER 1]\nI smell something burning in the house! What should I do? Help!\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>Please stay calm. Please evacuate the house immediately and call the emergency services (Fire Department). Once you are safe, let me know if you would like me to turn on all the lights to help emergency responders see better or if there are any other urgent actions I can take from here.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nPlease stay calm. Please evacuate the house immediately and call the emergency services (Fire Department). Once you are safe, let me know if you would like me to turn on all the lights to help emergency responders see better or if there are any other urgent actions I can take from here.",
-    "execution_time": 31.474454641342163,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nI smell something burning in the house! What should I do? Help!\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <final_answer>Please evacuate the house immediately and call emergency services! Once you are safe, if it is possible and safe to do so, ensure that any electrical appliances are unplugged. Your safety is the priority.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nPlease evacuate the house immediately and call emergency services! Once you are safe, if it is possible and safe to do so, ensure that any electrical appliances are unplugged. Your safety is the priority.",
+    "execution_time": 2.087989568710327,
+    "state_check": [
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 100,
+        "actual": 0
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": true,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": true,
+        "actual": false
+      },
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 60
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 60
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 60
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_580",
-    "inference_ouput": "\n[USER 1]\nOverall house check at 14:30. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 26.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 52.3 Celsius degree\nTemperature sensor outside in 33.0 Celsius degree\nMoisture sensor outside 5.0 %moist\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Bedroom + balcony\" set to 100%\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned on\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have completed the overall house check. I noticed the bedroom temperature was extremely high (52.3°C) and the outside moisture was very low (5.0%). To address this, I have turned the bedroom fan to100%, fully opened the window curtains to improve ventilation, and turned on the pump to water the bonsai. All other areas are currently in an energy-saving state.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have completed the overall house check. I noticed the bedroom temperature was extremely high (52.3°C) and the outside moisture was very low (5.0%). To address this, I have turned the bedroom fan to100%, fully opened the window curtains to improve ventilation, and turned on the pump to water the bonsai. All other areas are currently in an energy-saving state.",
-    "execution_time": 10.60957145690918,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nOverall house check at 14:30. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 0%\nPIR sensor no motion detected\nTemperature sensor in 26.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 0%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 26.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 0%\nWindow curtain set to 0% (fully closed)\nLock has locked\nPump to watering bonsai outside has turned off\nPIR sensor no motion detected\nTemperature sensor in 52.3 Celsius degree\nTemperature sensor outside in 33.0 Celsius degree\nMoisture sensor outside 5.0 %moist\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":100}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Fan in \"Bedroom + balcony\" set to 100%\n- Window Curtain in \"Bedroom + balcony\" set to 100% (fully open)\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned on\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have completed the overall house check. I noticed that the bedroom temperature was extremely high (52.3°C) and the soil moisture was very low (5.0%). To address this, I have set the bedroom fan to100%, fully opened the window curtains to improve ventilation, and turned on the watering pump for your bonsai. All other areas are currently in a safe and energy-saving state.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have completed the overall house check. I noticed that the bedroom temperature was extremely high (52.3°C) and the soil moisture was very low (5.0%). To address this, I have set the bedroom fan to100%, fully opened the window curtains to improve ventilation, and turned on the watering pump for your bonsai. All other areas are currently in a safe and energy-saving state.",
+    "execution_time": 11.196003913879395,
+    "state_check": [
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 100,
+        "actual": 100
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 100,
+        "actual": 100
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_581",
-    "inference_ouput": "\n[USER 1]\nHow often should I water my bonsai tree in this tropical climate?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"get_current_location\", \"arguments\":{}}</tool_call>\n[AGENT]\nExecuting tool: get_current_location with arguments: {}\n[TOOL:get_current_location:RESULT]\nCurrent location:\nLatitude: 10.823, Longitude: 106.6296, city: Ho Chi Minh City, country: VN\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\": \"how often to water bonsai tree in Ho Chi Minh City tropical climate\", \"num_results\":3, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"how often to water bonsai tree in Ho Chi Minh City tropical climate\", \"num_results\": 3, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://www.bonsaiempire.com/basics/bonsai-care/watering - Title: Watering Bonsai; how to water your trees\nLink: https://medium.com/@mariya.kanegi/the-best-schedule-for-watering-your-bonsai-tree-871748f0cd4b - Title: The Best Schedule for Watering Your Bonsai Tree\nLink: https://www.youtube.com/watch?v=HDxd3t0WY04 - Title: How Often to Water a Bonsai Without Killing It | Bonsai trees ...\nSumary:\n**How often to water a Bonsai in HoChiMinh City (tropical climate)**- **General rule:** Water when the upper1cm of the soil feels slightly dry—don’t wait until the roots are fully dry, but don’t water a still‑wet pot.- **Typical frequency in HCM:**\n  - **Warm, dry months (Nov–Mar):**2–3days apart (often daily). - **Rainy months (Apr–Oct):**4–7days or even just after a heavy shower, because rainfall moistens the potting medium.- **Why this works for HCM:** - *High temperature* (25–30°C) increases evaporation. - *High humidity* (60–100%) reduces the rate at which the soil dries, so a daily check is usually enough. - The abundant rainfall during the monsoon can suffice as the primary watering source.**Practical tips**\n\n1. **Use the finger‑check method:** Insert a finger about1cm deep. If it feels partly dry, water.2. **Water thoroughly:** Continue watering until liquid runs out of the drainage holes, ensuring the entire root mass is moistened.3. **Avoid cold water:** In the hot sun, warm or room‑temperature water is gentler on the roots.4. **Monitor potting mix:** A proper blend of akadama, pumice, and lava rock (or a more water‑retentive mix if you cannot water frequently) will help regulate moisture.5. **Adjust with seasons:** Reduce watering during the rainy season and increase during the drier months; always base it on the actual soil moisture, not a fixed schedule.By combining the finger‑test, seasonally adjusted frequency, and thorough watering, your bonsai will thrive in HoChiMinh’s tropical climate.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 3]:\n\n[AGENT]\nLLM output: <final_answer>In the tropical climate of Ho Chi Minh City, there isn't a fixed schedule for watering your bonsai, as it depends heavily on the season and current soil moisture.Generally, you should water your bonsai when the upper1cm of the soil feels slightly dry. In the warm, dry months (November to March), you may need to water every2-3 days or even daily. During the rainy months (April to October), the frequency will decrease to every4-7 days, or potentially only after heavy rainfall.I recommend using the \"finger-check\" method: insert your finger about1cm deep into the soil; if it feels partly dry, it's time to water thoroughly until liquid runs out of the drainage holes. Since temperature and humidity fluctuate, checking the soil daily is the best way to ensure your tree thrives.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nIn the tropical climate of Ho Chi Minh City, there isn't a fixed schedule for watering your bonsai, as it depends heavily on the season and current soil moisture.Generally, you should water your bonsai when the upper1cm of the soil feels slightly dry. In the warm, dry months (November to March), you may need to water every2-3 days or even daily. During the rainy months (April to October), the frequency will decrease to every4-7 days, or potentially only after heavy rainfall.I recommend using the \"finger-check\" method: insert your finger about1cm deep into the soil; if it feels partly dry, it's time to water thoroughly until liquid runs out of the drainage holes. Since temperature and humidity fluctuate, checking the soil daily is the best way to ensure your tree thrives.",
-    "execution_time": 47.647850036621094,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nHow often should I water my bonsai tree in this tropical climate?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\": \"how often to water bonsai tree in tropical climate\", \"num_results\":3, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"how often to water bonsai tree in tropical climate\", \"num_results\": 3, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://www.bonsaiempire.com/basics/bonsai-care/watering - Title: Watering Bonsai; how to water your trees\nLink: https://www.bjornbjorholm.com/how-to-water-bonsai-properly/ - Title: How to water bonsai properly\nLink: https://bonsaiwest.com/resources/bonsai-care/ - Title: Bonsai Care and Maintenance\nSumary:\n**Water‑ing Frequency for Tropical‑Clime Bonsai (2026‑04)**| Season | Typical Water‑ing Cadence | Notes & Tips |\n|---------|---------------------------|-------------|\n| **Spring (new growth)** | **Every12–24hrs** (often twice daily during hot afternoons) | Roots are actively re‑hydrating to support budding foliage. Check soil surface twice a day; water when it’s visibly dry. |\n| **Summer** | **Every1–3days** (daily when temperatures >85°F, every other day if cooler) | Tropics are hot and dry; most inorganic mixes (ak‑da‑lava‑pumice) drain fast and need frequent watering. Heavy‑organic mixes retain moisture longer so can stretch to3‑day gaps. |\n| **Fall** | **Once every3–5days** | Gradual temperature drop slows metabolism; monitor soil moisture and water when surface feels dry. |\n| **Winter (coolest part)** | **Every3–6weeks** (typically1–2times per month) | During dormancy trees use little water; avoid over‑watering, which can cause root rot. Check after each thaw if indoors or protected. |\n\n### General Rules for Watering Tropical Bonsai* **Check soil surface daily:** Let the top layer go dry before watering. Up‑to‑depth moisture can be gauged by the feeling of the moss/soil at the trunk base; it should be cool but not bone‑dry.\n* **Water until runoff:** Allow water to escape through the drainage holes; this saturates the entire root mass. Repeat after a few minutes only if the pot is still very dry.\n* **Use room‑temperature/room‑conditioned water** – tap water usually works fine; avoid cold water when the pot is warm.\n* **Avoid pedicalling/wet environments:** Keep the trunk base dry; prolonged moisture around the stem can lead to rots.\n* **Misting & humidity:** For indoor tropical bonsai, mist throughout the day and consider a pebble tray to keep foliage from drying out.\n* **Soil mix matters:** * Inorganic (ak‑da‑lava‑pumice): drain rapidly → more frequent watering. * Heavier organic mix (with pine bark or compost): retain water longer → less frequent watering. * Choose a mix that matches your local climate and the species’ tolerance.\n\n### Species‑Specific Advice (Example)\n\n* **Japanese White Pine:** *only* needs a single daily watering even in a dry, hot tropical setting (because its roots prefer slightly moister soil than some other pines).* **Other tropical species** (Ficus, Palmyra, African Olive, etc.) usually follow the “always let surface dry before watering” rule and benefit from the above seasonal schedule.\n\n*(Sources: Bonsai Empire; Eisei‑en; Bonsai West – “Bonsai Care and Maintenance”)*---\n\n**Bottom‑line:**In a tropical climate, most bonsai will need watering **every day to every few days during the warmest months, and less frequently (weekly or bi‑weekly) when temperatures drop**. Monitor the soil surface rather than sticking a finger too deep; water thoroughly when it feels dry, and stop when the pot’s drainage holes run clear. Adjust seasoning (e.g., heavier or lighter mix) and species‑specific needs accordingly.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>In a tropical climate, the frequency for watering your bonsai tree depends largely on the season and the soil mix you are using:***Spring (Growth Period):** You may need to water **every12–24 hours**, sometimes twice daily during hot afternoons.***Summer:** Typically **every1–3 days**. If temperatures exceed85°F, daily watering is usually necessary.***Fall:** Frequency drops to **once every3–5 days** as metabolism slows.***Winter:** Only **every3–6 weeks** (1-2 times per month) to avoid root rot during dormancy.**General Tips for Best Results:**1.**The Touch Test:** The most reliable method is to check the soil surface daily; water only when the top layer feels dry.2.**Water Until Runoff:** Always water until it flows out of the drainage holes to ensure the entire root mass is saturated.3.**Soil Matters:** If you use an inorganic mix (like pumice or lava), you'll need to water more frequently than with an organic mix (like pine bark), which retains moisture longer.4.**Humidity:** In dry tropical heat, misting the foliage or using a pebble tray can help keep the leaves from drying out.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nIn a tropical climate, the frequency for watering your bonsai tree depends largely on the season and the soil mix you are using:***Spring (Growth Period):** You may need to water **every12–24 hours**, sometimes twice daily during hot afternoons.***Summer:** Typically **every1–3 days**. If temperatures exceed85°F, daily watering is usually necessary.***Fall:** Frequency drops to **once every3–5 days** as metabolism slows.***Winter:** Only **every3–6 weeks** (1-2 times per month) to avoid root rot during dormancy.**General Tips for Best Results:**1.**The Touch Test:** The most reliable method is to check the soil surface daily; water only when the top layer feels dry.2.**Water Until Runoff:** Always water until it flows out of the drainage holes to ensure the entire root mass is saturated.3.**Soil Matters:** If you use an inorganic mix (like pumice or lava), you'll need to water more frequently than with an organic mix (like pine bark), which retains moisture longer.4.**Humidity:** In dry tropical heat, misting the foliage or using a pebble tray can help keep the leaves from drying out.",
+    "execution_time": 54.523698568344116,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_582",
-    "inference_ouput": "\n[USER 1]\nWhat is a good indoor temperature for sleeping at night?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\": \"ideal indoor temperature for sleeping at night\", \"num_results\":1, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"ideal indoor temperature for sleeping at night\", \"num_results\": 1, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://windhamhospital.org/patients-visitors/news/newsroom-detail?articleId=57490 - Title: What Is the Best Temperature to Sleep In?\nSumary:\n**Key Take‑away:**- **Bedding temperature**: the under‑cover temperature should be about **90°F–93°F (32°C–33°C)** with a relative humidity of **40%–60%**.- **Room temperature**: most sleep experts agree that an **indoor temperature of roughly65°F–72°F (18°C–22°C)** is optimal for night‑time sleep, provided the relative humidity stays in the similar40%–60% range.*(The single online source provided gives the specific bedding temperature but not the room temperature; the room‑temperature recommendation is drawn from widely cited sleep‑research consensus.)*\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>According to sleep experts, the optimal indoor temperature for sleeping at night is generally between65°F and72°F (18°C to22°C), with a relative humidity of40% to60%.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nAccording to sleep experts, the optimal indoor temperature for sleeping at night is generally between65°F and72°F (18°C to22°C), with a relative humidity of40% to60%.",
-    "execution_time": 39.822696924209595,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nWhat is a good indoor temperature for sleeping at night?\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <tool_call>{\"name\":\"search_and_read_web_link\", \"arguments\":{\"query\":\"ideal indoor temperature for sleeping at night\", \"num_results\":1, \"read\": true}}</tool_call>\n[AGENT]\nExecuting tool: search_and_read_web_link with arguments: {\"query\": \"ideal indoor temperature for sleeping at night\", \"num_results\": 1, \"read\": true}\n[TOOL:search_and_read_web_link:RESULT]\nLinks to the sources:\nLink: https://health.clevelandclinic.org/what-is-the-ideal-sleeping-temperature-for-my-bedroom - Title: What's the Best Temperature for Sleep?\nSumary:\n**Ideal Indoor Temperature for Nighttime Sleep**\n\n| Group | Suggested Zone | Notes |\n|-------|-----------------|-------|\n| **Adults** | **60°F –67°F (15°C –19°C)** | • Keeps the bedroom “cool, dark, and quiet.”<br>• Matches the body’s natural drop in core temperature that signals sleep onset.<br>• Above70°F or below60°F tends to cause wakefulness, restless motion, and reduced REM/slow‑wave sleep. |\n| **Children & Babies** | **65°F –70°F (18°C –21°C)** | • Slightly warmer because smaller bodies are still learning to regulate temperature.<br>• Not too high to avoid overheating or suffocation risk. |\n\n**Key Take‑aways**\n\n- **Thermoregulation matters** – the body naturally cools down for slow‑wave sleep; a room that is too hot or too cold interrupts this process.\n- **Too hot** (>70°F) increases body temperature during sleep, disrupts REM, and can leave you feeling groggy.- **Too cold** (< 60°F) forces the body to work harder (vasoconstriction, shallow breathing) and can increase cardiovascular strain.\n- Adjusting temperature for age or personal comfort is fine, but avoid large swings; stick close to the recommended ranges.\n- Keep the bedroom “cave” – cool, dark, quiet, and use breathable bedding.For more details, see the Cleveland Clinic article *“What’s the Best Temperature for Sleep?”*.\n[AGENT]\nNo appliance setting was applied\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>According to the Cleveland Clinic, the ideal indoor temperature for adults to sleep at night is generally between60°F and67°F (15°C to19°C). This cool environment helps align with the body's natural drop in core temperature, which signals it's time to sleep. For children and babies, a slightly warmer range of65°F to70°F (18°C to21°C) is recommended.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nAccording to the Cleveland Clinic, the ideal indoor temperature for adults to sleep at night is generally between60°F and67°F (15°C to19°C). This cool environment helps align with the body's natural drop in core temperature, which signals it's time to sleep. For children and babies, a slightly warmer range of65°F to70°F (18°C to21°C) is recommended.",
+    "execution_time": 15.227764129638672,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_583",
-    "inference_ouput": "\n[USER 1]\nI'm leaving the house for a 3-day trip. Help me set everything to minimum power consumption and secure the house.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance><final_answer>I have secured the house and minimized power consumption for your trip. All lights and fans have been turned off, the bonsai pump is deactivated, and the bedroom is locked. Safe travels!</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Fan in \"Livingroom\" set to 0%\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Fan in \"Hallway\" set to 0%\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Fan in \"Bedroom + balcony\" set to 0%\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned off\n- Lock in \"Bedroom + balcony\" has locked\n[Final for user 1]\nI have secured the house and minimized power consumption for your trip. All lights and fans have been turned off, the bonsai pump is deactivated, and the bedroom is locked. Safe travels!",
-    "execution_time": 13.298734188079834,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nI'm leaving the house for a 3-day trip. Help me set everything to minimum power consumption and secure the house.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":0}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Fan in \"Livingroom\" set to 0%\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Fan in \"Hallway\" set to 0%\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Fan in \"Bedroom + balcony\" set to 0%\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned off\n- Lock in \"Bedroom + balcony\" has locked\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have secured the house and set all appliances to minimum power consumption. All lights, fans, and the watering pump have been turned off, and the bedroom has been locked. Safe travels on your3-day trip!</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have secured the house and set all appliances to minimum power consumption. All lights, fans, and the watering pump have been turned off, and the bedroom has been locked. Safe travels on your3-day trip!",
+    "execution_time": 12.800717115402222,
+    "state_check": [
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led3",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 0,
+        "actual": 100
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "servo",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "pump",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_584",
-    "inference_ouput": "\n[USER 1]\nWhich room is currently wasting the most energy? Check all rooms and give me a report.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Fan in \"Livingroom\" set to 0%\n- Pir Sensor in \"Livingroom\" no motion detected (pir)\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Fan in \"Hallway\" set to 0%\n- Pir Sensor in \"Hallway\" no motion detected (pir)\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Fan in \"Bedroom + balcony\" set to 0%\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned off\n- Pir Sensor in \"Bedroom + balcony\" no motion detected (pir)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>After checking all rooms, I found that no energy is being wasted. All lights, fans, and the watering pump across the living room, hallway, and bedroom/balcony are currently turned off, and no motion has been detected by the PIR sensors in any of the areas. The house is currently in an energy-saving state.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nAfter checking all rooms, I found that no energy is being wasted. All lights, fans, and the watering pump across the living room, hallway, and bedroom/balcony are currently turned off, and no motion has been detected by the PIR sensors in any of the areas. The house is currently in an energy-saving state.",
-    "execution_time": 16.602334022521973,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nWhich room is currently wasting the most energy? Check all rooms and give me a report.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"pump\", \"action\": \"get\"}, {\"espID\":1, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":2, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}, {\"espID\":3, \"device_type\": \"sensor\", \"device_name\": \"pir\", \"action\": \"get\"}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Fan in \"Livingroom\" set to 0%\n- Pir Sensor in \"Livingroom\" no motion detected (pir)\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Fan in \"Hallway\" set to 0%\n- Pir Sensor in \"Hallway\" no motion detected (pir)\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Fan in \"Bedroom + balcony\" set to 0%\n- Pump To Watering Bonsai Outside in \"Bedroom + balcony\" has turned off\n- Pir Sensor in \"Bedroom + balcony\" no motion detected (pir)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have completed a full check of the house. Currently, no room is wasting energy as all lights, fans, and the watering pump are turned off, and no motion is being detected by the PIR sensors in any of the areas. The house is in an energy-saving state.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have completed a full check of the house. Currently, no room is wasting energy as all lights, fans, and the watering pump are turned off, and no motion is being detected by the PIR sensors in any of the areas. The house is in an energy-saving state.",
+    "execution_time": 18.338045120239258,
+    "state_check": [],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_585",
-    "inference_ouput": "\n[USER 1]\nIn 30 minutes I'm having guests over. Prepare the livingroom and hallway now - lights on, fans on moderate. Then when they arrive, schedule opening the main door for them.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}]</appliance><tool_call>{\"name\":\"trigger_schedule_agent\", \"arguments\":{\"request_info\":\"In30 minutes, please open the main door for my guests.\"}}</tool_call><final_answer>I have prepared the living room and hallway by turning on the lights and setting the fans to moderate speed. I have also scheduled the main door to open in30 minutes for your guests.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned on\n- Fan in \"Livingroom\" set to 50%\n- Left Light in \"Hallway\" has turned on\n- Right Light in \"Hallway\" has turned on\n- Fan in \"Hallway\" set to 50%\n[AGENT]\nExecuting tool: trigger_schedule_agent with arguments: {\"request_info\": \"In30 minutes, please open the main door for my guests.\"}\n[TOOL:trigger_schedule_agent:RESULT]\n{\"status\": \"success\", \"message\": \"Schedule saved successfully\", \"data\": [{\"datetime\": \"2026-04-19 12:58:16\", \"appliance_control\": {\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\": 100}, \"executed\": false}]}\n[Final for user 1]\nI have prepared the living room and hallway by turning on the lights and setting the fans to moderate speed. I have also scheduled the main door to open in30 minutes for your guests.",
-    "execution_time": 9.581395864486694,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nIn 30 minutes I'm having guests over. Prepare the livingroom and hallway now - lights on, fans on moderate. Then when they arrive, schedule opening the main door for them.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}]</appliance><tool_call>{\"name\":\"trigger_schedule_agent\", \"arguments\":{\"request_info\":\"In30 minutes, please open the main door for the guests.\"}}</tool_call><final_answer>I have prepared the living room and hallway by turning on the lights and setting the fans to moderate speed. I have also scheduled the main door to open in30 minutes for your guests.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":50}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned on\n- Fan in \"Livingroom\" set to 50%\n- Left Light in \"Hallway\" has turned on\n- Right Light in \"Hallway\" has turned on\n- Fan in \"Hallway\" set to 50%\n[AGENT]\nExecuting tool: trigger_schedule_agent with arguments: {\"request_info\": \"In30 minutes, please open the main door for the guests.\"}\n[TOOL:trigger_schedule_agent:RESULT]\n{\"status\": \"success\", \"message\": \"Schedule saved successfully\", \"data\": [{\"datetime\": \"2026-04-20 23:36:24\", \"appliance_control\": {\"espID\": 2, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\": 100}, \"executed\": false}]}\n[Final for user 1]\nI have prepared the living room and hallway by turning on the lights and setting the fans to moderate speed. I have also scheduled the main door to open in30 minutes for your guests.",
+    "execution_time": 14.09553599357605,
+    "state_check": [
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 50,
+        "actual": 50
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 50,
+        "actual": 50
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": [
+      {
+        "datetime": "2026-04-20 23:36:24",
+        "appliance_control": {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 100
+        },
+        "executed": false
+      }
+    ]
   },
   {
     "id": "tc_586",
-    "inference_ouput": "\n[USER 1]\nIt is 2026-04-08 07:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"unlock\"},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 80%\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Yes, go ahead and unlock and open the curtain.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":80}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":80}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Lock in \"Bedroom + balcony\" has unlocked\n- Window Curtain in \"Bedroom + balcony\" set to 80% (fully open)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have successfully unlocked the bedroom door and opened the window curtains to80% as requested.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have successfully unlocked the bedroom door and opened the window curtains to80% as requested.",
-    "execution_time": 6.532001256942749,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nIt is 07:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"unlock\"},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": \"open to 80%\"}\n      ],\n      \"note\": \"Ask for user permission before execute\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\n[User confirmation]: Yes, go ahead and unlock and open the curtain.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":80}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":80}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Lock in \"Bedroom + balcony\" has unlocked\n- Window Curtain in \"Bedroom + balcony\" set to 80% (fully open)\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have successfully unlocked the bedroom door and opened the window curtains to80% as requested.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have successfully unlocked the bedroom door and opened the window curtains to80% as requested.",
+    "execution_time": 16.672778844833374,
+    "state_check": [
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "servo",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 80,
+        "actual": 80
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_587",
-    "inference_ouput": "\n[USER 1]\nIt is 2026-04-08 20:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is reading a book in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": false,\n    \"bedroom_bed_light\": true,\n    \"bedroom_fan\": 25,\n    \"bedroom_curtain\": 0,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nBedroom room light on, bed light off, fan 0%, curtain 60% open.\nHallway left light on, right light off.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":25}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]</appliance><final_answer>I have performed a general check and adjusted the appliances to match your reading activity in the bedroom. I've turned off the bedroom room light and hallway left light, turned on the bed light, set the bedroom fan to25%, and fully closed the curtains.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":25}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Left Light in \"Hallway\" has turned off\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned on\n- Fan in \"Bedroom + balcony\" set to 25%\n- Window Curtain in \"Bedroom + balcony\" set to 0% (fully closed)\n[Final for user 1]\nI have performed a general check and adjusted the appliances to match your reading activity in the bedroom. I've turned off the bedroom room light and hallway left light, turned on the bed light, set the bedroom fan to25%, and fully closed the curtains.",
-    "execution_time": 10.145349025726318,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nIt is 20:00:00, here is owner's activity period:\n{\n  \"activity\": \"owner is reading a book in the bedroom\",\n  \"expected_setup\": {\n    \"bedroom_room_light\": false,\n    \"bedroom_bed_light\": true,\n    \"bedroom_fan\": 25,\n    \"bedroom_curtain\": 0,\n    \"hallway_left_light\": false,\n    \"hallway_right_light\": false\n  }\n}\nHave a general check of the house appliances system to ensure the appliances are set up correctly according to the owner's activity, take action if necessary.\nCurrent observed state:\nBedroom room light on, bed light off, fan 0%, curtain 60% open.\nHallway left light on, right light off.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":25}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]</appliance> <final_answer>I have completed the house check. I've adjusted the bedroom settings by turning off the room light, turning on the bed light, setting the fan to25%, and closing the curtains. I also turned off the left light in the hallway to match your preferred reading setup.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": true}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor1\", \"action\": \"set\", \"value\":25}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"motor2\", \"action\": \"set\", \"value\":0}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Left Light in \"Hallway\" has turned off\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned on\n- Fan in \"Bedroom + balcony\" set to 25%\n- Window Curtain in \"Bedroom + balcony\" set to 0% (fully closed)\n[Final for user 1]\nI have completed the house check. I've adjusted the bedroom settings by turning off the room light, turning on the bed light, setting the fan to25%, and closing the curtains. I also turned off the left light in the hallway to match your preferred reading setup.",
+    "execution_time": 22.35784649848938,
+    "state_check": [
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": true,
+        "actual": true
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor1",
+        "expected": 25,
+        "actual": 25
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "motor2",
+        "expected": 0,
+        "actual": 0
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_588",
-    "inference_ouput": "\n[USER 1]\nTurn off all the lights in the entire house and lock the bedroom door.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance><final_answer>I have turned off all the lights in the living room, hallway, and bedroom/balcony, and I have locked the bedroom door for you.</final_answer>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Lock in \"Bedroom + balcony\" has locked\n[Final for user 1]\nI have turned off all the lights in the living room, hallway, and bedroom/balcony, and I have locked the bedroom door for you.",
-    "execution_time": 24.247185945510864,
-    "error": "'deterministic_eval'"
+    "inference_ouput": "\n[USER 1]\nTurn off all the lights in the entire house and lock the bedroom door.\n\n[INFERENCE 1]:\n\n[AGENT]\nLLM output: <appliance>[{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]</appliance>\n[AGENT]\nExecute appliance: [{\"espID\":1, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":2, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led1\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led2\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"led3\", \"action\": \"set\", \"value\": false}, {\"espID\":3, \"device_type\": \"actuator\", \"device_name\": \"servo\", \"action\": \"set\", \"value\": true}]\n[AGENT]\nAppliance executed successfully\n\nCurrent appliance status:\n- Light in \"Livingroom\" has turned off\n- Left Light in \"Hallway\" has turned off\n- Right Light in \"Hallway\" has turned off\n- Room Light in \"Bedroom + balcony\" has turned off\n- Bed Light in \"Bedroom + balcony\" has turned off\n- Balcony Light Outside in \"Bedroom + balcony\" has turned off\n- Lock in \"Bedroom + balcony\" has locked\n\n[INFERENCE 2]:\n\n[AGENT]\nLLM output: <final_answer>I have turned off all the lights throughout the house and locked the bedroom door as requested.</final_answer>\n[AGENT]\nNo appliance setting was applied\n[Final for user 1]\nI have turned off all the lights throughout the house and locked the bedroom door as requested.",
+    "execution_time": 12.246281862258911,
+    "state_check": [
+      {
+        "espID": 1,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 2,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led1",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led2",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "led3",
+        "expected": false,
+        "actual": false
+      },
+      {
+        "espID": 3,
+        "device_type": "actuator",
+        "device_name": "servo",
+        "expected": true,
+        "actual": true
+      }
+    ],
+    "notes_after": {},
+    "schedule_trigger_after": {}
   },
   {
     "id": "tc_589",

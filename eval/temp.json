@@ -1,5 +1,147 @@
 [
   {
+    "id": "tc_250",
+    "task_type": "schedule_moment",
+    "prompt": "It is 23:00:00, here is some of the moment may have reached:\n[\n  {\n    \"type\": \"appliance_setting\",\n    \"data\": {\n      \"appliances\": [\n        {\"place\": \"all\", \"device\": \"all lights\", \"target\": \"off\"},\n        {\"place\": \"bedroom\", \"device\": \"fan\", \"target\": 20},\n        {\"place\": \"bedroom\", \"device\": \"curtain\", \"target\": 0},\n        {\"place\": \"bedroom\", \"device\": \"lock\", \"target\": \"locked\"},\n        {\"place\": \"hallway\", \"device\": \"main door\", \"target\": 0}\n      ],\n      \"note\": \"Night sleep mode\"\n    }\n  }\n]\nPlease have a check on the house appliances system and take action to set up the appliances accordingly.\nCurrent observed state:\nLivingroom light on, fan 0%.\nHallway left light on, right light off, fan 0%, main door 0%.\nBedroom room light off, bed light off, balcony light off, fan 20%, curtain 0%, lock locked.",
+    "llm_judge_eval": {
+      "judge_focus": [
+        "intent_understanding",
+        "grounded_response",
+        "consistency_between_actions_and_reply"
+      ],
+      "required_behaviors": [
+        "Identify that livingroom light and hallway left light are on but should be off for night sleep mode",
+        "Turn off livingroom led1 and hallway led1",
+        "Confirm the rest already matches night sleep mode and no further action needed"
+      ],
+      "acceptable_behaviors": [
+        "May turn off both lights in a single appliance call",
+        "May list items already in correct state"
+      ],
+      "forbidden_behaviors": [
+        "Changing values that are already correct (bedroom fan, curtain, lock)",
+        "Missing either of the two required light corrections"
+      ],
+      "response_requirements": {
+        "must_confirm_result": true,
+        "must_explain_if_not_executed": false,
+        "must_be_consistent_with_environment_change": true,
+        "must_not_overclaim": true
+      },
+      "trajectory_judgment": {
+        "required_step_patterns": [],
+        "preferred_step_patterns": [],
+        "forbidden_step_patterns": [],
+        "reference_flow": [
+          {
+            "actor": "User",
+            "action": "request",
+            "tool": "",
+            "args": {}
+          },
+          {
+            "actor": "Agent",
+            "action": "call_tool",
+            "tool": "appliance",
+            "args": {
+              "changes": "livingroom led1 off, hallway led1 off"
+            }
+          },
+          {
+            "actor": "Agent",
+            "action": "respond",
+            "tool": "",
+            "args": {}
+          }
+        ]
+      },
+      "judge_note": "Only two mismatches: livingroom light on and hallway left light on. Agent must turn them both off without disturbing already-correct bedroom settings."
+    },
+    "preconditions": {
+      "notes_setup": [],
+      "state_setup": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set",
+          "value": 20
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set",
+          "value": true
+        }
+      ]
+    },
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
     "id": "tc_564",
     "task_type": "sensor_driven",
     "prompt": "Compare the indoor bedroom temperature with the outside temperature. Is it warmer inside or outside?",
