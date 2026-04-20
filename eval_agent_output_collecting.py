@@ -173,7 +173,7 @@ def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_
 if __name__ == "__main__":
 
     
-    benchmark_path = "./eval/eval_dataset_full.json"
+    benchmark_path = "./eval/temp.json"
     collect_agent_outputs(benchmark_path)
 
     # testcase_initial_setup()

@@ -44,8 +44,8 @@ class Copilot:
         system_prompt=None,
         image_path=None,
         timeout=12000,
-        retries=5,
-        backoff=2,
+        retries=6,
+        backoff=1.5,
     ):
 
         def strip_thinking(text: str) -> str:
@@ -247,6 +247,8 @@ class Copilot:
 
                 if attempt < retries - 1:
                     _time.sleep(backoff ** attempt)
+                else:
+                    return "<final_answer>Inference failed after retries, no response.</final_answer>"
 
         logger.error(f"Inference failed: {last_err}")
         return None
