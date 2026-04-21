@@ -124,8 +124,9 @@ def build_action_views(inference_output: str) -> Dict[str, Any]:
 
         elif raw.startswith("<final_answer>"):
             final_text = parse_final_answer(raw)
-            final_answers.append(final_text)
-            flat_sequence.append("final_answer")
+            if "..." not in final_text.strip():
+                final_answers.append(final_text)
+                flat_sequence.append("final_answer")
 
     return {
         "raw_actions": raw_actions,
