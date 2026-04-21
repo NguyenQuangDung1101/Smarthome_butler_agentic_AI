@@ -122,7 +122,7 @@ def search_and_read_web_link(
     query: str,
     num_results: int = 3,
     read: bool = True,
-    api_key: Optional[str] = "d74c53982d4259c26022ca3e2a0c66d78e43e424057fb9dfa165cb93652b5164",
+    api_key: Optional[str] = "6a5e2ee6d9d2f509e1d70af4f6a0b524fec1af4018b40afceade9ac98b2e4c92",
     timeout: int = 15
 ) -> List[Dict[str, Any]]:
     """

@@ -7,7 +7,7 @@
           "id": "led1",
           "description": "Light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -20,7 +20,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 0,
+          "value": 20,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 24.2,
+          "value": 25.7,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -64,7 +64,7 @@
           "id": "led1",
           "description": "Left light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -77,7 +77,7 @@
           "id": "led2",
           "description": "Right light",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -90,7 +90,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 0,
+          "value": 30,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 25,
+          "value": 26.8,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -185,7 +185,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 25,
+          "value": 60,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -209,7 +209,7 @@
           "id": "servo",
           "description": "Lock",
           "value_type": "boolean",
-          "value": false,
+          "value": true,
           "constraints": {
             "type": "boolean",
             "allowed": [
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 26.4,
+          "value": 28.6,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 26.3,
+          "value": 27.3,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 40,
+          "value": 49,
           "constraints": {
             "type": "float",
             "min": 0.0,
