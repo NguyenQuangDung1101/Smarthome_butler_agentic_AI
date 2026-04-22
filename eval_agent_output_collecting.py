@@ -77,13 +77,15 @@ def get_actual_states(expected_state, appliance_file="appliances_data.json"):
 
 
 
-def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_oss120.json") -> None:
+def collect_agent_outputs(benchmark_path: str, output_path: str = "./eval/agent_output_ministral3_14b_4fewshot.json") -> None:
     with open(benchmark_path, "r", encoding="utf-8") as f:
         benchmark = json.load(f)
-    model = "gpt-oss:120b-cloud"
+    model = "ministral-3:14b-cloud"
     # gemini-3-flash-preview:cloud
     # gemma4:31b-cloud
     # qwen3.5:397b-cloud
+    # gpt-oss:120b-cloud
+    # gpt-oss:20b-cloud
 
     print(f"[TOTAL CASES]: {len(benchmark)}")
     print(f"[MODEL]: {model}")
