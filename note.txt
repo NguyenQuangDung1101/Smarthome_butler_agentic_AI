@@ -137,3 +137,260 @@ Rules:
 - reference_flow is only a soft reference, not the only valid path.
 - judge_note must stay short, objective, slightly specify case intent and directly tied to pass/fail behavior (check and do if the current judge_note it need enhance or update)
 
+
+
+Few shot:
+[
+  {
+    "id": "tc_43",
+    "task_type": "complex",
+    "prompt": "I am leaving the house for school until 17:00. Make the house safe and energy-saving now, and schedule the hallway lights to turn on at 16:55 before I come back.",
+    "judge_note": "Correct if the agent performs immediate leave-home actions (lights off, lock bedroom) and also uses trigger_schedule_agent to schedule hallway lights at 16:55.",
+    "deterministic_eval": {
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": false
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": false
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [
+        "trigger_schedule_agent"
+      ],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+    }
+  },
+  {
+    "id": "tc_426",
+    "task_type": "overall_check",
+    "prompt": "Overall house check. Current observed state:\nLivingroom:\nLight has turned off\nFan set to 45%\nPIR sensor no motion detected\nTemperature sensor in 22.0 Celsius degree\n\nHallway:\nLeft light has turned off\nRight light has turned off\nFan set to 30%\nMain door set to 0% (fully closed)\nPIR sensor no motion detected\nTemperature sensor in 22.5 Celsius degree\n\nBedroom + balcony:\nRoom light has turned off\nBed light has turned off\nBalcony light outside has turned off\nFan set to 60%\nWindow curtain set to 100% (fully open)\nLock has locked\nPump to watering bonsai outside has turned on\nPIR sensor no motion detected\nTemperature sensor in 22.8 Celsius degree\nTemperature sensor outside in 21.0 Celsius degree\nMoisture sensor outside 72.0 %moist",
+    "judge_note": "Cool temps (22-22.8C) make all running fans wasteful; pump on with 72% moisture risks overwatering. Agent must turn off pump and reduce/stop all fans.",
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "value": false
+        }
+      ],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "motor1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "pump",
+          "action": "set"
+        }
+      ]
+    }
+  },
+  {
+    "id": "tc_431",
+    "task_type": "security",
+    "prompt": "I noticed the main door is open on my phone camera but I'm at work. Can you close it and lock the bedroom immediately? This is urgent.",
+    "judge_note": "Urgent security request while owner is away. Agent must close door (motor2=0) and lock bedroom (servo=true) immediately without asking for confirmation."
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_510",
+    "task_type": "emergency_handling",
+    "prompt": "It is 2:30 AM. All three PIR sensors (livingroom, hallway, bedroom) are detecting motion simultaneously. The owner confirmed earlier they would be traveling and no one should be home. The main door is showing 100% (fully open).",
+    "judge_note": "Break-in scenario: owner away, all PIR triggered, door fully open. Agent must light up all rooms and lock bedroom. Must NOT close the main door. Dismissing the event is a failure.",
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ]
+    }
+  }
+]
+
+
+
