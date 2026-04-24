@@ -182,5 +182,129 @@ Few shots ():
         }
       ]
     }
+  },
+  {
+    "id": "tc_431",
+    "task_type": "security",
+    "prompt": "I noticed the main door is open on my phone camera but I'm at work. Can you close it and lock the bedroom immediately? This is urgent.",
+    "judge_note": "Urgent security request while owner is away. Agent must close door (motor2=0) and lock bedroom (servo=true) immediately without asking for confirmation."
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "value": 0
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_tool_calls": [],
+      "abandon_tool_calls": [],
+      "required_appliances": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [],
+      "ordering_constraints": []
+    }
+  },
+  {
+    "id": "tc_510",
+    "task_type": "emergency_handling",
+    "prompt": "It is 2:30 AM. All three PIR sensors (livingroom, hallway, bedroom) are detecting motion simultaneously. The owner confirmed earlier they would be traveling and no one should be home. The main door is showing 100% (fully open).",
+    "judge_note": "Break-in scenario: owner away, all PIR triggered, door fully open. Agent must light up all rooms and lock bedroom. Must NOT close the main door. Dismissing the event is a failure.",
+    "deterministic_eval": {
+      "must_check_note": false,
+      "must_check_schedule": false,
+      "expected_state": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "value": true
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "value": true
+        }
+      ],
+      "required_appliances": [
+        {
+          "espID": 1,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "led2",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "led1",
+          "action": "set"
+        },
+        {
+          "espID": 3,
+          "device_type": "actuator",
+          "device_name": "servo",
+          "action": "set"
+        }
+      ],
+      "abandon_appliance": [
+        {
+          "espID": 2,
+          "device_type": "actuator",
+          "device_name": "motor2",
+          "action": "set"
+        }
+      ]
+    }
   }
 ]
