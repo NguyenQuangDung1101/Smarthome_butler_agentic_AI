@@ -20,7 +20,7 @@
           "id": "motor1",
           "description": "Fan",
           "value_type": "integer",
-          "value": 0,
+          "value": 40,
           "constraints": {
             "type": "integer",
             "min": 0,
@@ -47,7 +47,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 30.6,
+          "value": 26.7,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -129,7 +129,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 31.9,
+          "value": 26.5,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -250,7 +250,7 @@
           "id": "tem",
           "description": "Temperature sensor",
           "value_type": "float",
-          "value": 32.9,
+          "value": 28.8,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -262,7 +262,7 @@
           "id": "tem_out",
           "description": "Temperature sensor outside",
           "value_type": "float",
-          "value": 31.2,
+          "value": 28.7,
           "constraints": {
             "type": "float",
             "min": -40.0,
@@ -274,7 +274,7 @@
           "id": "mois",
           "description": "Moisture sensor outside",
           "value_type": "float",
-          "value": 50,
+          "value": 43,
           "constraints": {
             "type": "float",
             "min": 0.0,
