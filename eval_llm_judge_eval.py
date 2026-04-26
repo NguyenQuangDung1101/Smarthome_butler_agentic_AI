@@ -297,9 +297,9 @@ def save_report(report: Dict[str, Any], output_path: str) -> None:
 
 if __name__ == "__main__":
     benchmark_path = "./eval/eval_dataset_full.json"
-    agent_output_path = "./eval/agent_output_gemini_3fewshot.json"
+    agent_output_path = "./eval/agent_output_gemini_4fewshot.json"
     system_prompt_path = "./eval/llm_judge_sysprompt.txt"
-    output_path = "./eval/llm_judge_report_gemini_3fewshot_1.json"
+    output_path = "./eval/llm_judge_report_gemini_4fewshot_2.json"
     tool_list = "./tool_list.json"
 
     report = run_llm_judge_eval(
