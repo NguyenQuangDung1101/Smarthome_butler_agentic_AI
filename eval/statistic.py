@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 EVAL_DATASET_FILE = "./eval/eval_dataset_full.json"
-REPORT_FILE = "./eval/deterministic_report.json"
+REPORT_FILE = "./eval/temp.json"
 
 
 def main():
