@@ -124,8 +124,9 @@ def build_action_views(inference_output: str) -> Dict[str, Any]:
 
         elif raw.startswith("<final_answer>"):
             final_text = parse_final_answer(raw)
-            final_answers.append(final_text)
-            flat_sequence.append("final_answer")
+            if "..." not in final_text.strip():
+                final_answers.append(final_text)
+                flat_sequence.append("final_answer")
 
     return {
         "raw_actions": raw_actions,
@@ -455,8 +456,8 @@ def run_deterministic_eval(benchmark_path: str, agent_output_path: str) -> Dict[
 
 if __name__ == "__main__":
     benchmark_path = "./eval/eval_dataset_full.json"
-    agent_output_path = "./eval/agent_output_qwen35_fewshot.json"
-    output_path = "./eval/deterministic_report_qwen35_fewshot.json"
+    agent_output_path = "./eval/agent_output_gemini_3fewshot.json"
+    output_path = "./eval/deterministic_report_gemini_3fewshot.json"
 
     report = run_deterministic_eval(benchmark_path, agent_output_path)
 

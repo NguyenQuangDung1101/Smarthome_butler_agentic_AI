@@ -117,12 +117,15 @@ def get_current_location(return_value = False):
 # --------------------------------------------------------
 # dung:d74c53982d4259c26022ca3e2a0c66d78e43e424057fb9dfa165cb93652b5164
 # hieu:6a5e2ee6d9d2f509e1d70af4f6a0b524fec1af4018b40afceade9ac98b2e4c92
+# banoi:5c5ac81171d4c6129e4269a141a02f05b40f5b109de42c5ff647380f635f102d
+# me:23691d22fce3f90644c0b155310271745a725e91a1a232d728f6afdbcd2f7d27
+# be:ee909cc8881e6bd6bc6e2047a6b55947823e35ebd54a0dc6e0e4fd9d1648263c
 
 def search_and_read_web_link(
     query: str,
     num_results: int = 3,
     read: bool = True,
-    api_key: Optional[str] = "6a5e2ee6d9d2f509e1d70af4f6a0b524fec1af4018b40afceade9ac98b2e4c92",
+    api_key: Optional[str] = "ee909cc8881e6bd6bc6e2047a6b55947823e35ebd54a0dc6e0e4fd9d1648263c",
     timeout: int = 15
 ) -> List[Dict[str, Any]]:
     """

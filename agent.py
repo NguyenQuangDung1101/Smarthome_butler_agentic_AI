@@ -354,7 +354,7 @@ def build_agent(system_prompt_text: str, model: str = "gpt-oss:20b-cloud", host:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
     sp = include_notes_to_prompt(sp)
-    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=16, max_history=16)
+    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=8, max_history=8)
 
 
 if __name__ == "__main__":
