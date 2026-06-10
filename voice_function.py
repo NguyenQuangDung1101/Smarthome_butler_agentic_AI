@@ -21,6 +21,7 @@ FRAME_DURATION_MS = 30          # 10, 20, or 30 for webrtcvad
 VAD_AGGRESSIVENESS = 3          # 0 = less strict, 3 = more strict
 START_TRIGGER_FRAMES = 15       # speech frames needed to start recording
 END_TRIGGER_FRAMES = 120        # silence frames needed to stop recording
+PRE_SPEECH_BUFFER_FRAMES = 30   # how many frames to keep before speech starts (for better STT context)
 MAX_RECORD_SECONDS = 40         # safety limit (in seconds)
 WHISPER_MODEL_SIZE = "base"     # tiny, base, small, medium, large-v2, large-v3
 
@@ -160,7 +161,7 @@ def listen_for_speech(
     bytes_per_frame = frame_size * 2  # int16 = 2 bytes
     max_frames = int(max_record_seconds * 1000 / frame_duration_ms)
 
-    pre_speech_buffer = collections.deque(maxlen=10)
+    pre_speech_buffer = collections.deque(maxlen=PRE_SPEECH_BUFFER_FRAMES)
     recorded_frames = []
 
     speech_count = 0
