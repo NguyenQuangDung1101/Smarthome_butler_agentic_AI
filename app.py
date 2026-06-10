@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import time
 import threading
 import os
@@ -109,7 +110,7 @@ def chat_sessions():
         return jsonify(sessions)
     else:  # POST
         data = request.json or {}
-        model = data.get('model', 'gemini-3-flash-preview:cloud')
+        model = data.get('model', 'gemma4:31b-cloud')
         session_id = sm.create_new_normal_session(model=model)
         return jsonify({'session_id': session_id})
 
@@ -440,7 +441,6 @@ def _voice_loop(session_id: str, agent, stop_event):
         if stop_event.is_set():
             break
 
-        import numpy as np
         if not hasattr(audio, 'size') or audio.size == 0:
             continue
 

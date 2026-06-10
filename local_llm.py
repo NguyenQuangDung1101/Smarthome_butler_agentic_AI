@@ -619,6 +619,7 @@ if __name__ == "__main__":
     # gemini-3-flash-preview:cloud
     # qwen3.5:397b-cloud
     # qwen3-vl:235b-cloud
+    # gemma4:31b-cloud
     copilot = Copilot(
         host="http://localhost:11434",
         model="gemini-3-flash-preview:cloud"

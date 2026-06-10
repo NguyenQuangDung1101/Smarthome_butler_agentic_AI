@@ -54,7 +54,7 @@ Available tools (schema):
 
 Rules:
 - Output ONLY either <tool_call>...</tool_call>, <appliance>...</appliance>  or <final_answer>...</final_answer> at each step.
-- Do NOT include extra commentary outside those tags.
+- Do NOT include extra commentary outside those tags (except thinking string, which is not be returned to user).
 - You can call multiple tools in one response by outputting multiple <tool_call>...</tool_call>.
 - If a tool returns tabular data (CSV/text), read it and continue reasoning.
 - If house appliance execution return strange message, read it and continue reasoning.
@@ -218,7 +218,7 @@ class ToolCallingAgent:
             system_prompt=(
                 "[SYSTEM]\nFollow the instructions precisely. Only output "
                 "<tool_call>...</tool_call>, <appliance>...</appliance> or <final_answer>...</final_answer>.\n"
-                "<final_answer> must be a standalone response, mutually exclusive with <tool_call> and <appliance> and should not be call at the same time (in an inference response) with <tool_call> and <appliance>..\n"
+                "<final_answer> must be a standalone response, mutually exclusive with <tool_call> and <appliance> and should not be call at the same time (in an inference response) with <tool_call> and <appliance>.\n"
                 f"{self.system_prompt}"
             )
         )
@@ -264,7 +264,7 @@ class ToolCallingAgent:
 
         final = extract_final_answer(llm_out)
         if not any([appliance, calls, final]):
-            self._append_agent("Your previous output didn't include a valid <tool_call>...</tool_call>, <appliance>...</appliance>, or <final_answer>...</final_answer>. Please try again.")
+            self._append_agent("Your previous output didn't include a valid <tool_call>...</tool_call>, <appliance>...</appliance>, or <final_answer>...</final_answer>. This will be considered as thinking string. Please try again.")
             return None
 
         if final is not None:
@@ -350,11 +350,11 @@ class ToolCallingAgent:
 # Example CLI usage
 # ──────────────────────────────────────────────────────────────────────────────
 
-def build_agent(system_prompt_text: str, model: str = "gpt-oss:20b-cloud", host: str = "http://localhost:11434") -> ToolCallingAgent:
+def build_agent(system_prompt_text: str, model: str = "gemma4:31b-cloud", host: str = "http://localhost:11434") -> ToolCallingAgent:
     llm = Copilot(host=host, model=model)
     sp = build_strong_system_prompt(system_prompt_text, TOOL_SPEC)
     sp = include_notes_to_prompt(sp)
-    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=8, max_history=8)
+    return ToolCallingAgent(llm=llm, system_prompt=sp, max_steps=20, max_history=13)
 
 
 if __name__ == "__main__":
