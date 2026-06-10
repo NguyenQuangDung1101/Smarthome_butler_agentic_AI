@@ -300,7 +300,7 @@ const ScheduleSessionTab = ({ onPendingPermissionsChange }) => {
             <span className="ss-editor-filename">scheduler/weekday_weekend.json</span>
             <button className="ss-btn ss-btn-format" onClick={handleSchedFormat}>{ } Format</button>
             <button className="ss-btn ss-btn-reload" onClick={fetchSchedJson}>↻ Reload</button>
-            <button className="ss-btn ss-btn-save" onClick={handleSchedSave}>💾 Save</button>
+            <button className="ss-btn ss-btn-save" onClick={handleSchedSave}>Save</button>
           </div>
           {schedJsonError && <div className="ss-editor-error">⚠ {schedJsonError}</div>}
           {schedSaveStatus && <div className="ss-editor-ok">✔ {schedSaveStatus}</div>}

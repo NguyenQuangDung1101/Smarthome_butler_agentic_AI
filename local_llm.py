@@ -16,7 +16,7 @@ logger = logging.getLogger("OLLama")
 logging.basicConfig(level=logging.INFO)
 
 class Copilot:
-    def __init__(self, host="http://localhost:11434", model="gemma3:4b", server_host="http://localhost:5001"):
+    def __init__(self, host="http://localhost:11434", model="gemma4:31b-cloud", server_host="http://localhost:5001"):
         self.host = host
         self.model = model
         self.server_host = server_host
@@ -299,7 +299,7 @@ class Copilot:
                             "prompt": prompt,
                             "options": kwargs.get("options", {}),
                             "stream": True,
-                            "think": False,
+                            # "think": False,
                         }
                         if "images" in kwargs:
                             payload["images"] = kwargs["images"]

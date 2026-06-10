@@ -144,3 +144,10 @@ Rules:
 3 shot   78.56    79.78
 4 shot   79.78    81.22
 
+
+Device information tab, remove refresh button
+Fix manual control tab (button behavior)
+Schedule session enhance modify schedule interface
+User/schedule session tab, add delete session
+In user chat tab, add modify session name
+Expose to be access from mobile phone

@@ -1,13 +1,1 @@
-[
-  {
-    "datetime": "2026-06-05 23:09:57",
-    "appliance_control": {
-      "espID": 1,
-      "device_type": "actuator",
-      "device_name": "led1",
-      "action": "set",
-      "value": true
-    },
-    "executed": true
-  }
-]
+[]

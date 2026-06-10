@@ -42,7 +42,7 @@ WHISPER_MODEL_SIZE = "base"     # tiny, base, small, medium, large-v2, large-v3
 # en-GB-RyanNeural          # deep ielts listening 2    ///top1///
 # en-GB-SoniaNeural         # female ielts listening 3
 
-TTS_VOICE = "en-GB-RyanNeural"
+TTS_VOICE = "en-US-AndrewMultilingualNeural"
 
 
 # =========================
