@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatTab = () => {
   const [sessions, setSessions] = useState([]);
@@ -253,7 +255,7 @@ const ChatTab = () => {
   };
 
   const toggleEvent = (idx) => {
-    setExpandedEvents(prev => ({ ...prev, [idx]: prev[idx] === false ? true : false }));
+    setExpandedEvents(prev => ({ ...prev, [idx]: prev[idx] === true ? false : true }));
   };
 
   // ── Render a single message event ─────────────────────────────────────────
@@ -275,14 +277,16 @@ const ChatTab = () => {
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-role-badge">BEON AI</div>
-          <div className="chat-bubble chat-bubble-final">{msg.content}</div>
+          <div className="chat-bubble chat-bubble-final">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+          </div>
           <div className="chat-msg-time">{msg.time}</div>
         </div>
       );
     }
 
     if (msg.type === 'tool_result') {
-      const expanded = expandedEvents[idx] !== false; // default true
+      const expanded = expandedEvents[idx] === true; // default collapsed
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-event-card chat-event-tool">
@@ -298,7 +302,7 @@ const ChatTab = () => {
     }
 
     if (msg.type === 'appliance') {
-      const expanded = expandedEvents[idx] !== false; // default true
+      const expanded = expandedEvents[idx] === true; // default collapsed
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-event-card chat-event-appliance">

@@ -114,6 +114,7 @@ def _play_audio_bytes(mp3_bytes: bytes, stop_event=None) -> None:
                 sd.stop()
 
 def text_to_speech(text: str, stop_event=None) -> None:
+    text = text.replace('*', '')
     if not text.strip():
         return
     mp3_data = asyncio.run(_tts_collect(text, stop_event=stop_event))
