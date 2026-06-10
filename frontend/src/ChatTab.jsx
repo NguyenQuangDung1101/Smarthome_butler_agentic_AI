@@ -42,6 +42,30 @@ const ChatTab = () => {
   // ── Voice polling ─────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (!activeSessionId) {
+      setVoiceActive(false);
+      setVoiceState('idle');
+      return;
+    }
+
+    let cancelled = false;
+    const loadVoiceStatus = async () => {
+      try {
+        const res = await fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`);
+        const data = await res.json();
+        if (cancelled) return;
+        setVoiceActive(Boolean(data.active));
+        setVoiceState(data.state || 'idle');
+      } catch (_) {}
+    };
+
+    loadVoiceStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSessionId]);
+
+  useEffect(() => {
     if (voiceActive && activeSessionId) {
       voicePollRef.current = setInterval(async () => {
         try {
@@ -91,7 +115,10 @@ const ChatTab = () => {
           body: JSON.stringify({ session_id: activeSessionId }),
         });
         const data = await res.json();
-        if (data.success) setVoiceActive(true);
+        if (data.success) {
+          setVoiceActive(true);
+          setVoiceState(data.state || 'speech_wait');
+        }
       } catch (_) {}
     }
   };
@@ -306,6 +333,11 @@ const ChatTab = () => {
     return null;
   };
 
+  const activeSession = sessions.find(sess => sess.id === activeSessionId);
+  const isAgentBusy = isLoading || Boolean(activeSession?.is_running) || (voiceActive && ['agent_wait', 'processing'].includes(voiceState));
+  const inputLocked = voiceActive || isAgentBusy;
+  const voiceButtonLocked = !activeSessionId || (!voiceActive && isAgentBusy);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -363,13 +395,12 @@ const ChatTab = () => {
             <div className="chat-input-bar">
               {voiceActive && (
                 <div className="voice-state-indicator">
+                  {voiceState === 'speech_wait'  && '🎤 Waiting for speech...'}
                   {voiceState === 'listening'    && '🎤 Listening…'}
                   {voiceState === 'transcribing' && '✍️ Transcribing…'}
-                  {voiceState === 'waiting'      && '⏳ Waiting for agent…'}
+                  {voiceState === 'agent_wait'   && '⏳ Waiting for agent response…'}
                   {voiceState === 'processing'   && '⚙️ Processing…'}
                   {voiceState === 'speaking'     && '🔊 Speaking…'}
-                  {voiceState === 'starting'     && '▶ Starting…'}
-                  {voiceState === 'stopping'     && '⏹ Stopping…'}
                 </div>
               )}
               <div className="chat-input-row">
@@ -385,13 +416,13 @@ const ChatTab = () => {
                       sendMessage();
                     }
                   }}
-                  placeholder={voiceActive ? 'Voice mode active – listening…' : 'Message your home AI…'}
-                  disabled={isLoading || voiceActive}
+                  placeholder={voiceActive ? 'Voice mode active' : 'Message your home AI…'}
+                  disabled={inputLocked}
                 />
                 <button
                   className={`chat-voice-btn${voiceActive ? ' active' : ''}`}
                   onClick={toggleVoice}
-                  disabled={!activeSessionId}
+                  disabled={voiceButtonLocked}
                   title={voiceActive ? 'Stop voice mode' : 'Start voice mode'}
                 >
                   🎤
@@ -399,7 +430,7 @@ const ChatTab = () => {
                 <button
                   className="chat-send-btn"
                   onClick={sendMessage}
-                  disabled={isLoading || !inputText.trim() || voiceActive}
+                  disabled={inputLocked || !inputText.trim()}
                 >
                   {isLoading ? '…' : 'Send'}
                 </button>

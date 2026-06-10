@@ -422,15 +422,60 @@ def save_weekday_weekend():
 _voice_sessions: dict = {}
 
 
+async def _run_agent_with_cancel(agent, user_message: str, stop_event):
+    task = asyncio.create_task(agent.run(user_message))
+    while not task.done():
+        if stop_event.is_set():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            return None
+        await asyncio.sleep(0.1)
+    return await task
+
+# --- VOICE PRELOAD ---
+_voice_ready = threading.Event()
+_voice_load_error = None
+
+
+def _preload_voice_function():
+    """Load voice_function and STT model when the server starts."""
+    global _voice_load_error
+    try:
+        print("[VOICE] Preloading voice module...")
+        import voice_function
+        if hasattr(voice_function, "warmup_voice"):
+            voice_function.warmup_voice()
+        _voice_ready.set()
+        print("[VOICE] Voice module ready.")
+    except Exception as e:
+        _voice_load_error = str(e)
+        _voice_ready.set()
+        print(f"[VOICE] Preload error: {e}")
+
 def _voice_loop(session_id: str, agent, stop_event):
+    """Background thread: listen → STT → run agent → TTS → repeat."""
+    _voice_ready.wait()
+    if _voice_load_error:
+        print(f"[VOICE] Cannot start voice loop: {_voice_load_error}")
+        _voice_sessions[session_id]["active"] = False
+        _voice_sessions[session_id]["state"] = "idle"
+        return
     """Background thread: listen → STT → run agent → TTS → repeat."""
     from voice_function import listen_for_speech, speech_to_text, text_to_speech
 
+    def set_voice_state(state: str):
+        vs = _voice_sessions.get(session_id)
+        if vs and not stop_event.is_set():
+            vs["state"] = state
+
     print(f"[VOICE] Loop started for session: {session_id}")
     while not stop_event.is_set():
-        _voice_sessions[session_id]["state"] = "listening"
+        set_voice_state("speech_wait")
         try:
-            audio = listen_for_speech(stop_event=stop_event)
+            audio = listen_for_speech(stop_event=stop_event, state_callback=set_voice_state)
         except Exception as e:
             print(f"[VOICE] listen_for_speech error: {e}")
             if stop_event.is_set():
@@ -444,20 +489,25 @@ def _voice_loop(session_id: str, agent, stop_event):
         if not hasattr(audio, 'size') or audio.size == 0:
             continue
 
-        _voice_sessions[session_id]["state"] = "transcribing"
+        set_voice_state("transcribing")
         try:
             text = speech_to_text(audio)
         except Exception as e:
             print(f"[VOICE] STT error: {e}")
+            if stop_event.is_set():
+                break
             continue
 
-        if not text or stop_event.is_set():
+        if stop_event.is_set():
+            break
+
+        if not text:
             continue
 
         print(f"[VOICE] Heard: {text}")
 
         # Wait for agent to finish any ongoing inference
-        _voice_sessions[session_id]["state"] = "waiting"
+        set_voice_state("agent_wait")
         while agent.is_running and not stop_event.is_set():
             time.sleep(0.5)
 
@@ -465,23 +515,28 @@ def _voice_loop(session_id: str, agent, stop_event):
             break
 
         # Run agent
-        _voice_sessions[session_id]["state"] = "processing"
+        set_voice_state("processing")
         final = None
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        agent.is_running = True
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            final = loop.run_until_complete(agent.run(text))
-            loop.close()
+            final = loop.run_until_complete(_run_agent_with_cancel(agent, text, stop_event))
+        except asyncio.CancelledError:
+            final = None
         except Exception as e:
             print(f"[VOICE] Agent error: {e}")
+        finally:
+            agent.is_running = False
+            loop.close()
 
         if stop_event.is_set():
             break
 
         if final:
-            _voice_sessions[session_id]["state"] = "speaking"
+            set_voice_state("speaking")
             try:
-                text_to_speech(final)
+                text_to_speech(final, stop_event=stop_event)
             except Exception as e:
                 print(f"[VOICE] TTS error: {e}")
 
@@ -501,13 +556,13 @@ def voice_start():
         return jsonify({"success": False, "error": "Session not found"}), 404
     vs = _voice_sessions.get(session_id)
     if vs and vs.get("active"):
-        return jsonify({"success": True, "already_active": True})
+        return jsonify({"success": True, "already_active": True, "state": vs.get("state", "speech_wait")})
     agent = session["agent"]
     stop_event = threading.Event()
-    _voice_sessions[session_id] = {"active": True, "state": "starting", "stop_event": stop_event}
+    _voice_sessions[session_id] = {"active": True, "state": "speech_wait", "stop_event": stop_event}
     t = threading.Thread(target=_voice_loop, args=(session_id, agent, stop_event), daemon=True)
     t.start()
-    return jsonify({"success": True})
+    return jsonify({"success": True, "state": "speech_wait"})
 
 
 @app.route('/api/voice/stop', methods=['POST'])
@@ -521,7 +576,12 @@ def voice_stop():
         return jsonify({"success": True, "was_active": False})
     vs.get("stop_event").set()
     _voice_sessions[session_id]["active"] = False
-    _voice_sessions[session_id]["state"] = "stopping"
+    _voice_sessions[session_id]["state"] = "idle"
+    try:
+        import sounddevice as sd
+        sd.stop()
+    except Exception:
+        pass
     return jsonify({"success": True})
 
 
@@ -534,6 +594,8 @@ def voice_status(session_id):
 
 
 if __name__ == '__main__':
+    threading.Thread(target=_preload_voice_function, daemon=True).start()
+    
     # Run the Flask app on port 5000
     app.run(debug=True, use_reloader=False) 
     # use_reloader=False is important so threads don't start twice
