@@ -145,9 +145,14 @@ Rules:
 4 shot   79.78    81.22
 
 
-Device information tab, remove refresh button
-Fix manual control tab (button behavior)
-Schedule session enhance modify schedule interface
-User/schedule session tab, add delete session
-In user chat tab, add modify session name
-Expose to be access from mobile phone
+In device information tab, remove refresh button
+Fix manual control tab (button behavior), for true false node make it change the but turn color correctly and instantly (on and off button), not waiting for the updating loop to fresh the web
+In user chat session tab, add delete session and add modify session name (right click to choose rename or delete)
+Think carefully, just do what i told, avoid using icon
+
+
+In schedule session, help me to enhance the modify schedule interface (schedule editor) (two sub tab weekday and weekend), think carefully and make it easy to follow and understand the schedule
+Think carefully, just do what i told, avoid using icon
+
+
+I want to make this web to be accessible from mobile phone or any browser in other device (not local host any more)
