@@ -596,6 +596,6 @@ def voice_status(session_id):
 if __name__ == '__main__':
     threading.Thread(target=_preload_voice_function, daemon=True).start()
     
-    # Run the Flask app on port 5000
-    app.run(debug=True, use_reloader=False) 
+    # Run the Flask app on port 5000, accessible from all network interfaces
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False) 
     # use_reloader=False is important so threads don't start twice

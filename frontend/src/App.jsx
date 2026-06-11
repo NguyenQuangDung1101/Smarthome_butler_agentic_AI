@@ -11,6 +11,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [pendingPermissions, setPendingPermissions] = useState(0);
   const [showBellPopup, setShowBellPopup] = useState(false);
+  const [deviceOverrides, setDeviceOverrides] = useState({});
 
   const fetchData = async () => {
     try {
@@ -70,6 +71,10 @@ const App = () => {
         if (statusDiv) {
           statusDiv.style.color = 'green';
           statusDiv.innerText = 'Success!';
+        }
+        // Immediately reflect the new value in the button UI
+        if (valueType === 'boolean') {
+          setDeviceOverrides(prev => ({ ...prev, [`${espID}-${deviceID}`]: parsedValue }));
         }
         // Refresh data
         fetchData();
@@ -167,17 +172,19 @@ const App = () => {
                   const labelId = `label-${espID}-${device.id}`;
 
                   if (device.value_type === 'boolean') {
+                    const overrideKey = `${espID}-${device.id}`;
+                    const effectiveValue = deviceOverrides[overrideKey] !== undefined ? deviceOverrides[overrideKey] : device.value;
                     return (
                       <div key={device.id} className="node-card">
                         <div>
                           <div className="node-header">{device.description}</div>
-                          <div className="node-id">ID: {device.id} | Current: {device.value ? 'On' : 'Off'}</div>
+                          <div className="node-id">ID: {device.id} | Current: {effectiveValue ? 'On' : 'Off'}</div>
                         </div>
                         {/* hidden input so updateDevice can read the chosen value */}
-                        <input type="hidden" id={inputId} defaultValue={device.value.toString()} />
+                        <input type="hidden" id={inputId} defaultValue={effectiveValue.toString()} />
                         <div className="bool-btn-group">
                           <button
-                            className={`bool-btn bool-on${device.value === true ? ' active' : ''}`}
+                            className={`bool-btn bool-on${effectiveValue === true ? ' active' : ''}`}
                             onClick={() => {
                               const el = document.getElementById(inputId);
                               if (el) el.value = 'true';
@@ -185,7 +192,7 @@ const App = () => {
                             }}
                           >On</button>
                           <button
-                            className={`bool-btn bool-off${device.value === false ? ' active' : ''}`}
+                            className={`bool-btn bool-off${effectiveValue === false ? ' active' : ''}`}
                             onClick={() => {
                               const el = document.getElementById(inputId);
                               if (el) el.value = 'false';
@@ -276,7 +283,6 @@ const App = () => {
         <div className="tab-content">
           <div className="header-action">
             <h2>Current Appliances Info</h2>
-            <button className="refresh-btn" onClick={fetchData}>Refresh Data</button>
           </div>
           {renderTab1Info()}
         </div>
