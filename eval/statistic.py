@@ -1,9 +1,9 @@
 import json
 from collections import defaultdict
 
-EVAL_DATASET_FILE = "./eval/temp.json"
-REPORT_FILE = "./eval/deterministic_report.json"
-output = "./eval/output.json"
+EVAL_DATASET_FILE = "./eval/eval_dataset_full.json"
+REPORT_FILE = r"C:\Users\quang\Desktop\Research\smart_house\eval\gemini-3-flash-preview-cloud-0shot\deterministic_report_gemini_0shot.json"
+output = r"C:\Users\quang\Desktop\Research\smart_house\eval\gemini-3-flash-preview-cloud-0shot\agent_output_gemini_0shot.json"
 
 def main():
     with open(EVAL_DATASET_FILE, "r", encoding="utf-8") as f:

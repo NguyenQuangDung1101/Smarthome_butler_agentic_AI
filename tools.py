@@ -169,7 +169,7 @@ def search_and_read_web_link(
                 content = f"Failed to fetch/read: {e}"
         results.append({"title": title, "link": link, "snippet": snippet, "content": content})
 
-    llm = Copilot(host="http://localhost:11434", model="gpt-oss:20b-cloud")
+    llm = Copilot(host="http://localhost:11434", model="gemma4:31b-cloud")
     summary_search_results = llm.infer(
         user_prompt = f"Retrieved data for the query: '{query}'. Here are the search results:\n{json.dumps(results, indent=2)}\n\nPlease provide a concise summary of the key information relevant to the query.(return full information in detail if the query is asking for specific information)",
         system_prompt = "You will receive search results from the internet (may from multiple different sources). Summarize the key information relevant to the query in a concise manner.",
@@ -307,7 +307,7 @@ def trigger_schedule_agent(request_info: str) -> str:
     parts = [f"Current date and time: {get_current_datetime()}", role_sys_prompt, instruction_sys_prompt]
     sys_prompt = "\n\n".join([p for p in parts if p])
 
-    llm = Copilot(host="http://localhost:11434", model="gpt-oss:20b-cloud")
+    llm = Copilot(host="http://localhost:11434", model="gemma4:31b-cloud")
 
     def _extract_json(text: str):
         text = text.strip()

@@ -14,6 +14,7 @@ import time
 # gemini-3-flash-preview:cloud
 # qwen3.5:397b-cloud
 # qwen3-vl:235b-cloud
+# gemma4:31b-cloud
 
 class SessionManager:
     def __init__(self):
@@ -142,7 +143,7 @@ class SessionManager:
         return latest
 
     #################################################################################################
-    def create_new_normal_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
+    def create_new_normal_session(self, model="gemma4:31b-cloud", context_text=None):
         print("[NORMAL INFER] Creating new normal session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')
@@ -177,7 +178,7 @@ class SessionManager:
         asyncio.run(agent.chat_cli(first_user_prompt=user_prompt))
     
     ###############################################################################################
-    def create_new_schedule_session(self, model="gemini-3-flash-preview:cloud", context_text=None):
+    def create_new_schedule_session(self, model="gemma4:31b-cloud", context_text=None):
         print("[SCHEDULE INFER] Creating new schedule session...")
         role_sys_prompt = load_system_prompt('./system_prompt_doc/role.txt')
         instruction_sys_prompt = load_system_prompt('./system_prompt_doc/instruction.txt')

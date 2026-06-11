@@ -12,12 +12,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 
 INPUT_FILES = [
-    BASE_DIR / "gemini-3-flash-preview-cloud-4fewshot" / "llm_judge_report_gemini_4fewshot_1.json",
-    BASE_DIR / "gemini-3-flash-preview-cloud-4fewshot" / "llm_judge_report_gemini_4fewshot_2.json",
-    BASE_DIR / "gemini-3-flash-preview-cloud-4fewshot" / "llm_judge_report_gemini_4fewshot_3.json",
+    BASE_DIR / "gemini-3-flash-preview-cloud-0shot" / "llm_judge_report_gemini_0shot_1.json",
+    BASE_DIR / "gemini-3-flash-preview-cloud-0shot" / "llm_judge_report_gemini_0shot_2.json",
+    BASE_DIR / "gemini-3-flash-preview-cloud-0shot" / "llm_judge_report_gemini_0shot_3.json",
 ]
 
-OUTPUT_FILE = INPUT_FILES[0].parent / "llm_judge_summary.json"
+OUTPUT_FILE = INPUT_FILES[0].parent / "llm_judge_summary_gemini_0shot.json"
 # ─────────────────────────────────────────────────────────────────────────────
 
 

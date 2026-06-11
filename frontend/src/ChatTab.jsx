@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatTab = () => {
   const [sessions, setSessions] = useState([]);
@@ -40,6 +42,30 @@ const ChatTab = () => {
   }, [fetchSessions]);
 
   // ── Voice polling ─────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!activeSessionId) {
+      setVoiceActive(false);
+      setVoiceState('idle');
+      return;
+    }
+
+    let cancelled = false;
+    const loadVoiceStatus = async () => {
+      try {
+        const res = await fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`);
+        const data = await res.json();
+        if (cancelled) return;
+        setVoiceActive(Boolean(data.active));
+        setVoiceState(data.state || 'idle');
+      } catch (_) {}
+    };
+
+    loadVoiceStatus();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSessionId]);
 
   useEffect(() => {
     if (voiceActive && activeSessionId) {
@@ -91,7 +117,10 @@ const ChatTab = () => {
           body: JSON.stringify({ session_id: activeSessionId }),
         });
         const data = await res.json();
-        if (data.success) setVoiceActive(true);
+        if (data.success) {
+          setVoiceActive(true);
+          setVoiceState(data.state || 'speech_wait');
+        }
       } catch (_) {}
     }
   };
@@ -226,7 +255,7 @@ const ChatTab = () => {
   };
 
   const toggleEvent = (idx) => {
-    setExpandedEvents(prev => ({ ...prev, [idx]: prev[idx] === false ? true : false }));
+    setExpandedEvents(prev => ({ ...prev, [idx]: prev[idx] === true ? false : true }));
   };
 
   // ── Render a single message event ─────────────────────────────────────────
@@ -248,14 +277,16 @@ const ChatTab = () => {
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-role-badge">BEON AI</div>
-          <div className="chat-bubble chat-bubble-final">{msg.content}</div>
+          <div className="chat-bubble chat-bubble-final">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+          </div>
           <div className="chat-msg-time">{msg.time}</div>
         </div>
       );
     }
 
     if (msg.type === 'tool_result') {
-      const expanded = expandedEvents[idx] !== false; // default true
+      const expanded = expandedEvents[idx] === true; // default collapsed
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-event-card chat-event-tool">
@@ -271,7 +302,7 @@ const ChatTab = () => {
     }
 
     if (msg.type === 'appliance') {
-      const expanded = expandedEvents[idx] !== false; // default true
+      const expanded = expandedEvents[idx] === true; // default collapsed
       return (
         <div key={idx} className="chat-msg-row chat-msg-agent">
           <div className="chat-event-card chat-event-appliance">
@@ -305,6 +336,11 @@ const ChatTab = () => {
 
     return null;
   };
+
+  const activeSession = sessions.find(sess => sess.id === activeSessionId);
+  const isAgentBusy = isLoading || Boolean(activeSession?.is_running) || (voiceActive && ['agent_wait', 'processing'].includes(voiceState));
+  const inputLocked = voiceActive || isAgentBusy;
+  const voiceButtonLocked = !activeSessionId || (!voiceActive && isAgentBusy);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -363,13 +399,12 @@ const ChatTab = () => {
             <div className="chat-input-bar">
               {voiceActive && (
                 <div className="voice-state-indicator">
+                  {voiceState === 'speech_wait'  && '🎤 Waiting for speech...'}
                   {voiceState === 'listening'    && '🎤 Listening…'}
                   {voiceState === 'transcribing' && '✍️ Transcribing…'}
-                  {voiceState === 'waiting'      && '⏳ Waiting for agent…'}
+                  {voiceState === 'agent_wait'   && '⏳ Waiting for agent response…'}
                   {voiceState === 'processing'   && '⚙️ Processing…'}
                   {voiceState === 'speaking'     && '🔊 Speaking…'}
-                  {voiceState === 'starting'     && '▶ Starting…'}
-                  {voiceState === 'stopping'     && '⏹ Stopping…'}
                 </div>
               )}
               <div className="chat-input-row">
@@ -385,13 +420,13 @@ const ChatTab = () => {
                       sendMessage();
                     }
                   }}
-                  placeholder={voiceActive ? 'Voice mode active – listening…' : 'Message your home AI…'}
-                  disabled={isLoading || voiceActive}
+                  placeholder={voiceActive ? 'Voice mode active' : 'Message your home AI…'}
+                  disabled={inputLocked}
                 />
                 <button
                   className={`chat-voice-btn${voiceActive ? ' active' : ''}`}
                   onClick={toggleVoice}
-                  disabled={!activeSessionId}
+                  disabled={voiceButtonLocked}
                   title={voiceActive ? 'Stop voice mode' : 'Start voice mode'}
                 >
                   🎤
@@ -399,7 +434,7 @@ const ChatTab = () => {
                 <button
                   className="chat-send-btn"
                   onClick={sendMessage}
-                  disabled={isLoading || !inputText.trim() || voiceActive}
+                  disabled={inputLocked || !inputText.trim()}
                 >
                   {isLoading ? '…' : 'Send'}
                 </button>
