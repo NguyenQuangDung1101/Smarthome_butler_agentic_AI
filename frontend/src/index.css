@@ -236,6 +236,8 @@ h1 {
     flex-direction: column;
     justify-content: space-between;
     transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .node-card:hover {
@@ -313,10 +315,12 @@ h1 {
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
+    min-width: 0;
 }
 
 .slider-wrapper input[type="range"] {
     flex: 1;
+    min-width: 0;
     -webkit-appearance: none;
     appearance: none;
     height: 5px;
@@ -359,12 +363,14 @@ h1 {
 }
 
 .slider-value {
-    min-width: 34px;
+    min-width: 28px;
+    max-width: 38px;
     text-align: right;
     font-size: 0.9em;
     font-weight: 700;
     color: var(--accent);
     font-family: monospace;
+    flex-shrink: 0;
 }
 
 .update-btn {
@@ -2027,6 +2033,19 @@ h1 {
 
   .bool-btn { padding: 8px 0; font-size: 12px; }
   .update-btn { font-size: 12px; padding: 7px; }
+
+  .slider-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .slider-wrapper input[type="range"] {
+    width: 100%;
+  }
+  .slider-value {
+    text-align: center;
+    max-width: unset;
+  }
 
   .chat-layout {
     max-height: 88vh;
