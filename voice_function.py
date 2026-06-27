@@ -114,13 +114,46 @@ def _play_audio_bytes(mp3_bytes: bytes, stop_event=None) -> None:
             if stop_event is not None and stop_event.is_set():
                 sd.stop()
 
-def text_to_speech(text: str, stop_event=None) -> None:
+def text_to_speech_bytes(text: str, stop_event=None) -> bytes:
     text = text.replace('*', '')
     if not text.strip():
-        return
-    mp3_data = asyncio.run(_tts_collect(text, stop_event=stop_event))
+        return b""
+    return asyncio.run(_tts_collect(text, stop_event=stop_event))
+
+def text_to_speech(text: str, stop_event=None) -> None:
+    mp3_data = text_to_speech_bytes(text, stop_event=stop_event)
     if mp3_data and not (stop_event is not None and stop_event.is_set()):
         _play_audio_bytes(mp3_data, stop_event=stop_event)
+
+
+# =========================
+# Decode browser audio to mono 16 kHz int16
+# =========================
+def decode_browser_audio(audio_bytes: bytes, sample_rate: int = SAMPLE_RATE) -> np.ndarray:
+    if not audio_bytes:
+        return np.array([], dtype=np.int16)
+
+    container = av.open(io.BytesIO(audio_bytes))
+    if not container.streams.audio:
+        container.close()
+        return np.array([], dtype=np.int16)
+
+    audio_stream = container.streams.audio[0]
+    resampler = av.AudioResampler(format="s16", layout="mono", rate=sample_rate)
+    chunks = []
+
+    try:
+        for frame in container.decode(audio_stream):
+            for resampled_frame in resampler.resample(frame):
+                chunks.append(resampled_frame.to_ndarray().reshape(-1))
+        for resampled_frame in resampler.resample(None):
+            chunks.append(resampled_frame.to_ndarray().reshape(-1))
+    finally:
+        container.close()
+
+    if not chunks:
+        return np.array([], dtype=np.int16)
+    return np.concatenate(chunks).astype(np.int16, copy=False)
 
 
 # =========================

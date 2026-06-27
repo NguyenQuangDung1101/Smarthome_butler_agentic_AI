@@ -14,13 +14,24 @@ const ChatTab = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const voicePollRef = useRef(null);
-  const voiceMsgPollRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const voiceFrameRef = useRef(null);
+  const voiceRequestRef = useRef(null);
+  const playbackSourceRef = useRef(null);
+  const voiceActiveRef = useRef(false);
+  const voiceSessionRef = useRef(null);
+  const voicePhaseRef = useRef('idle');
+  const messagesRef = useRef([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
+    messagesRef.current = messages;
     scrollToBottom();
   }, [messages, isLoading]);
 
@@ -44,86 +55,374 @@ const ChatTab = () => {
   // ── Voice polling ─────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!activeSessionId) {
-      setVoiceActive(false);
-      setVoiceState('idle');
+    if (!voiceActive || !activeSessionId) {
+      clearInterval(voicePollRef.current);
       return;
     }
 
-    let cancelled = false;
-    const loadVoiceStatus = async () => {
+    voicePollRef.current = setInterval(async () => {
+      if (voicePhaseRef.current !== 'processing') return;
       try {
-        const res = await fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`);
-        const data = await res.json();
-        if (cancelled) return;
-        setVoiceActive(Boolean(data.active));
-        setVoiceState(data.state || 'idle');
+        const [statusRes, messagesRes] = await Promise.all([
+          fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`),
+          fetch(`/api/chat/sessions/${encodeURIComponent(activeSessionId)}/messages`),
+        ]);
+        const status = await statusRes.json();
+        const eventLog = await messagesRes.json();
+
+        // Ignore a polling response that finished after audio playback started.
+        if (voicePhaseRef.current !== 'processing') return;
+
+        if (!status.active) {
+          await stopVoice(activeSessionId);
+          return;
+        }
+
+        if (Array.isArray(eventLog)) {
+          messagesRef.current = eventLog;
+          setMessages(eventLog);
+        }
+
+        if (
+          ['transcribing', 'agent_wait', 'processing'].includes(status.state)
+        ) {
+          setVoiceState(status.state);
+        }
       } catch (_) {}
-    };
+    }, 300);
 
-    loadVoiceStatus();
-    return () => {
-      cancelled = true;
-    };
-  }, [activeSessionId]);
-
-  useEffect(() => {
-    if (voiceActive && activeSessionId) {
-      voicePollRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/voice/status/${encodeURIComponent(activeSessionId)}`);
-          const data = await res.json();
-          setVoiceState(data.state || 'idle');
-          if (!data.active) {
-            setVoiceActive(false);
-            setVoiceState('idle');
-          }
-        } catch (_) {}
-      }, 1000);
-      voiceMsgPollRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/chat/sessions/${encodeURIComponent(activeSessionId)}/messages`);
-          const data = await res.json();
-          if (Array.isArray(data)) setMessages(data);
-        } catch (_) {}
-      }, 2000);
-    } else {
-      clearInterval(voicePollRef.current);
-      clearInterval(voiceMsgPollRef.current);
-    }
-    return () => {
-      clearInterval(voicePollRef.current);
-      clearInterval(voiceMsgPollRef.current);
-    };
+    return () => clearInterval(voicePollRef.current);
   }, [voiceActive, activeSessionId]);
 
   // ── Voice toggle ──────────────────────────────────────────────────────────
 
-  const toggleVoice = async () => {
-    if (!activeSessionId) return;
-    if (voiceActive) {
+  const chooseRecorderMimeType = () => {
+    const types = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/ogg;codecs=opus',
+    ];
+    return types.find(type => MediaRecorder.isTypeSupported(type)) || '';
+  };
+
+  const cleanupVoice = () => {
+    if (voiceFrameRef.current) {
+      cancelAnimationFrame(voiceFrameRef.current);
+      voiceFrameRef.current = null;
+    }
+
+    if (voiceRequestRef.current) {
+      voiceRequestRef.current.abort();
+      voiceRequestRef.current = null;
+    }
+
+    const recorder = mediaRecorderRef.current;
+    mediaRecorderRef.current = null;
+    if (recorder && recorder.state !== 'inactive') {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+
+    if (playbackSourceRef.current) {
+      try { playbackSourceRef.current.stop(); } catch (_) {}
+      playbackSourceRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+
+    analyserRef.current = null;
+  };
+
+  const stopVoice = async (sessionId = voiceSessionRef.current || activeSessionId) => {
+    voiceActiveRef.current = false;
+    voiceSessionRef.current = null;
+    voicePhaseRef.current = 'idle';
+    cleanupVoice();
+    setVoiceActive(false);
+    setVoiceState('idle');
+
+    if (sessionId) {
       await fetch('/api/voice/stop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: activeSessionId }),
+        body: JSON.stringify({ session_id: sessionId }),
       }).catch(() => {});
-      setVoiceActive(false);
-      setVoiceState('idle');
-    } else {
-      try {
-        const res = await fetch('/api/voice/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: activeSessionId }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          setVoiceActive(true);
-          setVoiceState(data.state || 'speech_wait');
-        }
-      } catch (_) {}
     }
   };
+
+  const playResponse = async (audioBase64) => {
+    const audioContext = audioContextRef.current;
+    if (!audioContext || !audioBase64) return;
+
+    const binary = atob(audioBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+    await new Promise(resolve => {
+      const source = audioContext.createBufferSource();
+      playbackSourceRef.current = source;
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      source.onended = () => {
+        if (playbackSourceRef.current === source) playbackSourceRef.current = null;
+        resolve();
+      };
+      voicePhaseRef.current = 'speaking';
+      setVoiceState('speaking');
+      source.start();
+    });
+  };
+
+  const refreshVoiceMessages = async (sessionId) => {
+    try {
+      const res = await fetch(`/api/chat/sessions/${encodeURIComponent(sessionId)}/messages`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        messagesRef.current = data;
+        setMessages(data);
+      }
+      fetchSessions();
+    } catch (_) {}
+  };
+
+  const processVoice = async (sessionId, audioBlob) => {
+    if (!voiceActiveRef.current || voiceSessionRef.current !== sessionId) return;
+
+    voicePhaseRef.current = 'processing';
+    setVoiceState('transcribing');
+
+    const controller = new AbortController();
+    voiceRequestRef.current = controller;
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    const extension = audioBlob.type.includes('mp4') ? 'm4a'
+      : audioBlob.type.includes('ogg') ? 'ogg'
+        : 'webm';
+    formData.append('audio', audioBlob, `voice.${extension}`);
+
+    try {
+      const res = await fetch('/api/voice/process', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Voice processing failed');
+      }
+
+      await refreshVoiceMessages(sessionId);
+      if (!voiceActiveRef.current || voiceSessionRef.current !== sessionId) return;
+
+      if (data.audio_base64) {
+        await playResponse(data.audio_base64);
+      }
+
+      if (!voiceActiveRef.current || voiceSessionRef.current !== sessionId) return;
+
+      await fetch('/api/voice/ready', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId }),
+      }).catch(() => {});
+
+      voicePhaseRef.current = 'capture';
+      setVoiceState('speech_wait');
+      startRecordingCycle(sessionId);
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+      alert(error.message || 'Voice processing failed');
+      await stopVoice(sessionId);
+    } finally {
+      if (voiceRequestRef.current === controller) voiceRequestRef.current = null;
+    }
+  };
+
+  const startRecordingCycle = (sessionId) => {
+    const stream = mediaStreamRef.current;
+    const analyser = analyserRef.current;
+    if (!voiceActiveRef.current || !stream || !analyser) return;
+
+    const mimeType = chooseRecorderMimeType();
+    const recorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
+    mediaRecorderRef.current = recorder;
+
+    const analyserData = new Uint8Array(analyser.fftSize);
+    const recordedChunks = [];
+    const cycleStartedAt = performance.now();
+    let speechDetected = false;
+    let speechCandidateAt = 0;
+    let speechStartedAt = 0;
+    let silenceStartedAt = 0;
+
+    recorder.ondataavailable = event => {
+      if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+    };
+
+    recorder.onstop = () => {
+      if (voiceFrameRef.current) {
+        cancelAnimationFrame(voiceFrameRef.current);
+        voiceFrameRef.current = null;
+      }
+      if (mediaRecorderRef.current === recorder) mediaRecorderRef.current = null;
+      if (!voiceActiveRef.current || voiceSessionRef.current !== sessionId) return;
+
+      if (!speechDetected || recordedChunks.length === 0) {
+        voicePhaseRef.current = 'capture';
+        setVoiceState('speech_wait');
+        startRecordingCycle(sessionId);
+        return;
+      }
+
+      const audioBlob = new Blob(recordedChunks, {
+        type: recorder.mimeType || mimeType || 'audio/webm',
+      });
+      if (audioBlob.size < 1000) {
+        voicePhaseRef.current = 'capture';
+        setVoiceState('speech_wait');
+        startRecordingCycle(sessionId);
+        return;
+      }
+      processVoice(sessionId, audioBlob);
+    };
+
+    recorder.start(250);
+    voicePhaseRef.current = 'capture';
+    setVoiceState('speech_wait');
+
+    const monitorMicrophone = () => {
+      if (!voiceActiveRef.current || recorder.state === 'inactive') return;
+
+      analyser.getByteTimeDomainData(analyserData);
+      let total = 0;
+      for (let i = 0; i < analyserData.length; i += 1) {
+        const sample = (analyserData[i] - 128) / 128;
+        total += sample * sample;
+      }
+
+      const volume = Math.sqrt(total / analyserData.length);
+      const now = performance.now();
+      const hasSpeech = volume >= (speechDetected ? 0.012 : 0.025);
+
+      if (!speechDetected) {
+        if (hasSpeech) {
+          if (!speechCandidateAt) speechCandidateAt = now;
+          if (now - speechCandidateAt >= 250) {
+            speechDetected = true;
+            speechStartedAt = now;
+            voicePhaseRef.current = 'listening';
+            setVoiceState('listening');
+          }
+        } else {
+          speechCandidateAt = 0;
+        }
+
+        if (!speechDetected && now - cycleStartedAt >= 30000) {
+          recorder.stop();
+          return;
+        }
+      } else {
+        if (hasSpeech) {
+          silenceStartedAt = 0;
+        } else if (!silenceStartedAt) {
+          silenceStartedAt = now;
+        } else if (now - silenceStartedAt >= 3600) {
+          recorder.stop();
+          return;
+        }
+
+        if (now - speechStartedAt >= 40000) {
+          recorder.stop();
+          return;
+        }
+      }
+
+      voiceFrameRef.current = requestAnimationFrame(monitorMicrophone);
+    };
+
+    voiceFrameRef.current = requestAnimationFrame(monitorMicrophone);
+  };
+
+  const toggleVoice = async () => {
+    if (!activeSessionId) return;
+    if (voiceActive) {
+      await stopVoice(activeSessionId);
+      return;
+    }
+
+    try {
+      if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Microphone access requires HTTPS. Use the ngrok HTTPS URL.');
+      }
+      if (!window.MediaRecorder) {
+        throw new Error('This browser does not support microphone recording.');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContextClass();
+      await audioContext.resume();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      const mute = audioContext.createGain();
+      mute.gain.value = 0;
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      analyser.connect(mute);
+      mute.connect(audioContext.destination);
+
+      const res = await fetch('/api/voice/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: activeSessionId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        stream.getTracks().forEach(track => track.stop());
+        await audioContext.close();
+        throw new Error(data.error || 'Unable to start voice mode');
+      }
+
+      mediaStreamRef.current = stream;
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+      voiceSessionRef.current = activeSessionId;
+      voiceActiveRef.current = true;
+      voicePhaseRef.current = 'capture';
+      setVoiceActive(true);
+      setVoiceState('speech_wait');
+      startRecordingCycle(activeSessionId);
+    } catch (error) {
+      cleanupVoice();
+      alert(error.message || 'Unable to start voice mode');
+    }
+  };
+
+  useEffect(() => () => {
+    voiceActiveRef.current = false;
+    cleanupVoice();
+  }, []);
 
   // ── Load existing session ─────────────────────────────────────────────────
 
@@ -131,13 +430,7 @@ const ChatTab = () => {
     if (isLoading) return;
     // Stop voice for current session before switching
     if (voiceActive && activeSessionId) {
-      await fetch('/api/voice/stop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: activeSessionId }),
-      }).catch(() => {});
-      setVoiceActive(false);
-      setVoiceState('idle');
+      await stopVoice(activeSessionId);
     }
     setActiveSessionId(sessionId);
     setMessages([]);
@@ -156,13 +449,7 @@ const ChatTab = () => {
   const createNewSession = async () => {
     // Stop voice for current session before creating new one
     if (voiceActive && activeSessionId) {
-      await fetch('/api/voice/stop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: activeSessionId }),
-      }).catch(() => {});
-      setVoiceActive(false);
-      setVoiceState('idle');
+      await stopVoice(activeSessionId);
     }
     try {
       const res = await fetch('/api/chat/sessions', {
@@ -387,7 +674,7 @@ const ChatTab = () => {
 
               {messages.map((msg, idx) => renderMessage(msg, idx))}
 
-              {isLoading && (
+              {(isLoading || (voiceActive && voiceState === 'agent_wait')) && (
                 <div className="chat-thinking">
                   <span className="chat-thinking-dots">AI is thinking</span>
                 </div>

@@ -1,4 +1,5 @@
 import json
+import base64
 import numpy as np
 import time
 import threading
@@ -455,95 +456,6 @@ def _preload_voice_function():
         _voice_ready.set()
         print(f"[VOICE] Preload error: {e}")
 
-def _voice_loop(session_id: str, agent, stop_event):
-    """Background thread: listen → STT → run agent → TTS → repeat."""
-    _voice_ready.wait()
-    if _voice_load_error:
-        print(f"[VOICE] Cannot start voice loop: {_voice_load_error}")
-        _voice_sessions[session_id]["active"] = False
-        _voice_sessions[session_id]["state"] = "idle"
-        return
-    """Background thread: listen → STT → run agent → TTS → repeat."""
-    from voice_function import listen_for_speech, speech_to_text, text_to_speech
-
-    def set_voice_state(state: str):
-        vs = _voice_sessions.get(session_id)
-        if vs and not stop_event.is_set():
-            vs["state"] = state
-
-    print(f"[VOICE] Loop started for session: {session_id}")
-    while not stop_event.is_set():
-        set_voice_state("speech_wait")
-        try:
-            audio = listen_for_speech(stop_event=stop_event, state_callback=set_voice_state)
-        except Exception as e:
-            print(f"[VOICE] listen_for_speech error: {e}")
-            if stop_event.is_set():
-                break
-            time.sleep(1)
-            continue
-
-        if stop_event.is_set():
-            break
-
-        if not hasattr(audio, 'size') or audio.size == 0:
-            continue
-
-        set_voice_state("transcribing")
-        try:
-            text = speech_to_text(audio)
-        except Exception as e:
-            print(f"[VOICE] STT error: {e}")
-            if stop_event.is_set():
-                break
-            continue
-
-        if stop_event.is_set():
-            break
-
-        if not text:
-            continue
-
-        print(f"[VOICE] Heard: {text}")
-
-        # Wait for agent to finish any ongoing inference
-        set_voice_state("agent_wait")
-        while agent.is_running and not stop_event.is_set():
-            time.sleep(0.5)
-
-        if stop_event.is_set():
-            break
-
-        # Run agent
-        set_voice_state("processing")
-        final = None
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        agent.is_running = True
-        try:
-            final = loop.run_until_complete(_run_agent_with_cancel(agent, text, stop_event))
-        except asyncio.CancelledError:
-            final = None
-        except Exception as e:
-            print(f"[VOICE] Agent error: {e}")
-        finally:
-            agent.is_running = False
-            loop.close()
-
-        if stop_event.is_set():
-            break
-
-        if final:
-            set_voice_state("speaking")
-            try:
-                text_to_speech(final, stop_event=stop_event)
-            except Exception as e:
-                print(f"[VOICE] TTS error: {e}")
-
-    _voice_sessions[session_id]["active"] = False
-    _voice_sessions[session_id]["state"] = "idle"
-    print(f"[VOICE] Loop stopped for session: {session_id}")
-
 
 @app.route('/api/voice/start', methods=['POST'])
 def voice_start():
@@ -551,18 +463,122 @@ def voice_start():
     session_id = data.get('session_id', '').strip()
     if not session_id:
         return jsonify({"success": False, "error": "session_id required"}), 400
+    if session_id not in sm.normal_session:
+        return jsonify({"success": False, "error": "Session not found"}), 404
+    if _voice_load_error:
+        return jsonify({"success": False, "error": _voice_load_error}), 500
+
+    _voice_sessions[session_id] = {
+        "active": True,
+        "state": "speech_wait",
+        "stop_event": threading.Event(),
+        "processing": False,
+    }
+    return jsonify({"success": True, "state": "speech_wait"})
+
+
+@app.route('/api/voice/process', methods=['POST'])
+def voice_process():
+    session_id = request.form.get('session_id', '').strip()
+    audio_file = request.files.get('audio')
+    if not session_id:
+        return jsonify({"success": False, "error": "session_id required"}), 400
+    if audio_file is None:
+        return jsonify({"success": False, "error": "audio file required"}), 400
+
     session = sm.normal_session.get(session_id)
+    vs = _voice_sessions.get(session_id)
     if not session:
         return jsonify({"success": False, "error": "Session not found"}), 404
+    if not vs or not vs.get("active"):
+        return jsonify({"success": False, "error": "Voice session is not active"}), 409
+    if vs.get("processing"):
+        return jsonify({"success": False, "error": "Voice session is busy"}), 409
+
+    _voice_ready.wait()
+    if _voice_load_error:
+        return jsonify({"success": False, "error": _voice_load_error}), 500
+
+    from voice_function import decode_browser_audio, speech_to_text, text_to_speech_bytes
+
+    agent = session["agent"]
+    stop_event = vs["stop_event"]
+    vs["processing"] = True
+
+    try:
+        vs["state"] = "transcribing"
+        audio_bytes = audio_file.read()
+        if len(audio_bytes) < 1000:
+            return jsonify({"success": True, "recognized": False})
+
+        try:
+            audio = decode_browser_audio(audio_bytes)
+        except Exception as e:
+            print(f"[VOICE] Invalid browser audio: {e}")
+            return jsonify({"success": True, "recognized": False})
+
+        if stop_event.is_set():
+            return jsonify({"success": False, "error": "Voice session stopped"}), 409
+
+        text = speech_to_text(audio) if audio.size else ""
+        if not text:
+            return jsonify({"success": True, "recognized": False})
+
+        print(f"[VOICE] Heard: {text}")
+
+        # STT is complete. From here until agent.run() finishes,
+        # voice mode matches the normal chat "AI is thinking" state.
+        vs["state"] = "agent_wait"
+
+        while agent.is_running and not stop_event.is_set():
+            time.sleep(0.5)
+
+        if stop_event.is_set():
+            return jsonify({"success": False, "error": "Voice session stopped"}), 409
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        agent.is_running = True
+        try:
+            final = loop.run_until_complete(
+                _run_agent_with_cancel(agent, text, stop_event)
+            )
+        finally:
+            agent.is_running = False
+            loop.close()
+
+        if stop_event.is_set():
+            return jsonify({"success": False, "error": "Voice session stopped"}), 409
+
+        # The final text is ready. Processing now means TTS generation only.
+        vs["state"] = "processing"
+        mp3_data = (
+            text_to_speech_bytes(str(final), stop_event=stop_event)
+            if final
+            else b""
+        )
+        return jsonify({
+            "success": True,
+            "recognized": True,
+            "text": text,
+            "audio_base64": base64.b64encode(mp3_data).decode('ascii') if mp3_data else "",
+        })
+    except Exception as e:
+        print(f"[VOICE] Error: {e}")
+        vs["state"] = "speech_wait"
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        vs["processing"] = False
+
+
+@app.route('/api/voice/ready', methods=['POST'])
+def voice_ready():
+    data = request.json or {}
+    session_id = data.get('session_id', '').strip()
     vs = _voice_sessions.get(session_id)
     if vs and vs.get("active"):
-        return jsonify({"success": True, "already_active": True, "state": vs.get("state", "speech_wait")})
-    agent = session["agent"]
-    stop_event = threading.Event()
-    _voice_sessions[session_id] = {"active": True, "state": "speech_wait", "stop_event": stop_event}
-    t = threading.Thread(target=_voice_loop, args=(session_id, agent, stop_event), daemon=True)
-    t.start()
-    return jsonify({"success": True, "state": "speech_wait"})
+        vs["state"] = "speech_wait"
+    return jsonify({"success": True})
 
 
 @app.route('/api/voice/stop', methods=['POST'])
@@ -574,14 +590,9 @@ def voice_stop():
     vs = _voice_sessions.get(session_id)
     if not vs:
         return jsonify({"success": True, "was_active": False})
-    vs.get("stop_event").set()
-    _voice_sessions[session_id]["active"] = False
-    _voice_sessions[session_id]["state"] = "idle"
-    try:
-        import sounddevice as sd
-        sd.stop()
-    except Exception:
-        pass
+    vs["stop_event"].set()
+    vs["active"] = False
+    vs["state"] = "idle"
     return jsonify({"success": True})
 
 

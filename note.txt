@@ -4,6 +4,7 @@ powershell.exe -executionpolicy unrestricted
 
 cls
 
+ngrok http 5000
 
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope Process -Force; . .\smarthome\Scripts\Activate.ps1; Clear-Host
 
@@ -144,15 +145,3 @@ Rules:
 3 shot   78.56    79.78
 4 shot   79.78    81.22
 
-
-In device information tab, remove refresh button
-Fix manual control tab (button behavior), for true false node make it change the but turn color correctly and instantly (on and off button), not waiting for the updating loop to fresh the web
-In user chat session tab, add delete session and add modify session name (right click to choose rename or delete)
-Think carefully, just do what i told, avoid using icon
-
-
-In schedule session, help me to enhance the modify schedule interface (schedule editor) (two sub tab weekday and weekend), think carefully and make it easy to follow and understand the schedule
-Think carefully, just do what i told, avoid using icon
-
-
-I want to make this web to be accessible from mobile phone or any browser in other device (not local host any more)
