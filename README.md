@@ -15,6 +15,20 @@ B.E.O.N is an intelligent smart home assistant built using an **Agentic AI archi
 
 ## Run the Project
 
+## Installation
+
+Install the Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Install Ollama, then pull the cloud model:
+
+```bash
+ollama pull gemma4:31b-cloud
+```
+
 ### 1. Start the backend
 
 ```bash
