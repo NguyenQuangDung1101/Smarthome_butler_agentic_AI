@@ -15,7 +15,7 @@ B.E.O.N is an intelligent smart home assistant built using an **Agentic AI archi
 
 ## Run the Project
 
-## Installation
+### Installation
 
 Install the Python dependencies:
 
